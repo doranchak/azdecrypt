@@ -1,0 +1,43 @@
+[Project]
+Version=3
+Description=Addin for code sniplets
+Api=fb (FreeBASIC),win (Windows)
+Grouping=1
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -w 1 -export
+Output=
+Run=
+[File]
+1=SnipletAddin.bas
+2=SnipletAddin.bi
+3=SnipletAddin.txt
+4=..\..\FbEdit\Inc\RAFile.bi
+5=SnipletAddin.rc
+6=..\..\FbEdit\Inc\Addins.bi
+7=..\..\FbEdit\Inc\RAEdit.bi
+8=
+9=
+[FileInfo]
+1=0,19,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+6=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+7=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+8=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+9=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[TabOrder]
+TabOrder=1,2,3,4,5,6,7
+[BreakPoint]
+1=
+2=
+3=
+4=
+6=
+7=

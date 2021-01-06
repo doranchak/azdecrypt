@@ -1,0 +1,764 @@
+;--------------------------------------------------------------------------
+[Lang]
+Lang=Norwegian, By KetilO
+;--------------------------------------------------------------------------
+[1100]
+1100=Gå Til Linje
+1002=Linje:
+1=OK
+2=Avbryt
+;--------------------------------------------------------------------------
+[1200]
+1200=Språk
+1004=Språk:
+1=OK
+2=Avbryt
+1002=Endringene vil finne sted når FbEdit restartes.
+;--------------------------------------------------------------------------
+[1300]
+;--------------------------------------------------------------------------
+[2000]
+2000=Opsjoner
+1=OK
+2=Avbryt
+;--------------------------------------------------------------------------
+[2100]
+2115=Navn Eksport Format
+2101=Assembly equ's
+2102=C defines
+2103=hla
+2104=PureBasic
+2116=Navn Eksport Output
+2110=Fil
+2111=Utklipps tavle
+2112=Output
+2117=Default Eksport Filnavn:
+2114=Auto eksporter ved lagring
+;--------------------------------------------------------------------------
+[2200]
+2204=Legg til
+2205=Slett
+2206=Endringer vil oppdateres når FbEdit restartes.
+;--------------------------------------------------------------------------
+[2300]
+4020=Grid X-Size
+4021=Grid Y-Size
+4022=Grid farge
+4003=Vis Grid
+4002=Lås Til Grid
+4001=Vis Size/Pos
+4009=Grid som linjer
+4010=Styles som hex
+4011=Juster Dialog til Font
+4012=Enkel Property
+4013=Definer IDC_STATIC
+;--------------------------------------------------------------------------
+[2400]
+2402=Legg til
+2401=Slett
+;--------------------------------------------------------------------------
+[2410]
+2502=Legg til
+2501=Slett
+2504=Endringer vil oppdateres når FbEdit restartes.
+;--------------------------------------------------------------------------
+[2500]
+2500=Finn ...
+2216=Finn hva:
+2009=Erstatt:
+2003=Match Case
+2007=Hele Ord
+2013=Ignorer Kommenterte Linjer
+2014=Logg endringer
+2217=Retning
+2004=Alle
+2006=Opp
+2005=Ned
+2501=Søk
+2505=Valgt Tekst
+2502=Valgt Procedure
+2503=Valgt Modul
+2504=Alle Åpne Filer
+2012=Alle Prosjekt Filer
+1=Finn
+2010=Erstatt
+2015=Finn Alle
+2008=Erstatt Alle
+2=Avbryt
+;--------------------------------------------------------------------------
+[3000]
+1=OK
+;--------------------------------------------------------------------------
+[3200]
+1=OK
+2=Avbryt
+3209=Import
+3205=Sett inn
+3206=Slett
+3211=Meny item:
+3210=Kommando:
+;--------------------------------------------------------------------------
+[4000]
+4000=Kode Editor Opsjoner
+4050=Farge Tema
+4016=Legg til Nytt
+4051=Farger
+4052=Farger:
+4038=Fet
+4037=Italic
+4053=Syntaks
+4054=Gruppe:
+4055=Aktive:
+4009=>
+4008=<
+4056=På Vent:
+4011=Legg til
+4010=Slett
+4004=Fet
+4003=Italic
+4005=RC fil
+4064=Inline asm
+4057=Kode Filer (.bas.bi.):
+4058=Diverse
+4059=Tab Størrelse
+4060=Backups
+4006=Linje Nummer
+4019=Tab som mellomrom
+4031=Kun en instans
+4035=Blokk Fullfør
+4034=Lagre ved make
+4044=Auto last prosjekt
+4020=Auto Indenter
+4036=Smart Indent
+4033=Auto Parantes
+4032=Parantes paring
+4021=Marker aktiv linje
+4026=Marker kommentarer
+4049=Smart Matematikk
+4047=Lukk vad Låser
+4061=Fonter
+4024=Kode
+4022=AaBbCc
+4025=Linje Nummer
+4023=12345
+4066=Verktøy
+4065=AaBbCc
+4062=Kode Fullfør
+4039=Aktiv
+4046=Include/Inclib
+4045=Auto Størrelse
+4048=Kode Tooltip
+4063=Case Konverter
+4040=Ingen
+4041=Mikset Case
+4042=Små bokstaver
+4043=Store bokstaver
+4002=Legg inn
+1=OK
+2=Avbryt
+;--------------------------------------------------------------------------
+[4100]
+4100=Eksterne Filer Opsjoner
+4107=Filtype:
+1=OK
+2=Avbryt
+4102=Legg til
+4103=Slett
+4108=Kommando:
+;--------------------------------------------------------------------------
+[5000]
+5000=Lagre Filer
+2=Avbryt
+1=OK
+1003=Velg ingen
+1002=Velg alle
+;--------------------------------------------------------------------------
+[5100]
+5100=Debug / Quick Run Opsjoner
+1002=Debugger:
+1004=Quick Run Kompilerings Kommando:
+1=OK
+2=Avbryt
+;--------------------------------------------------------------------------
+[5200]
+5200=Blokk Innstt
+1=OK
+2=Avbryt
+5202=Legg inn tekst som skal settes inn ved hver linje i valgt blokk.
+;--------------------------------------------------------------------------
+[5300]
+5300=Nytt Prosjekt
+1015=Prosjekt Navn:
+1016=Prosjekt Beskrivelse:
+1017=Prosjekt Sti:
+1018=Mappe opprettelse
+1014=Prosjekt mappe
+1012=Bak
+1010=Mod
+1011=Res
+1013=Inc
+1=OK
+2=Avbryt
+;--------------------------------------------------------------------------
+[5360]
+1010=Prosjekt Type:
+1009=Tekst fil (.txt)
+1008=Resurs fil (.rc)
+1007=Include fil (.bi)
+1006=Kode fil (.bas)
+1011=Fil Opprettelse
+1012=Valg på denne taben overskrives hvis en template er valgt.
+;--------------------------------------------------------------------------
+[5380]
+;--------------------------------------------------------------------------
+[5400]
+5400=Sti Opsjoner
+1009=Forvalgt Prosjekt Sti:
+1010=Kompiler Sti:
+5403=Hjelp Sti:
+1=OK
+2=Avbryt
+;--------------------------------------------------------------------------
+[5500]
+5500=Prosjekt Opsjoner
+5511=Prosjekt Beskrivelse:
+5512=Prosjekt Type:
+5513=Build Kommando:
+5510=Legg hovedfiler til Build Kommando
+5514=Api filer:
+5523=Inkrementer Versjon ved Build
+5515=Modul Behandling
+5522=Legg modul filer til Build Kommando
+5516=Modul Build Kommando:
+5521=Kompiler bare hvis nyere
+5504=Manuell build
+5505=Rekompiler
+5506=Kommando linje
+5517=Output filenavn:
+5518=Run kommando linje parameter:
+5526=Start cmd.exe
+5525=Auto slett filer etter build (*.obj ; *.a):
+5519=Resurs Navn Eksport Fil:
+5520=Prosjekt Fil Gruppering
+5501=Ingen
+5502=Ved Sti
+5503=Ved Type
+1=OK
+2=Avbryt
+;--------------------------------------------------------------------------
+[5600]
+5600=Eksport properties til output
+1=OK
+2=Avbryt
+1001=Functions
+1002=Constants
+1003=Variables
+1004=UDT's
+1005=Enums
+1006=Namespaces
+1007=Macros
+1008=Constructors
+1009=Destructors
+1010=Properties
+1011=Operators
+5601=Meldinger
+;--------------------------------------------------------------------------
+[6000]
+6000=Lag Template
+1006=Beskrivelse:
+1007=Tilleggs Filer:
+1002=Legg til
+1003=Fjern
+1008=Template Filenavn:
+2=Avbryt
+1=OK
+;--------------------------------------------------------------------------
+[6100]
+6100=Addin Manager
+1=OK
+2=Avbryt
+1002=Hjelp
+1003=Endringene vil finne sted nåt FbEdit restartes.
+;--------------------------------------------------------------------------
+[6200]
+6200=Prosjekt Api filer
+2=Avbryt
+1=OK
+;--------------------------------------------------------------------------
+[6300]
+6300=Finn ...
+1001=Finn hva:
+1003=Erstatt:
+1005=Type
+1006=Hex
+1007=Ascii
+1008=Retning
+1009=Ned
+1010=Opp
+1=Finn
+1011=Erstatt
+1012=Erstatt Alle
+2=Avbryt
+;--------------------------------------------------------------------------
+[10000]
+10001=&Fil
+10002=Nytt Prosjekt\tShift+Ctrl+N
+10003=Åpne Prosjekt\tShift+Ctrl+O
+10004=Lukk Prosjekt\tShift+Ctrl+F4
+10005=&Ny Kode Fil\tCtrl+N
+10006=Ny &Resurs Fil\tCtrl+Alt+N
+10007=&Åpne\tCtrl+O
+10060=Åpne som &Hex
+10008=Siste filer
+10009=&Lagre\tCtrl+S
+10010=Lagre &Alle\tShift+Ctrl+S
+10011=Lagre Som\tCtrl+Alt+S
+10012=&Lukk\tF4
+10013=Lukk Alle\tCtrl+F4
+10015=Side Oppsett
+10016=&Utskrift
+10014=Avslutt\tAlt+F4
+10021=&Rediger
+10022=Angre\tCtrl+Z
+10023=Gjenta\tCtrl+Y
+10024=Klipp ut\tCtrl+X
+10025=Kopier\tCtrl+C
+10026=Lim inn\tCtrl+V
+10027=Slett\tDel
+10028=Velg Alt\tCtrl+A
+10029=Gå til Linje\tCtrl+G
+10030=Finn\tCtrl+F
+10031=Finn Neste\tF3
+10032=Finn Forrige\tCtrl+F3
+10033=Erstatt\tCtrl+R
+10034=Finn Deklarasjon\tF2
+10035=Retur\tCtrl+F2
+10036=Ekspander / Krymp\tCtrl+E
+10037=Blokk
+10038=Indenter\tTab
+10039=Fjærn indent\tShift+Tab
+10040=Kommenter\tF9
+10041=Fjærn Kommentar\tCtrl+F9
+10042=Trim Trailing Spaces
+10043=Konverter
+10044=Indent til Mellomrom
+10045=Indent til Tabulator
+10046=Uppercase\tCtrl+U
+10047=Lowercase\tCtrl+L
+10048=Blokk Modus\tCtrl+B
+10049=Blokk Insett\tShift+Ctrl+B
+10050=Bokmerke
+10051=På / Av\tShift+F8
+10052=Neste\tF8
+10053=Forrige\tCtrl+F8
+10054=Slett Alle\tShift+Ctrl+F8
+10055=Feil
+10056=Neste feil\tF7
+10057=Fjærn alle feil\tShift+Ctrl+F7
+10061=Form&at
+10062=&Lås kontroller
+10063=&Send til Bakgrunn
+10064=&Hent til Forgrunn
+10065=Vis &Grid
+10066=&Lås til Grid
+10067=Align Kontroller
+10068=&Venstre
+10069=&Senter
+10070=&Høyre
+10071=&Topp
+10072=&Midten
+10073=&Bunn
+10074=Samme Størrelse
+10075=&Bredde
+10076=&Høyde
+10077=&Begge
+10078=Sentrer i Dialog
+10079=&Horisontalt
+10080=&Vertikalt
+10081=Sett Tabindex
+10082=Auto Renumrer ID's
+10083=&Case konverter\tCtrl+F12
+10084=&Indenter\tShift+Ctrl+F12
+10091=&Vis
+10092=&Output\tF6
+10093=&Prosjekt
+10094=Property
+10020=Toolbar
+10058=Tabselect
+10059=Statusbar
+10095=Forhåndsvis &Dialog
+10096=Splitt Skjerm
+10097=Full Skjerm\tCtrl+W
+10098=Dobbelt Panel\tShift+Ctrl+D
+10101=&Prosjekt
+10102=Legg til &Ny
+10103=&Fil
+10104=&Modul
+10105=Legg til &Eksisterende
+10106=&Filer
+10107=&Moduler
+10018=Sett Valgt Som Hoved Fil
+10019=Omgjør Valgt til Modul / Fil
+10108=Fjern Valgt
+10109=Gi nytt navn
+10086=Sett inn valgt som #Include
+10110=Prosjekt &Opsjoner
+10111=Lag &Template
+10121=&Resurs
+10122=Legg til &Dialog
+10123=Legg til &Meny
+10124=Legg til Acceleratortabell
+10125=Legg til Strengtabell
+10126=Legg til Versjonsinfo
+10127=Legg til XP Manifest
+10128=Legg til RCData
+10129=Språk
+10130=Include filer
+10131=Resurser
+10132=Navn
+10133=Elsporter Navn
+10134=Fjern
+10135=Omgjør Fjern
+10141=&Make
+10142=&Kompiler\tF5
+10143=&Kjør\tShift+F5
+10144=&Kompiler og Kjør\tCtrl+F5
+10145=Kjør med Debug
+10146=Kompiler &Moduler
+10147=&Hurtig Kjør\tShift+Ctrl+F5
+10151=&Verktøy
+10152=&Eksporter properties
+10161=&Opsjoner
+10017=&Språk
+10162=&Kode Editor
+10163=&Dialog Editor
+10164=&Sti Opsjoner
+10165=Deb&ug / &Quick run Opsjoner
+10166=&Make Opsjoner
+10167=&Eksterne Filer
+10168=&Addin Manager
+10169=&Verktøy Meny
+10170=&Hjelp Meny
+10181=&Hjelp
+10182=&Om FbEdit
+;--------------------------------------------------------------------------
+[20000]
+20001=&TabTool
+10201=Lås / Lås opp Tab
+10202=Lås opp Alle Tabs
+10012=Lukk Valgt Tab
+10013=Lukk Alle Tabs
+10203=Lukk Alle untatt valgt
+10204=Neste Tab
+10205=Forrige Tab
+10206=Splitt / Lukk Splitt
+20002=&Project
+10002=Nytt Prosjekt
+10003=Åpne Prosjekt
+10004=Lukk Prosjekt
+10102=Legg til Ny
+10103=Fil
+10104=Modul
+10105=Legg til Eksisterende
+10106=Filer
+10107=Moduler
+10018=Sett Valgt Som Hoved Fil
+10019=Omgjør Valgt til Modul / Fil
+10108=Fjern Valgt
+10109=Gi nytt navn
+10110=Prosjekt Opsjoner
+20003=&Output
+10092=Skjul
+10211=Tøm
+10212=Velg Alt
+10213=Kopier
+20004=&Property
+10221=&Gå til Declare
+10222=&Kopier til kode
+10229=&Finn Alle
+10223=Fremhev
+10224=Oppdater
+10225=Nullstill
+20005=&Form&at
+10022=Omgjør\tCtrl+Z
+10024=Klipp ut\tCtrl+X
+10025=Kopier\tCtrl+C
+10026=Lim inn\tCtrl+V
+10027=Slett\tDel
+10062=Lås kontroller
+10063=&Send to Bakgrunn
+10064=&Hent til Forgrunn
+10065=Vis &Grid
+10066=&Lås til Grid
+10067=Align Kontroller
+10068=&Venstre
+10069=&Sentrert
+10070=&Høyre
+10071=&Topp
+10072=&Midten
+10073=&Bunn
+10074=Samme Størrelse
+10075=&Bredde
+10076=&Høyde
+10077=Begge
+10078=Sentrer i Dialog
+10079=&Horisontalt
+10080=&Vertikalt
+10081=Sett Tabindex
+10082=Auto Renumrer ID's
+20006=&Immediate
+10085=Skjul
+10226=Tøm
+10227=Velg Alt
+10228=Kopier
+;--------------------------------------------------------------------------
+[Strings]
+10005=Ny fil
+10007=Åpne fil
+10009=Lagre fil
+10010=Lagre Alle filer
+10022=Undo
+10023=Redo
+10024=Klipp ut
+10025=Kopier
+10026=Lim inn
+10027=Slett
+10030=Finn
+10033=Erstatt
+10038=Indenter
+10039=Fjern indent
+10040=Kommenter
+10041=Fjern kommentar
+10051=Toggle bokmerke
+10052=Neste bokmerke
+10053=Forrige bokmerke
+10054=Slett alle bokmerker
+10092=Vis / Skjul Output vindu
+10093=Vis / Skjul Project
+10094=Vis / Skjul Properties
+10142=Kompiler
+10143=Kjør program
+10144=Kompiler og kjør
+;--------------------------------------------------------------------------
+[Internal]
+1=Kunne ikke finne
+100=Fil
+101=Prosjekt
+1000=Finn
+1001=Neste
+1002=Forrige
+1003=Erstatt...
+1004=Søkt i hele Området
+1005=Erstatninger utført.
+1006=Søkt i Prosjekt Filer
+1007=Område søkt%c%cFind%c  Founds: %d%c  Repeats: %d%c%cBuild%c  Errors: %d%c  Warnings: %d
+1008=Prosjekt Filer søkt%c%cFind%c  Files: %d%c  Founds: %d%c  Repeats: %d%c%cBuild%c  Errors: %d%c  Warnings: %d
+1009=Åpne Filer søkt%c%cFind%c  Files: %d%c  Founds: %d%c  Repeats: %d%c%cBuild%c  Errors: %d%c  Warnings: %d
+1100=Verktøy Meny Opsjoner
+1101=Hjelp Meny Opsjoner
+1102=Build Opsjoner
+1103=Prosjekt Build Opsjoner
+1104=Importer Build Opsjoner
+1200=Filer
+1201=Template
+1202=Let Etter Mappe
+1300=Basic Kildefil
+1301=Include
+1302=Resurs
+1303=Diverse
+2000=Legg til Ny Fil
+2001=Legg til Eksisterende Fil
+2002=Legg til Ny Modul
+2003=Legg til Eksisterende Modul
+2004=Åpne Prosjekt
+3000=Fil eksisterer i prosjektet.
+3001=Fjern filen fra prosjektet?
+3002=Kunne ikke opprette mappen:
+3003=Mappen eksisterer. Lag prosjektet likevel?
+3004=Prosjekt filen eksisterer. Lag prosjektet likevel?
+3005=Kunne ikke lage filen:
+3006=Lagre endringene?
+3007=Filen endret utenfor editoren!
+3008=Gjenåpne filen?
+4010=Eksport
+4020=Utseende
+4030=Custom kontroller
+4031=Custom kontroll
+4032=Style maske
+4040=Custom styles
+4041=Style
+4042=Verdi
+4043=Maske
+4050=Resurs typer
+4051=Navn
+4052=Vedi
+4053=Filer
+4054=Editor
+5001=Endret status
+5002=Splitt Bar
+5003=Vis/Skjul Linjenummer
+5004=Ekspander alle
+5005=Kollaps alle
+5006=Låa/Lås opp Tab
+5011=Opp Ett Nivå
+5012=Fil Filter
+5021=Valgt fil
+5022=Åpne filer
+5023=Oppfrisk
+;--------------------------------------------------------------------------
+[SnipletAddin]
+SnipletAddin=Kode biter
+1=Kopier til kode
+2=Lukk
+10000=Kode Biter\tF11
+;--------------------------------------------------------------------------
+[AdvEdit]
+10000=Avansert Editering
+10001=Marker Ord\tShift+Ctrl+W
+10002=Kopier Ord\tShift+Ctrl+C
+10003=Klipp ut Ord\tShift+Ctrl+X
+10004=Slett Ord
+10005=Marker Linje\tShift+Ctrl+L
+10006=Kopier Linje\tAlt+Ctrl+C
+10007=Klipp ut Linje\tAlt+Ctrl+X
+10008=Slett Linje
+10009=Hurtig kjør
+10010=Dupliser Linje\tCtrl+D
+;--------------------------------------------------------------------------
+[CustomFontAddin]
+CustomFontAddin=Egendefinert Font
+1001=Søk
+1003=OK
+1004=Avbryt
+10000=Egendefinert Font
+10001=Legg til Ny Font
+;--------------------------------------------------------------------------
+[FBFileAssociation]
+FBFileAssociation=Filtilhørighet
+1008=Info
+1009=Endre Filtilhørighet med FbEdit ved å markere filtypene du ønsker og klikk Endre Filtilhørighet\r\nTilhørigheten vil lage flotte ikon
+1001=Filer
+1002=*.bas - FreeBasic Kilde
+1003=*.bi    - FreeBasic Headers
+1005=*.rc    - Windows Resurs Skript
+1004=*.fbp  - FBEdit Prosjekt Fil
+1006=Endre Filtilhørighet
+1007=Lukk
+10000=Filtilhørighet
+10001=Filtilhørighet endret!\rFBEdit stien er:
+;--------------------------------------------------------------------------
+[FileTabStyle]
+10000=Fil tab type
+10001=Standard
+10002=Knapper
+10003=Flat
+10004=Modifisert status indikator
+10005=Fast bredde
+10006=Fremhev ikon
+10007=Stjerne karakter
+10008=Ingen indikator
+10009=Flerlinjet
+;--------------------------------------------------------------------------
+[Toolbar]
+Toolbar=Toolbar Verktøy
+2000=Knapp Navn:
+2001=ID
+2002=Bitmap Fil:
+2003=Bitmap Navn:
+2004=Ant
+1008=Ny Knapp
+1009=Legg til Kn.
+1011=Ny Sep.
+1010=Legg til Sep.
+1012=Slett
+2005=Toolbar Type
+1018=Flat
+1020=Wrap
+1021=Ingen Divider
+1023=Tips
+1022=Liste
+2006=Knapp Type
+1025=Check
+1024=Gruppe
+2007=Knapp Størrelse
+1019=Eksporter
+1=Lagre
+2=Avslutt
+;--------------------------------------------------------------------------
+[TortoiseSVN]
+10000=SVN Logg
+10001=SVN Oppdater
+10002=SVN Lagre
+;--------------------------------------------------------------------------
+[ShowVars]
+999=Vis variable
+1000=Skjul
+1001=Neste Tab\tCtrl+F6
+1002=Forrige Tab\tShift+Ctrl+F6
+1003=Blank Tab
+1100=Navn
+1101=Fortegn
+1102=Ikke Fortegn
+1103=Hex
+1104=Bokstav
+1105=Bin
+1200=Navn
+1201=Resultat
+1300=Navn
+1301=Len
+1302=Innhold
+1400=Navn
+1401=Adresse
+1402=Domp
+1403=Ascii
+1500=Navn
+1501=Adresse
+1502=Hex
+1503=Assembler
+1600=Tid
+1601=Tikk
+1602=Vis
+2000= Linje: 
+2001=     Funksjon: 
+2002=     Fil: 
+3000=Blank?
+3001=For mange register
+3002=Intern Feil
+9000=Linje
+9001=Funksjon
+9002=Sti
+9003=Fil
+;--------------------------------------------------------------------------
+[ProjectZip]
+ProjectZip=FbEdit prosjekt zipper
+1009=Zip Til:
+1010=Nåværende:
+1007=Velg Alle
+1004=Zip
+1011=Alle Prosjekt Filer
+2=Avslutt
+2000=Navn
+2001=Størrelse
+2002=Dato
+2003=Lager zip 
+2004=Overskriv eksisterende fil?\r
+2005=Kunne ikke lage filen\r
+2006=Lagt til zip: 
+2007=Ferdig.
+10000=Prosjekt Zipper
+;--------------------------------------------------------------------------
+[FbDebug]
+1005=Ikke debug
+1006=Debug
+1=OK
+10010=&Debug
+10000=Togggle &Bruddpunktt\tCtrl+T
+10001=&Blank Bruddpunkt\tShift+Ctrl+T
+10002=&Kjør\tShift+F7
+10008=&Bryt\tAlt+Ctrl+F7
+10003=&Stopp\tAlt+F7
+10004=Stepp &Inn\tF7
+10005=Stepp &Over\tCtrl+F7
+10006=Kjør &Til Markør\tShift+Ctrl+F7
+10007=&Ikke debug
+;--------------------------------------------------------------------------

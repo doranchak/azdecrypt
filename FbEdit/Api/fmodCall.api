@@ -1,0 +1,225 @@
+FMUSIC_FreeSong,mod_:FMUSIC_MODULE Ptr|byte
+FMUSIC_GetBPM,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetGlobalVolume,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetMasterVolume,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetName,mod_:FMUSIC_MODULE Ptr|zstring Ptr
+FMUSIC_GetNumChannels,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetNumInstruments,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetNumOrders,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetNumPatterns,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetNumSamples,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetOpenState,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetOrder,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetPattern,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetPatternLength,mod_:FMUSIC_MODULE Ptr,orderno:integer|integer
+FMUSIC_GetPaused,mod_:FMUSIC_MODULE Ptr|byte
+FMUSIC_GetRealChannel,mod_:FMUSIC_MODULE Ptr,modchannel:integer|integer
+FMUSIC_GetRow,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetSample,mod_:FMUSIC_MODULE Ptr,sampno:integer|FSOUND_SAMPLE Ptr
+FMUSIC_GetSpeed,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetTime,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetType,mod_:FMUSIC_MODULE Ptr|integer
+FMUSIC_GetUserData,mod_:FMUSIC_MODULE Ptr|any Ptr
+FMUSIC_IsFinished,mod_:FMUSIC_MODULE Ptr|byte
+FMUSIC_IsPlaying,mod_:FMUSIC_MODULE Ptr|byte
+FMUSIC_LoadSong,name:zstring Ptr|FMUSIC_MODULE Ptr
+FMUSIC_LoadSongEx,name_or_data:zstring Ptr,offset:integer,length:integer,mode:uinteger,samplelist:integer Ptr,samplelistnum:integer|FMUSIC_MODULE Ptr
+FMUSIC_OptimizeChannels,mod_:FMUSIC_MODULE Ptr,maxchannels:integer,minvolume:integer|byte
+FMUSIC_PlaySong,mod_:FMUSIC_MODULE Ptr|byte
+FMUSIC_SetInstCallback,mod_:FMUSIC_MODULE Ptr,callback:FMUSIC_CALLBACK,instrument:integer|byte
+FMUSIC_SetLooping,mod_:FMUSIC_MODULE Ptr,looping:byte|byte
+FMUSIC_SetMasterSpeed,mode:FMUSIC_MODULE Ptr,speed:single|byte
+FMUSIC_SetMasterVolume,mod_:FMUSIC_MODULE Ptr,volume:integer|byte
+FMUSIC_SetOrder,mod_:FMUSIC_MODULE Ptr,order:integer|byte
+FMUSIC_SetOrderCallback,mod_:FMUSIC_MODULE Ptr,callback:FMUSIC_CALLBACK,orderstep:integer|byte
+FMUSIC_SetPanSeperation,mod_:FMUSIC_MODULE Ptr,pansep:single|byte
+FMUSIC_SetPaused,mod_:FMUSIC_MODULE Ptr,pause:byte|byte
+FMUSIC_SetReverb,reverb:byte|byte
+FMUSIC_SetRowCallback,mod_:FMUSIC_MODULE Ptr,callback:FMUSIC_CALLBACK,rowstep:integer|byte
+FMUSIC_SetSample,mod_:FMUSIC_MODULE Ptr,sampno:integer,sptr:FSOUND_SAMPLE Ptr|byte
+FMUSIC_SetUserData,mod_:FMUSIC_MODULE Ptr,userdata:any Ptr|byte
+FMUSIC_SetZxxCallback,mod_:FMUSIC_MODULE Ptr,callback:FMUSIC_CALLBACK|byte
+FMUSIC_StopAllSongs
+FMUSIC_StopSong,mod_:FMUSIC_MODULE Ptr|byte
+FSOUND_3D_GetAttributes,channel:integer,pos:single Ptr,vel:single Ptr|byte
+FSOUND_3D_GetMinMaxDistance,channel:integer,min:single Ptr,max:single Ptr|byte
+FSOUND_3D_Listener_GetAttributes,pos:single Ptr,vel:single Ptr,fx:single Ptr,fy:single Ptr,fz:single Ptr,tx:single Ptr,ty:single Ptr,tz:single Ptr
+FSOUND_3D_Listener_SetAttributes,pos:single Ptr,vel:single Ptr,fx:single,fy:single,fz:single,tx:single,ty:single,tz:single
+FSOUND_3D_Listener_SetCurrent,current:integer,numlisteners:integer
+FSOUND_3D_SetAttributes,channel:integer,pos:single Ptr,vel:single Ptr|byte
+FSOUND_3D_SetDistanceFactor,scale:single
+FSOUND_3D_SetDopplerFactor,scale:single
+FSOUND_3D_SetMinMaxDistance,channel:integer,min:single,max:single|byte
+FSOUND_3D_SetRolloffFactor,scale:single
+FSOUND_CD_GetNumTracks,drive:byte|integer
+FSOUND_CD_GetPaused,drive:byte|byte
+FSOUND_CD_GetTrack,drive:byte|integer
+FSOUND_CD_GetTrackLength,drive:byte,track:integer|integer
+FSOUND_CD_GetTrackTime,drive:byte|integer
+FSOUND_CD_GetVolume,drive:byte|integer
+FSOUND_CD_OpenTray,drive:byte,open:byte|byte
+FSOUND_CD_Play,drive:byte,track:integer|byte
+FSOUND_CD_SetPaused,drive:byte,paused:byte|byte
+FSOUND_CD_SetPlayMode,drive:byte,mode:byte
+FSOUND_CD_SetTrackTime,drive:byte,ms:uinteger|byte
+FSOUND_CD_SetVolume,drive:byte,volume:integer|byte
+FSOUND_CD_Stop,drive:byte|byte
+FSOUND_Close
+FSOUND_DSP_ClearMixBuffer
+FSOUND_DSP_Create,callback:FSOUND_DSPCALLBACK,priority:integer,userdata:any Ptr|FSOUND_DSPUNIT Ptr
+FSOUND_DSP_Free,unit:FSOUND_DSPUNIT Ptr
+FSOUND_DSP_GetActive,unit:FSOUND_DSPUNIT Ptr|byte
+FSOUND_DSP_GetBufferLength|integer
+FSOUND_DSP_GetBufferLengthTotal|integer
+FSOUND_DSP_GetClearUnit|FSOUND_DSPUNIT Ptr
+FSOUND_DSP_GetClipAndCopyUnit|FSOUND_DSPUNIT Ptr
+FSOUND_DSP_GetFFTUnit|FSOUND_DSPUNIT Ptr
+FSOUND_DSP_GetMusicUnit|FSOUND_DSPUNIT Ptr
+FSOUND_DSP_GetPriority,unit:FSOUND_DSPUNIT Ptr|integer
+FSOUND_DSP_GetSFXUnit|FSOUND_DSPUNIT Ptr
+FSOUND_DSP_GetSpectrum|single Ptr
+FSOUND_DSP_MixBuffers,destbuffer:any Ptr,srcbuffer:any Ptr,len:integer,freq:integer,vol:integer,pan:integer,mode:uinteger|byte
+FSOUND_DSP_SetActive,unit:FSOUND_DSPUNIT Ptr,active:byte
+FSOUND_DSP_SetPriority,unit:FSOUND_DSPUNIT Ptr,priority:integer
+FSOUND_File_SetCallbacks,useropen:FSOUND_OPENCALLBACK,userclose:FSOUND_CLOSECALLBACK,userread:FSOUND_READCALLBACK,userseek:FSOUND_SEEKCALLBACK,usertell:FSOUND_TELLCALLBACK
+FSOUND_FX_Disable,channel:integer|byte
+FSOUND_FX_Enable,channel:integer,fxtype:uinteger|integer
+FSOUND_FX_SetChorus,fxid:integer,WetDryMix:single,Depth:single,Feedback:single,Frequency:single,Waveform:integer,Delay:single,Phase:integer|byte
+FSOUND_FX_SetCompressor,fxid:integer,Gain:single,Attack:single,Release:single,Threshold:single,Ratio:single,Predelay:single|byte
+FSOUND_FX_SetDistortion,fxid:integer,Gain:single,Edge:single,PostEQCenterFrequency:single,PostEQBandwidth:single,PreLowpassCutoff:single|byte
+FSOUND_FX_SetEcho,fxid:integer,WetDryMix:single,Feedback:single,LeftDelay:single,RightDelay:single,PanDelay:integer|byte
+FSOUND_FX_SetFlanger,fxid:integer,WetDryMix:single,Depth:single,Feedback:single,Frequency:single,Waveform:integer,Delay:single,Phase:integer|byte
+FSOUND_FX_SetGargle,fxid:integer,RateHz:integer,WaveShape:integer|byte
+FSOUND_FX_SetI3DL2Reverb,fxid:integer,Room:integer,RoomHF:integer,RoomRolloffFactor:single,DecayTime:single,DecayHFRatio:single,Reflections:integer,ReflectionsDelay:single,Reverb:integer,ReverbDelay:single,Diffusion:single,Density:single,HFReference:single|byte
+FSOUND_FX_SetParamEQ,fxid:integer,Center:single,Bandwidth:single,Gain:single|byte
+FSOUND_FX_SetWavesReverb,fxid:integer,InGain:single,ReverbMix:single,ReverbTime:single,HighFreqRTRatio:single|byte
+FSOUND_GetAmplitude,channel:integer|integer
+FSOUND_GetChannelsPlaying|integer
+FSOUND_GetCPUUsage|single
+FSOUND_GetCurrentLevels,channel:integer,l:single Ptr,r:single Ptr|byte
+FSOUND_GetCurrentPosition,channel:integer|uinteger
+FSOUND_GetCurrentSample,channel:integer|FSOUND_SAMPLE Ptr
+FSOUND_GetDriver|integer
+FSOUND_GetDriverCaps,id:integer,caps:uinteger Ptr|byte
+FSOUND_GetDriverName,id:integer|zstring Ptr
+FSOUND_GetError|integer
+FSOUND_GetFrequency,channel:integer|integer
+FSOUND_GetLoopMode,channel:integer|uinteger
+FSOUND_GetMaxChannels|integer
+FSOUND_GetMaxSamples|integer
+FSOUND_GetMemoryStats,currentalloced:uinteger Ptr,maxalloced:uinteger Ptr
+FSOUND_GetMixer|integer
+FSOUND_GetMute,channel:integer|byte
+FSOUND_GetNumDrivers|integer
+FSOUND_GetNumHWChannels,num2d:integer Ptr,num3d:integer Ptr,total:integer Ptr|byte
+FSOUND_GetNumSubChannels,channel:integer|integer
+FSOUND_GetOutput|integer
+FSOUND_GetOutputHandle|any Ptr
+FSOUND_GetOutputRate|integer
+FSOUND_GetPan,channel:integer|integer
+FSOUND_GetPaused,channel:integer|byte
+FSOUND_GetPriority,channel:integer|integer
+FSOUND_GetReserved,channel:integer|byte
+FSOUND_GetSFXMasterVolume|integer
+FSOUND_GetSubChannel,channel:integer,subchannel:integer|integer
+FSOUND_GetSurround,channel:integer|byte
+FSOUND_GetVersion|single
+FSOUND_GetVolume,channel:integer|integer
+FSOUND_Init,mixrate:integer,maxsoftwarechannels:integer,flags:uinteger|byte
+FSOUND_IsPlaying,channel:integer|byte
+FSOUND_PlaySound,channel:integer,sptr:FSOUND_SAMPLE Ptr|integer
+FSOUND_PlaySoundEx,channel:integer,sptr:FSOUND_SAMPLE Ptr,dsp:FSOUND_DSPUNIT Ptr,startpaused:byte|integer
+FSOUND_Record_GetDriver|integer
+FSOUND_Record_GetDriverName,id:integer|zstring Ptr
+FSOUND_Record_GetNumDrivers|integer
+FSOUND_Record_GetPosition|integer
+FSOUND_Record_SetDriver,outputtype:integer|byte
+FSOUND_Record_StartSample,sptr:FSOUND_SAMPLE Ptr,loop:byte|byte
+FSOUND_Record_Stop|byte
+FSOUND_Reverb_GetChannelProperties,channel:integer,prop:FSOUND_REVERB_CHANNELPROPERTIES Ptr|byte
+FSOUND_Reverb_GetProperties,prop:FSOUND_REVERB_PROPERTIES Ptr|byte
+FSOUND_Reverb_SetChannelProperties,channel:integer,prop:FSOUND_REVERB_CHANNELPROPERTIES Ptr|byte
+FSOUND_Reverb_SetProperties,prop:FSOUND_REVERB_PROPERTIES Ptr|byte
+FSOUND_Sample_Alloc,index:integer,length:integer,mode:uinteger,deffreq:integer,defvol:integer,defpan:integer,defpri:integer|FSOUND_SAMPLE Ptr
+FSOUND_Sample_Free,sptr:FSOUND_SAMPLE Ptr
+FSOUND_Sample_Get,sampno:integer|FSOUND_SAMPLE Ptr
+FSOUND_Sample_GetDefaults,sptr:FSOUND_SAMPLE Ptr,deffreq:integer Ptr,defvol:integer Ptr,defpan:integer Ptr,defpri:integer Ptr|byte
+FSOUND_Sample_GetDefaultsEx,sptr:FSOUND_SAMPLE Ptr,deffreq:integer Ptr,defvol:integer Ptr,defpan:integer Ptr,defpri:integer Ptr,varfreq:integer Ptr,varvol:integer Ptr,varpan:integer Ptr|byte
+FSOUND_Sample_GetLength,sptr:FSOUND_SAMPLE Ptr|uinteger
+FSOUND_Sample_GetLoopPoints,sptr:FSOUND_SAMPLE Ptr,loopstart:integer Ptr,loopend:integer Ptr|byte
+FSOUND_Sample_GetMinMaxDistance,sptr:FSOUND_SAMPLE Ptr,min:single Ptr,max:single Ptr|byte
+FSOUND_Sample_GetMode,sptr:FSOUND_SAMPLE Ptr|uinteger
+FSOUND_Sample_GetName,sptr:FSOUND_SAMPLE Ptr|zstring Ptr
+FSOUND_Sample_Load,index:integer,name_or_data:zstring Ptr,mode:uinteger,offset:integer,length:integer|FSOUND_SAMPLE Ptr
+FSOUND_Sample_Lock,sptr:FSOUND_SAMPLE Ptr,offset:integer,length:integer,ptr1:any Ptr Ptr,ptr2:any Ptr Ptr,len1:uinteger Ptr,len2:uinteger Ptr|byte
+FSOUND_Sample_SetDefaults,sptr:FSOUND_SAMPLE Ptr,deffreq:integer,defvol:integer,defpan:integer,defpri:integer|byte
+FSOUND_Sample_SetDefaultsEx,sptr:FSOUND_SAMPLE Ptr,deffreq:integer,defvol:integer,defpan:integer,defpri:integer,varfreq:integer,varvol:integer,varpan:integer|byte
+FSOUND_Sample_SetLoopPoints,sptr:FSOUND_SAMPLE Ptr,loopstart:integer,loopend:integer|byte
+FSOUND_Sample_SetMaxPlaybacks,sptr:FSOUND_SAMPLE Ptr,max:integer|byte
+FSOUND_Sample_SetMinMaxDistance,sptr:FSOUND_SAMPLE Ptr,min:single,max:single|byte
+FSOUND_Sample_SetMode,sptr:FSOUND_SAMPLE Ptr,mode:uinteger|byte
+FSOUND_Sample_Unlock,sptr:FSOUND_SAMPLE Ptr,ptr1:any Ptr,ptr2:any Ptr,len1:uinteger,len2:uinteger|byte
+FSOUND_Sample_Upload,sptr:FSOUND_SAMPLE Ptr,srcdata:any Ptr,mode:uinteger|byte
+FSOUND_SetBufferSize,len_ms:integer|byte
+FSOUND_SetCurrentPosition,channel:integer,offset:uinteger|byte
+FSOUND_SetDriver,driver:integer|byte
+FSOUND_SetFrequency,channel:integer,freq:integer|byte
+FSOUND_SetHWND,hwnd:any Ptr|byte
+FSOUND_SetLoopMode,channel:integer,loopmode:uinteger|byte
+FSOUND_SetMaxHardwareChannels,max:integer|byte
+FSOUND_SetMemorySystem,pool:any Ptr,poollen:integer,useralloc:FSOUND_ALLOCCALLBACK,userrealloc:FSOUND_REALLOCCALLBACK,userfree:FSOUND_FREECALLBACK|byte
+FSOUND_SetMinHardwareChannels,min:integer|byte
+FSOUND_SetMixer,mixer:integer|byte
+FSOUND_SetMute,channel:integer,mute:byte|byte
+FSOUND_SetOutput,outputtype:FSOUND_OUTPUTTYPES|byte
+FSOUND_SetPan,channel:integer,pan:integer|byte
+FSOUND_SetPanSeperation,pansep:single
+FSOUND_SetPaused,channel:integer,paused:byte|byte
+FSOUND_SetPriority,channel:integer,priority:integer|byte
+FSOUND_SetReserved,channel:integer,reserved:byte|byte
+FSOUND_SetSFXMasterVolume,volume:integer
+FSOUND_SetSpeakerMode,speakermode:uinteger
+FSOUND_SetSurround,channel:integer,surround:byte|byte
+FSOUND_SetVolume,channel:integer,vol:integer|byte
+FSOUND_SetVolumeAbsolute,channel:integer,vol:integer|byte
+FSOUND_StopSound,channel:integer|byte
+FSOUND_Stream_AddSyncPoint,stream:FSOUND_STREAM Ptr,pcmoffset:uinteger,name:zstring Ptr|FSOUND_SYNCPOINT Ptr
+FSOUND_Stream_Close,stream:FSOUND_STREAM Ptr|byte
+FSOUND_Stream_Create,callback:FSOUND_STREAMCALLBACK,length:integer,mode:uinteger,samplerate:integer,userdata:any Ptr|FSOUND_STREAM Ptr
+FSOUND_Stream_CreateDSP,stream:FSOUND_STREAM Ptr,callback:FSOUND_DSPCALLBACK,priority:integer,userdata:any Ptr|FSOUND_DSPUNIT Ptr
+FSOUND_Stream_DeleteSyncPoint,point:FSOUND_SYNCPOINT Ptr|byte
+FSOUND_Stream_FindTagField,stream:FSOUND_STREAM Ptr,type:integer,name:zstring Ptr,value:any Ptr Ptr,length:integer Ptr|byte
+FSOUND_Stream_GetLength,stream:FSOUND_STREAM Ptr|integer
+FSOUND_Stream_GetLengthMs,stream:FSOUND_STREAM Ptr|integer
+FSOUND_Stream_GetMode,stream:FSOUND_STREAM Ptr|uinteger
+FSOUND_Stream_GetNumSubStreams,stream:FSOUND_STREAM Ptr|integer
+FSOUND_Stream_GetNumSyncPoints,stream:FSOUND_STREAM Ptr|integer
+FSOUND_Stream_GetNumTagFields,stream:FSOUND_STREAM Ptr,num:integer Ptr|byte
+FSOUND_Stream_GetOpenState,stream:FSOUND_STREAM Ptr|integer
+FSOUND_Stream_GetPosition,stream:FSOUND_STREAM Ptr|uinteger
+FSOUND_Stream_GetSample,stream:FSOUND_STREAM Ptr|FSOUND_SAMPLE Ptr
+FSOUND_Stream_GetSyncPoint,stream:FSOUND_STREAM Ptr,index:integer|FSOUND_SYNCPOINT Ptr
+FSOUND_Stream_GetSyncPointInfo,point:FSOUND_SYNCPOINT Ptr,pcmoffset:uinteger Ptr|zstring Ptr
+FSOUND_Stream_GetTagField,stream:FSOUND_STREAM Ptr,num:integer,type:integer Ptr,name:byte Ptr Ptr,value:any Ptr Ptr,length:integer Ptr|byte
+FSOUND_Stream_GetTime,stream:FSOUND_STREAM Ptr|integer
+FSOUND_Stream_Net_GetBufferProperties,buffersize:integer Ptr,prebuffer_percent:integer Ptr,rebuffer_percent:integer Ptr|byte
+FSOUND_Stream_Net_GetLastServerStatus|zstring Ptr
+FSOUND_Stream_Net_GetStatus,stream:FSOUND_STREAM Ptr,status:integer Ptr,bufferpercentused:integer Ptr,bitrate:integer Ptr,flags:uinteger Ptr|byte
+FSOUND_Stream_Net_SetBufferProperties,buffersize:integer,prebuffer_percent:integer,rebuffer_percent:integer|byte
+FSOUND_Stream_Net_SetMetadataCallback,stream:FSOUND_STREAM Ptr,callback:FSOUND_METADATACALLBACK,userdata:any Ptr|byte
+FSOUND_Stream_Net_SetProxy,proxy:zstring Ptr|byte
+FSOUND_Stream_Open,name_or_data:zstring Ptr,mode:uinteger,offset:integer,length:integer|FSOUND_STREAM Ptr
+FSOUND_Stream_Play,channel:integer,stream:FSOUND_STREAM Ptr|integer
+FSOUND_Stream_PlayEx,channel:integer,stream:FSOUND_STREAM Ptr,dsp:FSOUND_DSPUNIT Ptr,startpaused:byte|integer
+FSOUND_Stream_SetBufferSize,ms:integer|byte
+FSOUND_Stream_SetEndCallback,stream:FSOUND_STREAM Ptr,callback:FSOUND_STREAMCALLBACK,userdata:any Ptr|byte
+FSOUND_Stream_SetLoopCount,stream:FSOUND_STREAM Ptr,count:integer|byte
+FSOUND_Stream_SetLoopPoints,stream:FSOUND_STREAM Ptr,loopstartpcm:uinteger,loopendpcm:uinteger|byte
+FSOUND_Stream_SetMode,stream:FSOUND_STREAM Ptr,mode:uinteger|byte
+FSOUND_Stream_SetPosition,stream:FSOUND_STREAM Ptr,position:uinteger|byte
+FSOUND_Stream_SetSubStream,stream:FSOUND_STREAM Ptr,index:integer|byte
+FSOUND_Stream_SetSubStreamSentence,stream:FSOUND_STREAM Ptr,sentencelist:integer Ptr,numitems:integer|byte
+FSOUND_Stream_SetSyncCallback,stream:FSOUND_STREAM Ptr,callback:FSOUND_STREAMCALLBACK,userdata:any Ptr|byte
+FSOUND_Stream_SetTime,stream:FSOUND_STREAM Ptr,ms:integer|byte
+FSOUND_Stream_Stop,stream:FSOUND_STREAM Ptr|byte
+FSOUND_Update

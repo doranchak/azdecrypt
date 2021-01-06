@@ -1,0 +1,24 @@
+[Project]
+Version=2
+Description=Picture viewer custom control
+Api=fb (FreeBASIC),win (Windows)
+Grouping=2
+AddMainFiles=0
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=1
+Current=1
+1=Custom Control build Dll,fbc -dll -l kernel32 -l gdi32 -l user32 -x "..\FBEPictView.dll" "FBEPictView.rc"
+2=Custom Control build Lib,fbc -lib -l kernel32 -l gdi32 -l user32 -x "..\FBEPictView"
+Output=
+Run=
+[File]
+1=FBEPictView.rc
+1001=FBEPictView.bas
+2=..\FBEPictView.bi
+3=Res\ToolBox.bmp
+[FileInfo]
+1=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1001=0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,14,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

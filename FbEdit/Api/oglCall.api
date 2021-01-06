@@ -1,0 +1,657 @@
+glClearIndex,c:GLfloat
+glClearColor,red:GLclampf,green:GLclampf,blue:GLclampf,alpha:GLclampf
+glClear,mask:GLbitfield
+glIndexMask,mask:GLuint
+glColorMask,red:GLboolean,green:GLboolean,blue:GLboolean,alpha:GLboolean
+glAlphaFunc,func:GLenum,ref:GLclampf
+glBlendFunc,sfactor:GLenum,dfactor:GLenum
+glLogicOp,opcode:GLenum
+glCullFace,mode:GLenum
+glFrontFace,mode:GLenum
+glPointSize,size:GLfloat
+glLineWidth,width:GLfloat
+glLineStipple,factor:GLint,pattern:GLushort
+glPolygonMode,face:GLenum,mode:GLenum
+glPolygonOffset,factor:GLfloat,units:GLfloat
+glPolygonStipple,mask:GLubyte ptr
+glGetPolygonStipple,mask:GLubyte ptr
+glEdgeFlag,flag:GLboolean
+glEdgeFlagv,flag:GLboolean ptr
+glScissor,x:GLint,y:GLint,width:GLsizei,height:GLsizei
+glClipPlane,plane:GLenum,equation:GLdouble ptr
+glGetClipPlane,plane:GLenum,equation:GLdouble ptr
+glDrawBuffer,mode:GLenum
+glReadBuffer,mode:GLenum
+glEnable,cap:GLenum
+glDisable,cap:GLenum
+glIsEnabled,cap:GLenum):GLboolean
+glEnableClientState,cap:GLenum
+glDisableClientState,cap:GLenum
+glGetBooleanv,pname:GLenum,params:GLboolean ptr
+glGetDoublev,pname:GLenum,params:GLdouble ptr
+glGetFloatv,pname:GLenum,params:GLfloat ptr
+glGetIntegerv,pname:GLenum,params:GLint ptr
+glPushAttrib,mask:GLbitfield
+glPopAttrib
+glPushClientAttrib,mask:GLbitfield
+glPopClientAttrib
+glRenderMode,mode:GLenum|GLint
+glGetError|GLenum
+glGetString,name:GLenum|zstring ptr
+glFinish
+glFlush
+glHint,target:GLenum,mode:GLenum
+glClearDepth,depth:GLclampd
+glDepthFunc,func:GLenum
+glDepthMask,flag:GLboolean
+glDepthRange,near_val:GLclampd,far_val:GLclampd
+glClearAccum,red:GLfloat,green:GLfloat,blue:GLfloat,alpha:GLfloat
+glAccum,op:GLenum,value:GLfloat
+glMatrixMode,mode:GLenum
+glOrtho,left:GLdouble,right:GLdouble,bottom:GLdouble,top:GLdouble,near_val:GLdouble,far_val:GLdouble
+glFrustum,left:GLdouble,right:GLdouble,bottom:GLdouble,top:GLdouble,near_val:GLdouble,far_val:GLdouble
+glViewport,x:GLint,y:GLint,width:GLsizei,height:GLsizei
+glPushMatrix
+glPopMatrix
+glLoadIdentity
+glLoadMatrixd,m:GLdouble ptr
+glLoadMatrixf,m:GLfloat ptr
+glMultMatrixd,m:GLdouble ptr
+glMultMatrixf,m:GLfloat ptr
+glRotated,angle:GLdouble,x:GLdouble,y:GLdouble,z:GLdouble
+glRotatef,angle:GLfloat,x:GLfloat,y:GLfloat,z:GLfloat
+glScaled,x:GLdouble,y:GLdouble,z:GLdouble
+glScalef,x:GLfloat,y:GLfloat,z:GLfloat
+glTranslated,x:GLdouble,y:GLdouble,z:GLdouble
+glTranslatef,x:GLfloat,y:GLfloat,z:GLfloat
+glIsList,list:GLuint|GLboolean
+glDeleteLists,list:GLuint,range:GLsizei
+glGenLists,range:GLsizei|GLuint
+glNewList,list:GLuint,mode:GLenum
+glEndList
+glCallList,list:GLuint
+glCallLists,n:GLsizei,type:GLenum,lists:GLvoid ptr
+glListBase,base:GLuint
+glBegin,mode:GLenum
+glEnd
+glVertex2d,x:GLdouble,y:GLdouble
+glVertex2f,x:GLfloat,y:GLfloat
+glVertex2i,x:GLint,y:GLint
+glVertex2s,x:GLshort,y:GLshort
+glVertex3d,x:GLdouble,y:GLdouble,z:GLdouble
+glVertex3f,x:GLfloat,y:GLfloat,z:GLfloat
+glVertex3i,x:GLint,y:GLint,z:GLint
+glVertex3s,x:GLshort,y:GLshort,z:GLshort
+glVertex4d,x:GLdouble,y:GLdouble,z:GLdouble,w:GLdouble
+glVertex4f,x:GLfloat,y:GLfloat,z:GLfloat,w:GLfloat
+glVertex4i,x:GLint,y:GLint,z:GLint,w:GLint
+glVertex4s,x:GLshort,y:GLshort,z:GLshort,w:GLshort
+glVertex2dv,v:GLdouble ptr
+glVertex2fv,v:GLfloat ptr
+glVertex2iv,v:GLint ptr
+glVertex2sv,v:GLshort ptr
+glVertex3dv,v:GLdouble ptr
+glVertex3fv,v:GLfloat ptr
+glVertex3iv,v:GLint ptr
+glVertex3sv,v:GLshort ptr
+glVertex4dv,v:GLdouble ptr
+glVertex4fv,v:GLfloat ptr
+glVertex4iv,v:GLint ptr
+glVertex4sv,v:GLshort ptr
+glNormal3b,nx:GLbyte,ny:GLbyte,nz:GLbyte
+glNormal3d,nx:GLdouble,ny:GLdouble,nz:GLdouble
+glNormal3f,nx:GLfloat,ny:GLfloat,nz:GLfloat
+glNormal3i,nx:GLint,ny:GLint,nz:GLint
+glNormal3s,nx:GLshort,ny:GLshort,nz:GLshort
+glNormal3bv,v:GLbyte ptr
+glNormal3dv,v:GLdouble ptr
+glNormal3fv,v:GLfloat ptr
+glNormal3iv,v:GLint ptr
+glNormal3sv,v:GLshort ptr
+glIndexd,c:GLdouble
+glIndexf,c:GLfloat
+glIndexi,c:GLint
+glIndexs,c:GLshort
+glIndexub,c:GLubyte
+glIndexdv,c:GLdouble ptr
+glIndexfv,c:GLfloat ptr
+glIndexiv,c:GLint ptr
+glIndexsv,c:GLshort ptr
+glIndexubv,c:GLubyte ptr
+glColor3b,red:GLbyte,green:GLbyte,blue:GLbyte
+glColor3d,red:GLdouble,green:GLdouble,blue:GLdouble
+glColor3f,red:GLfloat,green:GLfloat,blue:GLfloat
+glColor3i,red:GLint,green:GLint,blue:GLint
+glColor3s,red:GLshort,green:GLshort,blue:GLshort
+glColor3ub,red:GLubyte,green:GLubyte,blue:GLubyte
+glColor3ui,red:GLuint,green:GLuint,blue:GLuint
+glColor3us,red:GLushort,green:GLushort,blue:GLushort
+glColor4b,red:GLbyte,green:GLbyte,blue:GLbyte,alpha:GLbyte
+glColor4d,red:GLdouble,green:GLdouble,blue:GLdouble,alpha:GLdouble
+glColor4f,red:GLfloat,green:GLfloat,blue:GLfloat,alpha:GLfloat
+glColor4i,red:GLint,green:GLint,blue:GLint,alpha:GLint
+glColor4s,red:GLshort,green:GLshort,blue:GLshort,alpha:GLshort
+glColor4ub,red:GLubyte,green:GLubyte,blue:GLubyte,alpha:GLubyte
+glColor4ui,red:GLuint,green:GLuint,blue:GLuint,alpha:GLuint
+glColor4us,red:GLushort,green:GLushort,blue:GLushort,alpha:GLushort
+glColor3bv,v:GLbyte ptr
+glColor3dv,v:GLdouble ptr
+glColor3fv,v:GLfloat ptr
+glColor3iv,v:GLint ptr
+glColor3sv,v:GLshort ptr
+glColor3ubv,v:GLubyte ptr
+glColor3uiv,v:GLuint ptr
+glColor3usv,v:GLushort ptr
+glColor4bv,v:GLbyte ptr
+glColor4dv,v:GLdouble ptr
+glColor4fv,v:GLfloat ptr
+glColor4iv,v:GLint ptr
+glColor4sv,v:GLshort ptr
+glColor4ubv,v:GLubyte ptr
+glColor4uiv,v:GLuint ptr
+glColor4usv,v:GLushort ptr
+glTexCoord1d,s:GLdouble
+glTexCoord1f,s:GLfloat
+glTexCoord1i,s:GLint
+glTexCoord1s,s:GLshort
+glTexCoord2d,s:GLdouble,t:GLdouble
+glTexCoord2f,s:GLfloat,t:GLfloat
+glTexCoord2i,s:GLint,t:GLint
+glTexCoord2s,s:GLshort,t:GLshort
+glTexCoord3d,s:GLdouble,t:GLdouble,r:GLdouble
+glTexCoord3f,s:GLfloat,t:GLfloat,r:GLfloat
+glTexCoord3i,s:GLint,t:GLint,r:GLint
+glTexCoord3s,s:GLshort,t:GLshort,r:GLshort
+glTexCoord4d,s:GLdouble,t:GLdouble,r:GLdouble,q:GLdouble
+glTexCoord4f,s:GLfloat,t:GLfloat,r:GLfloat,q:GLfloat
+glTexCoord4i,s:GLint,t:GLint,r:GLint,q:GLint
+glTexCoord4s,s:GLshort,t:GLshort,r:GLshort,q:GLshort
+glTexCoord1dv,v:GLdouble ptr
+glTexCoord1fv,v:GLfloat ptr
+glTexCoord1iv,v:GLint ptr
+glTexCoord1sv,v:GLshort ptr
+glTexCoord2dv,v:GLdouble ptr
+glTexCoord2fv,v:GLfloat ptr
+glTexCoord2iv,v:GLint ptr
+glTexCoord2sv,v:GLshort ptr
+glTexCoord3dv,v:GLdouble ptr
+glTexCoord3fv,v:GLfloat ptr
+glTexCoord3iv,v:GLint ptr
+glTexCoord3sv,v:GLshort ptr
+glTexCoord4dv,v:GLdouble ptr
+glTexCoord4fv,v:GLfloat ptr
+glTexCoord4iv,v:GLint ptr
+glTexCoord4sv,v:GLshort ptr
+glRasterPos2d,x:GLdouble,y:GLdouble
+glRasterPos2f,x:GLfloat,y:GLfloat
+glRasterPos2i,x:GLint,y:GLint
+glRasterPos2s,x:GLshort,y:GLshort
+glRasterPos3d,x:GLdouble,y:GLdouble,z:GLdouble
+glRasterPos3f,x:GLfloat,y:GLfloat,z:GLfloat
+glRasterPos3i,x:GLint,y:GLint,z:GLint
+glRasterPos3s,x:GLshort,y:GLshort,z:GLshort
+glRasterPos4d,x:GLdouble,y:GLdouble,z:GLdouble,w:GLdouble
+glRasterPos4f,x:GLfloat,y:GLfloat,z:GLfloat,w:GLfloat
+glRasterPos4i,x:GLint,y:GLint,z:GLint,w:GLint
+glRasterPos4s,x:GLshort,y:GLshort,z:GLshort,w:GLshort
+glRasterPos2dv,v:GLdouble ptr
+glRasterPos2fv,v:GLfloat ptr
+glRasterPos2iv,v:GLint ptr
+glRasterPos2sv,v:GLshort ptr
+glRasterPos3dv,v:GLdouble ptr
+glRasterPos3fv,v:GLfloat ptr
+glRasterPos3iv,v:GLint ptr
+glRasterPos3sv,v:GLshort ptr
+glRasterPos4dv,v:GLdouble ptr
+glRasterPos4fv,v:GLfloat ptr
+glRasterPos4iv,v:GLint ptr
+glRasterPos4sv,v:GLshort ptr
+glRectd,x1:GLdouble,y1:GLdouble,x2:GLdouble,y2:GLdouble
+glRectf,x1:GLfloat,y1:GLfloat,x2:GLfloat,y2:GLfloat
+glRecti,x1:GLint,y1:GLint,x2:GLint,y2:GLint
+glRects,x1:GLshort,y1:GLshort,x2:GLshort,y2:GLshort
+glRectdv,v1:GLdouble ptr,v2:GLdouble ptr
+glRectfv,v1:GLfloat ptr,v2:GLfloat ptr
+glRectiv,v1:GLint ptr,v2:GLint ptr
+glRectsv,v1:GLshort ptr,v2:GLshort ptr
+glShadeModel,mode:GLenum
+glLightf,light:GLenum,pname:GLenum,param:GLfloat
+glLighti,light:GLenum,pname:GLenum,param:GLint
+glLightfv,light:GLenum,pname:GLenum,params:GLfloat ptr
+glLightiv,light:GLenum,pname:GLenum,params:GLint ptr
+glGetLightfv,light:GLenum,pname:GLenum,params:GLfloat ptr
+glGetLightiv,light:GLenum,pname:GLenum,params:GLint ptr
+glLightModelf,pname:GLenum,param:GLfloat
+glLightModeli,pname:GLenum,param:GLint
+glLightModelfv,pname:GLenum,params:GLfloat ptr
+glLightModeliv,pname:GLenum,params:GLint ptr
+glMaterialf,face:GLenum,pname:GLenum,param:GLfloat
+glMateriali,face:GLenum,pname:GLenum,param:GLint
+glMaterialfv,face:GLenum,pname:GLenum,params:GLfloat ptr
+glMaterialiv,face:GLenum,pname:GLenum,params:GLint ptr
+glGetMaterialfv,face:GLenum,pname:GLenum,params:GLfloat ptr
+glGetMaterialiv,face:GLenum,pname:GLenum,params:GLint ptr
+glColorMaterial,face:GLenum,mode:GLenum
+glPixelZoom,xfactor:GLfloat,yfactor:GLfloat
+glPixelStoref,pname:GLenum,param:GLfloat
+glPixelStorei,pname:GLenum,param:GLint
+glPixelTransferf,pname:GLenum,param:GLfloat
+glPixelTransferi,pname:GLenum,param:GLint
+glPixelMapfv,map:GLenum,mapsize:GLint,values:GLfloat ptr
+glPixelMapuiv,map:GLenum,mapsize:GLint,values:GLuint ptr
+glPixelMapusv,map:GLenum,mapsize:GLint,values:GLushort ptr
+glGetPixelMapfv,map:GLenum,values:GLfloat ptr
+glGetPixelMapuiv,map:GLenum,values:GLuint ptr
+glGetPixelMapusv,map:GLenum,values:GLushort ptr
+glBitmap,width:GLsizei,height:GLsizei,xorig:GLfloat,yorig:GLfloat,xmove:GLfloat,ymove:GLfloat,bitmap:GLubyte ptr
+glReadPixels,x:GLint,y:GLint,width:GLsizei,height:GLsizei,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glDrawPixels,width:GLsizei,height:GLsizei,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glCopyPixels,x:GLint,y:GLint,width:GLsizei,height:GLsizei,type:GLenum
+glStencilFunc,func:GLenum,ref:GLint,mask:GLuint
+glStencilMask,mask:GLuint
+glStencilOp,fail:GLenum,zfail:GLenum,zpass:GLenum
+glClearStencil,s:GLint
+glTexGend,coord:GLenum,pname:GLenum,param:GLdouble
+glTexGenf,coord:GLenum,pname:GLenum,param:GLfloat
+glTexGeni,coord:GLenum,pname:GLenum,param:GLint
+glTexGendv,coord:GLenum,pname:GLenum,params:GLdouble ptr
+glTexGenfv,coord:GLenum,pname:GLenum,params:GLfloat ptr
+glTexGeniv,coord:GLenum,pname:GLenum,params:GLint ptr
+glGetTexGendv,coord:GLenum,pname:GLenum,params:GLdouble ptr
+glGetTexGenfv,coord:GLenum,pname:GLenum,params:GLfloat ptr
+glGetTexGeniv,coord:GLenum,pname:GLenum,params:GLint ptr
+glTexEnvf,target:GLenum,pname:GLenum,param:GLfloat
+glTexEnvi,target:GLenum,pname:GLenum,param:GLint
+glTexEnvfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glTexEnviv,target:GLenum,pname:GLenum,params:GLint ptr
+glGetTexEnvfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glGetTexEnviv,target:GLenum,pname:GLenum,params:GLint ptr
+glTexParameterf,target:GLenum,pname:GLenum,param:GLfloat
+glTexParameteri,target:GLenum,pname:GLenum,param:GLint
+glTexParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glTexParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glGetTexParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glGetTexParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glGetTexLevelParameterfv,target:GLenum,level:GLint,pname:GLenum,params:GLfloat ptr
+glGetTexLevelParameteriv,target:GLenum,level:GLint,pname:GLenum,params:GLint ptr
+glTexImage1D,target:GLenum,level:GLint,internalFormat:GLint,width:GLsizei,border:GLint,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glTexImage2D,target:GLenum,level:GLint,internalFormat:GLint,width:GLsizei,height:GLsizei,border:GLint,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glGetTexImage,target:GLenum,level:GLint,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glMap1d,target:GLenum,u1:GLdouble,u2:GLdouble,stride:GLint,order:GLint,points:GLdouble ptr
+glMap1f,target:GLenum,u1:GLfloat,u2:GLfloat,stride:GLint,order:GLint,points:GLfloat ptr
+glMap2d,target:GLenum,u1:GLdouble,u2:GLdouble,ustride:GLint,uorder:GLint,v1:GLdouble,v2:GLdouble,vstride:GLint,vorder:GLint,points:GLdouble ptr
+glMap2f,target:GLenum,u1:GLfloat,u2:GLfloat,ustride:GLint,uorder:GLint,v1:GLfloat,v2:GLfloat,vstride:GLint,vorder:GLint,points:GLfloat ptr
+glGetMapdv,target:GLenum,query:GLenum,v:GLdouble ptr
+glGetMapfv,target:GLenum,query:GLenum,v:GLfloat ptr
+glGetMapiv,target:GLenum,query:GLenum,v:GLint ptr
+glEvalCoord1d,u:GLdouble
+glEvalCoord1f,u:GLfloat
+glEvalCoord1dv,u:GLdouble ptr
+glEvalCoord1fv,u:GLfloat ptr
+glEvalCoord2d,u:GLdouble,v:GLdouble
+glEvalCoord2f,u:GLfloat,v:GLfloat
+glEvalCoord2dv,u:GLdouble ptr
+glEvalCoord2fv,u:GLfloat ptr
+glMapGrid1d,un:GLint,u1:GLdouble,u2:GLdouble
+glMapGrid1f,un:GLint,u1:GLfloat,u2:GLfloat
+glMapGrid2d,un:GLint,u1:GLdouble,u2:GLdouble,vn:GLint,v1:GLdouble,v2:GLdouble
+glMapGrid2f,un:GLint,u1:GLfloat,u2:GLfloat,vn:GLint,v1:GLfloat,v2:GLfloat
+glEvalPoint1,i:GLint
+glEvalPoint2,i:GLint,j:GLint
+glEvalMesh1,mode:GLenum,i1:GLint,i2:GLint
+glEvalMesh2,mode:GLenum,i1:GLint,i2:GLint,j1:GLint,j2:GLint
+glFogf,pname:GLenum,param:GLfloat
+glFogi,pname:GLenum,param:GLint
+glFogfv,pname:GLenum,params:GLfloat ptr
+glFogiv,pname:GLenum,params:GLint ptr
+glFeedbackBuffer,size:GLsizei,type:GLenum,buffer:GLfloat ptr
+glPassThrough,token:GLfloat
+glSelectBuffer,size:GLsizei,buffer:GLuint ptr
+glInitNames
+glLoadName,name:GLuint
+glPushName,name:GLuint
+glPopName
+glGenTextures,n:GLsizei,textures:GLuint ptr
+glDeleteTextures,n:GLsizei,textures:GLuint ptr
+glBindTexture,target:GLenum,texture:GLuint
+glPrioritizeTextures,n:GLsizei,textures:GLuint ptr,priorities:GLclampf ptr
+glAreTexturesResident,n:GLsizei,textures:GLuint ptr,residences:GLboolean ptr|GLboolean
+glIsTexture,texture:GLuint|GLboolean
+glTexSubImage1D,target:GLenum,level:GLint,xoffset:GLint,width:GLsizei,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glTexSubImage2D,target:GLenum,level:GLint,xoffset:GLint,yoffset:GLint,width:GLsizei,height:GLsizei,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glCopyTexImage1D,target:GLenum,level:GLint,internalformat:GLenum,x:GLint,y:GLint,width:GLsizei,border:GLint
+glCopyTexImage2D,target:GLenum,level:GLint,internalformat:GLenum,x:GLint,y:GLint,width:GLsizei,height:GLsizei,border:GLint
+glCopyTexSubImage1D,target:GLenum,level:GLint,xoffset:GLint,x:GLint,y:GLint,width:GLsizei
+glCopyTexSubImage2D,target:GLenum,level:GLint,xoffset:GLint,yoffset:GLint,x:GLint,y:GLint,width:GLsizei,height:GLsizei
+glVertexPointer,size:GLint,type:GLenum,stride:GLsizei,ptr:GLvoid ptr
+glNormalPointer,type:GLenum,stride:GLsizei,ptr:GLvoid ptr
+glColorPointer,size:GLint,type:GLenum,stride:GLsizei,ptr:GLvoid ptr
+glIndexPointer,type:GLenum,stride:GLsizei,ptr:GLvoid ptr
+glTexCoordPointer,size:GLint,type:GLenum,stride:GLsizei,ptr:GLvoid ptr
+glEdgeFlagPointer,stride:GLsizei,ptr:GLvoid ptr
+glGetPointerv,pname:GLenum,params:GLvoid ptr ptr
+glArrayElement,i:GLint
+glDrawArrays,mode:GLenum,first:GLint,count:GLsizei
+glDrawElements,mode:GLenum,count:GLsizei,type:GLenum,indices:GLvoid ptr
+glInterleavedArrays,format:GLenum,stride:GLsizei,pointer:GLvoid ptr
+glDrawRangeElements,mode:GLenum,start:GLuint,end:GLuint,count:GLsizei,type:GLenum,indices:GLvoid ptr
+glTexImage3D,target:GLenum,level:GLint,internalFormat:GLenum,width:GLsizei,height:GLsizei,depth:GLsizei,border:GLint,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glTexSubImage3D,target:GLenum,level:GLint,xoffset:GLint,yoffset:GLint,zoffset:GLint,width:GLsizei,height:GLsizei,depth:GLsizei,format:GLenum,type:GLenum,pixels:GLvoid ptr
+glCopyTexSubImage3D,target:GLenum,level:GLint,xoffset:GLint,yoffset:GLint,zoffset:GLint,x:GLint,y:GLint,width:GLsizei,height:GLsizei
+glColorTable,target:GLenum,internalformat:GLenum,width:GLsizei,format:GLenum,type:GLenum,table:GLvoid ptr
+glColorSubTable,target:GLenum,start:GLsizei,count:GLsizei,format:GLenum,type:GLenum,data:GLvoid ptr
+glColorTableParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glColorTableParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glCopyColorSubTable,target:GLenum,start:GLsizei,x:GLint,y:GLint,width:GLsizei
+glCopyColorTable,target:GLenum,internalformat:GLenum,x:GLint,y:GLint,width:GLsizei
+glGetColorTable,target:GLenum,format:GLenum,type:GLenum,table:GLvoid ptr
+glGetColorTableParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glGetColorTableParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glBlendEquation,mode:GLenum
+glBlendColor,red:GLclampf,green:GLclampf,blue:GLclampf,alpha:GLclampf
+glHistogram,target:GLenum,width:GLsizei,internalformat:GLenum,sink:GLboolean
+glResetHistogram,target:GLenum
+glGetHistogram,target:GLenum,reset:GLboolean,format:GLenum,type:GLenum,values:GLvoid ptr
+glGetHistogramParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glGetHistogramParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glMinmax,target:GLenum,internalformat:GLenum,sink:GLboolean
+glResetMinmax,target:GLenum
+glGetMinmax,target:GLenum,reset:GLboolean,format:GLenum,types:GLenum,values:GLvoid ptr
+glGetMinmaxParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glGetMinmaxParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glConvolutionFilter1D,target:GLenum,internalformat:GLenum,width:GLsizei,format:GLenum,type:GLenum,image:GLvoid ptr
+glConvolutionFilter2D,target:GLenum,internalformat:GLenum,width:GLsizei,height:GLsizei,format:GLenum,type:GLenum,image:GLvoid ptr
+glConvolutionParameterf,target:GLenum,pname:GLenum,params:GLfloat
+glConvolutionParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glConvolutionParameteri,target:GLenum,pname:GLenum,params:GLint
+glConvolutionParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glCopyConvolutionFilter1D,target:GLenum,internalformat:GLenum,x:GLint,y:GLint,width:GLsizei
+glCopyConvolutionFilter2D,target:GLenum,internalformat:GLenum,x:GLint,y:GLint,width:GLsizei,height:GLsizei
+glGetConvolutionFilter,target:GLenum,format:GLenum,type:GLenum,image:GLvoid ptr
+glGetConvolutionParameterfv,target:GLenum,pname:GLenum,params:GLfloat ptr
+glGetConvolutionParameteriv,target:GLenum,pname:GLenum,params:GLint ptr
+glSeparableFilter2D,target:GLenum,internalformat:GLenum,width:GLsizei,height:GLsizei,format:GLenum,type:GLenum,row:GLvoid ptr,column:GLvoid ptr
+glGetSeparableFilter,target:GLenum,format:GLenum,type:GLenum,row:GLvoid ptr,column:GLvoid ptr,span:GLvoid ptr
+glActiveTexture,texture:GLenum
+glClientActiveTexture,texture:GLenum
+glCompressedTexImage1D,target:GLenum,level:GLint,internalformat:GLenum,width:GLsizei,border:GLint,imageSize:GLsizei,data:GLvoid ptr
+glCompressedTexImage2D,target:GLenum,level:GLint,internalformat:GLenum,width:GLsizei,height:GLsizei,border:GLint,imageSize:GLsizei,data:GLvoid ptr
+glCompressedTexImage3D,target:GLenum,level:GLint,internalformat:GLenum,width:GLsizei,height:GLsizei,depth:GLsizei,border:GLint,imageSize:GLsizei,data:GLvoid ptr
+glCompressedTexSubImage1D,target:GLenum,level:GLint,xoffset:GLint,width:GLsizei,format:GLenum,imageSize:GLsizei,data:GLvoid ptr
+glCompressedTexSubImage2D,target:GLenum,level:GLint,xoffset:GLint,yoffset:GLint,width:GLsizei,height:GLsizei,format:GLenum,imageSize:GLsizei,data:GLvoid ptr
+glCompressedTexSubImage3D,target:GLenum,level:GLint,xoffset:GLint,yoffset:GLint,zoffset:GLint,width:GLsizei,height:GLsizei,depth:GLsizei,format:GLenum,imageSize:GLsizei,data:GLvoid ptr
+glGetCompressedTexImage,target:GLenum,lod:GLint,img:GLvoid ptr
+glMultiTexCoord1d,target:GLenum,s:GLdouble
+glMultiTexCoord1dv,target:GLenum,v:GLdouble ptr
+glMultiTexCoord1f,target:GLenum,s:GLfloat
+glMultiTexCoord1fv,target:GLenum,v:GLfloat ptr
+glMultiTexCoord1i,target:GLenum,s:GLint
+glMultiTexCoord1iv,target:GLenum,v:GLint ptr
+glMultiTexCoord1s,target:GLenum,s:GLshort
+glMultiTexCoord1sv,target:GLenum,v:GLshort ptr
+glMultiTexCoord2d,target:GLenum,s:GLdouble,t:GLdouble
+glMultiTexCoord2dv,target:GLenum,v:GLdouble ptr
+glMultiTexCoord2f,target:GLenum,s:GLfloat,t:GLfloat
+glMultiTexCoord2fv,target:GLenum,v:GLfloat ptr
+glMultiTexCoord2i,target:GLenum,s:GLint,t:GLint
+glMultiTexCoord2iv,target:GLenum,v:GLint ptr
+glMultiTexCoord2s,target:GLenum,s:GLshort,t:GLshort
+glMultiTexCoord2sv,target:GLenum,v:GLshort ptr
+glMultiTexCoord3d,target:GLenum,s:GLdouble,t:GLdouble,r:GLdouble
+glMultiTexCoord3dv,target:GLenum,v:GLdouble ptr
+glMultiTexCoord3f,target:GLenum,s:GLfloat,t:GLfloat,r:GLfloat
+glMultiTexCoord3fv,target:GLenum,v:GLfloat ptr
+glMultiTexCoord3i,target:GLenum,s:GLint,t:GLint,r:GLint
+glMultiTexCoord3iv,target:GLenum,v:GLint ptr
+glMultiTexCoord3s,target:GLenum,s:GLshort,t:GLshort,r:GLshort
+glMultiTexCoord3sv,target:GLenum,v:GLshort ptr
+glMultiTexCoord4d,target:GLenum,s:GLdouble,t:GLdouble,r:GLdouble,q:GLdouble
+glMultiTexCoord4dv,target:GLenum,v:GLdouble ptr
+glMultiTexCoord4f,target:GLenum,s:GLfloat,t:GLfloat,r:GLfloat,q:GLfloat
+glMultiTexCoord4fv,target:GLenum,v:GLfloat ptr
+glMultiTexCoord4i,target:GLenum,s:GLint,t:GLint,r:GLint,q:GLint
+glMultiTexCoord4iv,target:GLenum,v:GLint ptr
+glMultiTexCoord4s,target:GLenum,s:GLshort,t:GLshort,r:GLshort,q:GLshort
+glMultiTexCoord4sv,target:GLenum,v:GLshort ptr
+glLoadTransposeMatrixd,m:GLdouble ptr
+glLoadTransposeMatrixf,m:GLfloat ptr
+glMultTransposeMatrixd,m:GLdouble ptr
+glMultTransposeMatrixf,m:GLfloat ptr
+glSampleCoverage,value:GLclampf,invert:GLboolean
+glSamplePass,pass:GLenum
+gluBeginCurve,nurb:GLUnurbs ptr
+gluBeginPolygon,tess:GLUtesselator ptr
+gluBeginSurface,nurb:GLUnurbs ptr
+gluBeginTrim,nurb:GLUnurbs ptr
+gluBuild1DMipmapLevels,target:GLenum,internalFormat:GLint,width:GLsizei,format:GLenum,type:GLenum,level:GLint,base:GLint,max:GLint,data:any ptr|GLint
+gluBuild1DMipmaps,target:GLenum,internalFormat:GLint,width:GLsizei,format:GLenum,type:GLenum,data:any ptr|GLint
+gluBuild2DMipmapLevels,target:GLenum,internalFormat:GLint,width:GLsizei,height:GLsizei,format:GLenum,type:GLenum,level:GLint,base:GLint,max:GLint,data:any ptr|GLint
+gluBuild2DMipmaps,target:GLenum,internalFormat:GLint,width:GLsizei,height:GLsizei,format:GLenum,type:GLenum,data:any ptr|GLint
+gluBuild3DMipmapLevels,target:GLenum,internalFormat:GLint,width:GLsizei,height:GLsizei,depth:GLsizei,format:GLenum,type:GLenum,level:GLint,base:GLint,max:GLint,data:any ptr|GLint
+gluBuild3DMipmaps,target:GLenum,internalFormat:GLint,width:GLsizei,height:GLsizei,depth:GLsizei,format:GLenum,type:GLenum,data:any ptr|GLint
+gluCheckExtension,extName:GLubyte ptr,extString:GLubyte ptr|GLboolean
+gluCylinder,quad:GLUquadric ptr,base:GLdouble,top:GLdouble,height:GLdouble,slices:GLint,stacks:GLint
+gluDeleteNurbsRenderer,nurb:GLUnurbs ptr
+gluDeleteQuadric,quad:GLUquadric ptr
+gluDeleteTess,tess:GLUtesselator ptr
+gluDisk,quad:GLUquadric ptr,inner:GLdouble,outer:GLdouble,slices:GLint,loops:GLint
+gluEndCurve,nurb:GLUnurbs ptr
+gluEndPolygon,tess:GLUtesselator ptr
+gluEndSurface,nurb:GLUnurbs ptr
+gluEndTrim,byval nurb:GLUnurbs ptr
+gluErrorString,error:GLenum|GLubyte ptr
+gluGetNurbsProperty,nurb:GLUnurbs ptr,property:GLenum,data:GLfloat ptr
+gluGetString,name:GLenum|GLubyte ptr
+gluGetTessProperty,tess:GLUtesselator ptr,which:GLenum,data:GLdouble ptr
+gluLoadSamplingMatrices,nurb:GLUnurbs ptr,model:GLfloat ptr,perspective:GLfloat ptr,view:GLint ptr
+gluLookAt,eyeX:GLdouble,eyeY:GLdouble,eyeZ:GLdouble,centerX:GLdouble,centerY:GLdouble,centerZ:GLdouble,upX:GLdouble,upY:GLdouble,upZ:GLdouble
+gluNewNurbsRenderer|GLUnurbs ptr
+gluNewQuadric|GLUquadric ptr
+gluNewTess|GLUtesselator ptr
+gluNextContour,tess:GLUtesselator ptr,type:GLenum
+gluNurbsCallback,nurb:GLUnurbs ptr,which:GLenum,func:Sub cdecl()
+gluNurbsCallbackData,nurb:GLUnurbs ptr,userData:GLvoid ptr
+gluNurbsCallbackDataEXT,nurb:GLUnurbs ptr,userData:GLvoid ptr
+gluNurbsCurve,nurb:GLUnurbs ptr,knotCount:GLint,knots:GLfloat ptr,stride:GLint,control:GLfloat ptr,order:GLint,type:GLenum
+gluNurbsProperty,nurb:GLUnurbs ptr,property:GLenum,value:GLfloat
+gluNurbsSurface,nurb:GLUnurbs ptr,sKnotCount:GLint,sKnots:GLfloat ptr,tKnotCount:GLint,tKnots:GLfloat ptr,sStride:GLint,tStride:GLint,control:GLfloat ptr,sOrder:GLint,tOrder:GLint,type:GLenum
+gluOrtho2D,left:GLdouble,right:GLdouble,bottom:GLdouble,top:GLdouble
+gluPartialDisk,quad:GLUquadric ptr,inner:GLdouble,outer:GLdouble,slices:GLint,loops:GLint,start:GLdouble,sweep:GLdouble
+gluPerspective,fovy:GLdouble,aspect:GLdouble,zNear:GLdouble,zFar:GLdouble
+gluPickMatrix,x:GLdouble,y:GLdouble,delX:GLdouble,delY:GLdouble,viewport:GLint ptr
+gluProject,objX:GLdouble,objY:GLdouble,objZ:GLdouble,model:GLdouble ptr,proj:GLdouble ptr,view:GLint ptr,winX:GLdouble ptr,winY:GLdouble ptr,winZ:GLdouble ptr|GLint
+gluPwlCurve,nurb:GLUnurbs ptr,count:GLint,data:GLfloat ptr,stride:GLint,type:GLenum
+gluQuadricCallback,quad:GLUquadric ptr,which:GLenum,func:Sub cdecl()
+gluQuadricDrawStyle,quad:GLUquadric ptr,draw:GLenum
+gluQuadricNormals,quad:GLUquadric ptr,normal:GLenum
+gluQuadricOrientation,quad:GLUquadric ptr,orientation:GLenum
+gluQuadricTexture,quad:GLUquadric ptr,texture:GLboolean
+gluScaleImage,format:GLenum,wIn:GLsizei,hIn:GLsizei,typeIn:GLenum,dataIn:any ptr,wOut:GLsizei,hOut:GLsizei,typeOut:GLenum,dataOut:GLvoid ptr|GLint
+gluSphere,quad:GLUquadric ptr,radius:GLdouble,slices:GLint,stacks:GLint
+gluTessBeginContour,tess:GLUtesselator ptr
+gluTessBeginPolygon,tess:GLUtesselator ptr,data:GLvoid ptr
+gluTessCallback,tess:GLUtesselator ptr,which:GLenum,func:Sub cdecl()
+gluTessEndContour,tess:GLUtesselator ptr
+gluTessEndPolygon,tess:GLUtesselator ptr
+gluTessNormal,tess:GLUtesselator ptr,valueX:GLdouble,valueY:GLdouble,valueZ:GLdouble
+gluTessProperty,tess:GLUtesselator ptr,which:GLenum,data:GLdouble
+gluTessVertex,tess:GLUtesselator ptr,location:GLdouble ptr,data:GLvoid ptr
+gluUnProject,winX:GLdouble,winY:GLdouble,winZ:GLdouble,model:GLdouble ptr,proj:GLdouble ptr,view:GLint ptr,objX:GLdouble ptr,objY:GLdouble ptr,objZ:GLdouble ptr|GLint
+gluUnProject4,winX:GLdouble,winY:GLdouble,winZ:GLdouble,clipW:GLdouble,model:GLdouble ptr,proj:GLdouble ptr,view:GLint ptr,nearVal:GLdouble,farVal:GLdouble,objX:GLdouble ptr,objY:GLdouble ptr,objZ:GLdouble ptr,objW:GLdouble ptr|GLint
+glutInit,ByRef argcp:Integer,ByRef argv:Byte ptr
+glutInitDisplayMode,mode:UInteger
+glutInitDisplayString,string:ZString ptr
+glutInitWindowPosition,x:Integer,y:Integer
+glutInitWindowSize,width:Integer,height:Integer
+glutMainLoop
+glutCreateWindow,title:ZString ptr|Integer
+glutCreateSubWindow,win:Integer,x:Integer,y:Integer,width:Integer,height:Integer|Integer
+glutDestroyWindow,win:Integer
+glutPostRedisplay
+glutPostWindowRedisplay,win:Integer
+glutSwapBuffers
+glutGetWindow,As Integer
+glutSetWindow,win:Integer
+glutSetWindowTitle,title:ZString ptr
+glutSetIconTitle,title:ZString ptr
+glutPositionWindow,x:Integer,y:Integer
+glutReshapeWindow,width:Integer,height:Integer
+glutPopWindow
+glutPushWindow
+glutIconifyWindow
+glutShowWindow
+glutHideWindow
+glutFullScreen
+glutSetCursor,cursor:Integer
+glutWarpPointer,x:Integer,y:Integer
+glutEstablishOverlay
+glutRemoveOverlay
+glutUseLayer,layer:GLenum
+glutPostOverlayRedisplay
+glutPostWindowOverlayRedisplay,win:Integer
+glutShowOverlay
+glutHideOverlay
+glutCreateMenu,func:Sub(ByVal:Integer)|Integer
+glutDestroyMenu,menu:Integer
+glutGetMenu|Integer
+glutSetMenu,menu:Integer
+glutAddMenuEntry,label:ZString ptr,value:Integer
+glutAddSubMenu,label:ZString ptr,submenu:Integer
+glutChangeToMenuEntry,item:Integer,label:ZString ptr,value:Integer
+glutChangeToSubMenu,item:Integer,label:ZString ptr,submenu:Integer
+glutRemoveMenuItem,item:Integer
+glutAttachMenu,button:Integer
+glutDetachMenu,button:Integer
+glutDisplayFunc,func:Sub cdecl()
+glutReshapeFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer)
+glutKeyboardFunc,func:Sub cdecl(ByVal:UByte,ByVal:Integer,ByVal:Integer)
+glutMouseFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer,ByVal:Integer,ByVal:Integer)
+glutMotionFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer)
+glutPassiveMotionFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer)
+glutEntryFunc,func:Sub(ByVal:Integer)
+glutVisibilityFunc,func:Sub cdecl(ByVal:Integer)
+glutIdleFunc,func:Sub cdecl()
+glutTimerFunc,millis:UInteger,func:Sub cdecl(ByVal:Integer),value:Integer
+glutMenuStateFunc,func:Sub cdecl(ByVal:Integer)
+glutSpecialFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer,ByVal:Integer)
+glutSpaceballMotionFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer,ByVal:Integer)
+glutSpaceballRotateFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer,ByVal:Integer)
+glutSpaceballButtonFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer)
+glutButtonBoxFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer)
+glutDialsFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer)
+glutTabletMotionFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer)
+glutTabletButtonFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer,ByVal:Integer,ByVal:Integer)
+glutMenuStatusFunc,func:Sub(ByVal:Integer,ByVal:Integer,ByVal:Integer)
+glutOverlayDisplayFunc,func:Sub cdecl()
+glutWindowStatusFunc,func:Sub cdecl(ByVal:Integer)
+glutKeyboardUpFunc,func:Sub cdecl(ByVal:UByte,ByVal:Integer,ByVal:Integer)
+glutSpecialUpFunc,func:Sub cdecl(ByVal:Integer,ByVal:Integer,ByVal:Integer)
+glutJoystickFunc,func:Sub cdecl(ByVal:UInteger,ByVal:Integer,ByVal:Integer,ByVal:Integer),pollInterval:Integer
+glutSetColor,ByVal:Integer,red:GLfloat,green:GLfloat,blue:GLfloat
+glutGetColor,ndx:Integer,component:Integer|GLfloat
+glutCopyColormap,win:Integer
+glutGet,type:GLenum|Integer
+glutDeviceGet,type:GLenum|Integer
+glutExtensionSupported,name:ZString ptr|Integer
+glutGetModifiers|Integer
+glutLayerGet,type:GLenum|Integer
+glutBitmapCharacter,font:Any ptr,character:Integer
+glutBitmapWidth,font:Any ptr,character:Integer|Integer
+glutStrokeCharacter,font:Any ptr,character:Integer)
+glutStrokeWidth,font:Any ptr,character:Integer|Integer
+glutBitmapLength,font:Any ptr,string:UByte ptr|Integer
+glutStrokeLength,font:Any ptr,string:UByte ptr|Integer
+glutWireSphere,radius:GLdouble,slices:GLint,stacks:GLint
+glutSolidSphere,radius:GLdouble,slices:GLint,stacks:GLint
+glutWireCone,base:GLdouble,height:GLdouble,slices:GLint,stacks:GLint
+glutSolidCone,base:GLdouble,height:GLdouble,slices:GLint,stacks:GLint
+glutWireCube,size:GLdouble
+glutSolidCube,size:GLdouble
+glutWireTorus,innerRadius:GLdouble,outerRadius:GLdouble,sides:GLint,rings:GLint
+glutSolidTorus,innerRadius:GLdouble,outerRadius:GLdouble,sides:GLint,rings:GLint
+glutWireDodecahedron
+glutSolidDodecahedron
+glutWireTeapot,size:GLdouble
+glutSolidTeapot,size:GLdouble
+glutWireOctahedron
+glutSolidOctahedron
+glutWireTetrahedron
+glutSolidTetrahedron
+glutWireIcosahedron
+glutSolidIcosahedron
+glutVideoResizeGet,param:GLenum|Integer
+glutSetupVideoResizing
+glutStopVideoResizing
+glutVideoResize,x:Integer,y:Integer,width:Integer,height:Integer
+glutVideoPan,x:Integer,y:Integer,width:Integer,height:Integer
+glutReportErrors
+glutIgnoreKeyRepeat,ignore:Integer
+glutSetKeyRepeat,repeatMode:Integer
+glutForceJoystickFunc
+glutGameModeString,string:ZString ptr
+glutEnterGameMode|Integer
+glutLeaveGameMode
+glutGameModeGet,mode:GLenum|Integer
+glfwInit|integer
+glfwTerminate
+glfwGetVersion,major:Integer ptr,minor:Integer ptr,rev:Integer ptr
+glfwOpenWindow,width:Integer,height:Integer,redbits:integer,greenbits:integer,bluebits:integer,alphabits:integer,depthbits:integer,stencilbits:integer,mode:integer|integer
+glfwOpenWindowHint,target:integer,hint:integer
+glfwCloseWindow
+glfwSetWindowTitle,title:zstring ptr
+glfwGetWindowSize,width:integer ptr,height:integer ptr
+glfwSetWindowSize,width:integer,height:integer
+glfwSetWindowPos,x:integer,y:integer
+glfwIconifyWindow
+glfwRestoreWindow
+glfwSwapBuffers
+glfwSwapInterval,interval:integer
+glfwGetWindowParam,param:integer|integer
+glfwSetWindowSizeCallback,cbfun:GLFWwindowsizefun
+glfwSetWindowCloseCallback,cbfun:GLFWwindowclosefun
+glfwSetWindowRefreshCallback,cbfun:GLFWwindowrefreshfun
+glfwGetVideoModes,list:GLFWvidmode ptr,maxcount:integer|integer
+glfwGetDesktopMode,mode:GLFWvidmode ptr
+glfwPollEvents
+glfwWaitEvents
+glfwGetKey,key:integer|integer
+glfwGetMouseButton,button:integer|integer
+glfwGetMousePos,xpos:integer ptr,ypos:integer ptr
+glfwSetMousePos,xpos:integer,ypos:integer
+glfwGetMouseWheel|integer
+glfwSetMouseWheel,pos:integer
+glfwSetKeyCallback,cbfun:GLFWkeyfun
+glfwSetCharCallback,cbfun:GLFWcharfun
+glfwSetMouseButtonCallback,cbfun:GLFWmousebuttonfun
+glfwSetMousePosCallback,cbfun:GLFWmouseposfun
+glfwSetMouseWheelCallback,cbfun:GLFWmousewheelfun
+glfwGetJoystickParam,joy:integer,param:integer|integer
+glfwGetJoystickPos,joy:integer,pos:single ptr,numaxes:integer|integer
+glfwGetJoystickButtons,joy:integer,buttons:ubyte ptr,numbuttons:integer|integer
+glfwGetTime|double
+glfwSetTime,time:double
+glfwSleep,time:double
+glfwExtensionSupported,extension:zstring ptr|integer
+glfwGetProcAddress,procname:zstring ptr|any ptr
+glfwGetGLVersion,major:integer ptr,minor:integer ptr,rev:integer ptr
+glfwCreateThread,fun:GLFWthreadfun,arg:any ptr|GLFWthread
+glfwDestroyThread,ID:GLFWthread
+glfwWaitThread,ID:GLFWthread,waitmode:integer|integer
+glfwGetThreadID|GLFWthread
+glfwCreateMutex|GLFWmutex
+glfwDestroyMutex,mutex:GLFWmutex
+glfwLockMutex,mutex:GLFWmutex
+glfwUnlockMutex,mutex:GLFWmutex
+glfwCreateCond|GLFWcond
+glfwDestroyCond,cond:GLFWcond
+glfwWaitCond,cond:GLFWcond,mutex:GLFWmutex,timeout:double
+glfwSignalCond,cond:GLFWcond
+glfwBroadcastCond,cond:GLFWcond
+glfwGetNumberOfProcessors|integer
+glfwEnable,token:integer
+glfwDisable,token:integer
+glfwReadImage,name:zstring ptr,img:GLFWimage ptr,flags:integer|integer
+glfwReadMemoryImage,data:Any Ptr,size:long,img:GLFWimage Ptr,flags:integer|integer
+glfwFreeImage,img:GLFWimage ptr
+glfwLoadTexture2D,name:zstring ptr,flags:integer|integer
+glfwLoadMemoryTexture2D,data:Any Ptr,size:long,flags:integer|integer

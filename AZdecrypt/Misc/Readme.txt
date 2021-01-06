@@ -1,0 +1,3 @@
+The Crib list example file is for use with the "Substitution + crib list" solver. The format is "17   CRIBOFYOURCHOICE" where the first number is the position of the crib in the cipher. The crib must be in the same alphabet as the n-grams and any pre-existing symbol to letter assignments will be overwritten.
+
+The Trithemius list file can be used with "Substitution + vigenère word list" solver to decode Trithemius ciphers. The same goes fot the Vigenère word list file.

@@ -1,0 +1,33 @@
+[Project]
+Version=3
+Description=Adds a custom font to the system.
+Api=fb (FreeBASIC),win (Windows)
+Grouping=1
+AddMainFiles=1
+ResExport=
+[Make]
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Recompile=2
+Module=Module Build,fbc -c
+Output=
+Run=
+[File]
+1=CustomFontAddin.bas
+2=..\..\FbEdit\Inc\Addins.bi
+3=CustomFontAddin.txt
+4=CustomFontAddin.bi
+5=CustomFontAddin.rc
+[FileInfo]
+2=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1=0,27,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,5,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[TabOrder]
+TabOrder=1,2,3,4,5
+[BreakPoint]
+1=
+2=
+3=
+4=

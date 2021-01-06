@@ -1,0 +1,9 @@
+A minimum TortoiseSVN implementation.
+
+Right click in project browser. The project must be under SVN control.
+
+SVN Log			shows the log
+SVN Update		gets recent files
+SVN Commit		commits chanegd files	
+
+KetilO

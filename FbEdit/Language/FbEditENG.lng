@@ -1,0 +1,772 @@
+;--------------------------------------------------------------------------
+[Lang]
+Lang=English (default), By FbEdit team
+;--------------------------------------------------------------------------
+[1100]
+1100=Goto Line
+1002=Line:
+1=OK
+2=Cancel
+;--------------------------------------------------------------------------
+[1200]
+1200=Language
+1004=Language:
+1=OK
+2=Cancel
+1002=Changes will take place when FbEdit is restarted.
+;--------------------------------------------------------------------------
+[1300]
+;--------------------------------------------------------------------------
+[1400]
+1401=Save As Unicode
+;--------------------------------------------------------------------------
+[2000]
+2000=Options
+1=OK
+2=Cancel
+;--------------------------------------------------------------------------
+[2100]
+2115=Name Export Format
+2101=Assembly equ's
+2102=C defines
+2103=hla
+2104=PureBasic
+2116=Name Export Output
+2110=File
+2111=Clip Board
+2112=Output
+2117=Default Export Filename:
+2114=Auto export when saved
+;--------------------------------------------------------------------------
+[2200]
+2204=Add
+2205=Delete
+2206=Changes will take place when FbEdit is restarted.
+;--------------------------------------------------------------------------
+[2300]
+4020=Grid X-Size
+4021=Grid Y-Size
+4022=Grid color
+4003=Show Grid
+4002=Snap To Grid
+4001=Show Size/Pos
+4009=Grid as lines
+4010=Styles as hex
+4011=Size Dialog to Font
+4012=Simple Property
+4013=Define IDC_STATIC
+;--------------------------------------------------------------------------
+[2400]
+2402=Add
+2401=Delete
+;--------------------------------------------------------------------------
+[2410]
+2502=Add
+2501=Delete
+2504=Changes will take place when FbEdit is restarted.
+;--------------------------------------------------------------------------
+[2500]
+2500=Find ...
+2216=Find what:
+2009=Replace:
+2003=Match Case
+2007=Whole Word
+2013=Skip Comment Line
+2014=Log operation
+2217=Direction
+2004=All
+2006=Up
+2005=Down
+2501=Search
+2505=Current Selection
+2502=Current Procedure
+2503=Current Module
+2504=All Open Files
+2012=All Project Files
+1=Find
+2010=Replace
+2015=Find All
+2008=Replace All
+2=Cancel
+;--------------------------------------------------------------------------
+[3000]
+1=OK
+;--------------------------------------------------------------------------
+[3200]
+1=OK
+2=Cancel
+3209=Import
+3205=Insert
+3206=Delete
+3211=Menu item:
+3210=Command:
+;--------------------------------------------------------------------------
+[4000]
+4000=Code Editor Options
+4050=Color Theme
+4016=Add New
+4051=Colors
+4052=Colors:
+4038=Bold
+4037=Italic
+4053=Syntax
+4054=Group:
+4055=Active:
+4009=>
+4008=<
+4056=On Hold:
+4011=Add
+4010=Delete
+4004=Bold
+4003=Italic
+4005=RC file
+4064=Inline asm
+4057=Code Files (.bas.bi.):
+4058=Misc
+4059=Tab Size
+4060=Backups
+4006=Line Numbers
+4019=Expand tabs
+4031=Single instance
+4035=Block Complete
+4034=Save on make
+4044=Autoload project
+4047=Close on Locks
+4020=Auto Indent
+4036=Smart Indent
+4033=Auto Brace
+4032=Brace Matching
+4021=Highlight active line
+4026=Highlight comments
+4049=Smart Maths
+4061=Fonts
+4024=Code
+4022=AaBbCc
+4025=Line Number
+4023=12345
+4066=Tools
+4065=AaBbCc
+4062=Code Complete
+4039=Active
+4046=Include/Inclib
+4045=Auto Size
+4048=Code Tooltip
+4063=Case Convert
+4040=None
+4041=Mixed Case
+4042=Lower Case
+4043=Upper Case
+4002=Apply
+1=OK
+2=Cancel
+;--------------------------------------------------------------------------
+[4100]
+4100=External Files Option
+4107=Filetype:
+1=OK
+2=Cancel
+4102=Add
+4103=Delete
+4108=Command:
+;--------------------------------------------------------------------------
+[5000]
+5000=Save Files
+2=Cancel
+1=OK
+1003=Deselect all
+1002=Select all
+;--------------------------------------------------------------------------
+[5100]
+5100=Debug / Quick Run Option
+1002=Debugger:
+1004=Quick Run Compile Command:
+1=OK
+2=Cancel
+;--------------------------------------------------------------------------
+[5200]
+5200=Block Insert
+1=OK
+2=Cancel
+5202=Enter text to be inserted at every line in selected block.
+;--------------------------------------------------------------------------
+[5300]
+5300=New Project
+1015=Project Name:
+1016=Project Description:
+1017=Project Path:
+1018=Folder creation
+1014=Project sub folder
+1012=Bak
+1010=Mod
+1011=Res
+1013=Inc
+1=OK
+2=Cancel
+;--------------------------------------------------------------------------
+[5360]
+1010=Project Type:
+1009=Text file (.txt)
+1008=Resource file (.rc)
+1007=Include file (.bi)
+1006=Code file (.bas)
+1011=File creation
+1012=Settings on this tab is overridden if a template is selected.
+;--------------------------------------------------------------------------
+[5380]
+;--------------------------------------------------------------------------
+[5400]
+5400=FbEdit Path Options
+1009=Default Project Path:
+1010=Compiler Path:
+5403=Help Path:
+1=OK
+2=Cancel
+;--------------------------------------------------------------------------
+[5500]
+5500=Project Options
+5511=Project Description:
+5512=Project Type:
+5513=Build Command:
+5510=Add main files to Build Command
+5514=Api files:
+5523=Increment Version on Build
+5515=Module Handling
+5522=Add module files to Build Command
+5516=Module Build Command:
+5521=Compile only if newer
+5504=Manual build
+5505=Recompile
+5506=Command line
+5517=Output filename:
+5518=Run Command line parameter:
+5526=Start cmd.exe
+5525=Auto delete files after build (*.obj ; *.a):
+5519=Resource Name Export File:
+5520=Project File Grouping
+5501=None
+5502=By Folder
+5503=By Type
+1=OK
+2=Cancel
+;--------------------------------------------------------------------------
+[5600]
+5600=Export properties to output
+1=OK
+2=Cancel
+1001=Functions
+1002=Constants
+1003=Variables
+1004=UDT's
+1005=Enums
+1006=Namespaces
+1007=Macros
+1008=Constructors
+1009=Destructors
+1010=Properties
+1011=Operators
+5601=Messages
+;--------------------------------------------------------------------------
+[6000]
+6000=Create Template
+1006=Description:
+1007=Additional Files:
+1002=Add
+1003=Remove
+1008=Template Filename:
+2=Cancel
+1=OK
+;--------------------------------------------------------------------------
+[6100]
+6100=Addin Manager
+1=OK
+2=Cancel
+1002=Help
+1003=Changes will take place when FbEdit is restarted.
+;--------------------------------------------------------------------------
+[6200]
+6200=Project Api files
+2=Cancel
+1=OK
+;--------------------------------------------------------------------------
+[6300]
+6300=Find ...
+1001=Find what:
+1003=Replace:
+1005=Type
+1006=Hex
+1007=Ascii
+1008=Direction
+1009=Down
+1010=Up
+1=Find
+1011=Replace
+1012=Replace All
+2=Cancel
+;--------------------------------------------------------------------------
+[10000]
+10001=&File
+10002=New Project\tShift+Ctrl+N
+10003=Open Project\tShift+Ctrl+O
+10004=Close Project\tShift+Ctrl+F4
+10005=&New Code File\tCtrl+N
+10006=New &Resource File\tCtrl+Alt+N
+10007=&Open\tCtrl+O
+10060=Open as &Hex
+10008=Recent files
+10009=&Save\tCtrl+S
+10010=Save &All\tShift+Ctrl+S
+10011=Save As\tCtrl+Alt+S
+10012=&Close\tF4
+10013=Close All\tCtrl+F4
+10015=Page Setup
+10016=&Print
+10014=E&xit\tAlt+F4
+10021=&Edit
+10022=Und&o\tCtrl+Z
+10023=R&edo\tCtrl+Y
+10087=Empty Undo Buffer
+10024=C&ut\tCtrl+X
+10025=&Copy\tCtrl+C
+10026=&Paste\tCtrl+V
+10027=&Delete\tDel
+10028=Select &All\tCtrl+A
+10029=&Goto Line\tCtrl+G
+10030=&Find\tCtrl+F
+10031=Find &Next\tF3
+10032=Find Pre&vious\tCtrl+F3
+10033=&Replace\tCtrl+R
+10034=Find Declare\tF2
+10035=Return\tCtrl+F2
+10036=Expand / Collapse\tCtrl+E
+10037=Block
+10038=Indent\tTab
+10039=Outdent\tShift+Tab
+10040=Comment\tF9
+10041=Uncomment\tCtrl+F9
+10042=Trim Trailing Spaces
+10043=Convert
+10044=Indent to Spaces
+10045=Indent to Tabs
+10046=Uppercase\tCtrl+U
+10047=Lowercase\tCtrl+L
+10048=Block Mode\tShift+Ctrl+B
+10049=Block Insert\tCtrl+B
+10050=Bookmark
+10051=Toggle\tShift+F8
+10052=Next\tF8
+10053=Previous\tCtrl+F8
+10054=Delete All\tShift+Ctrl+F8
+10055=Error
+10056=&Next error\tShift+F9
+10057=&Clear errors\tShift+Ctrl+F9
+10061=Form&at
+10062=&Lock controls
+10063=&Send to Back
+10064=&Bring to Front
+10065=Show &Grid
+10066=&Snap to Grid
+10067=Align Controls
+10068=&Left
+10069=&Center
+10070=&Right
+10071=&Top
+10072=&Middle
+10073=&Bottom
+10074=Same Size
+10075=&Width
+10076=&Height
+10077=&Both
+10078=Center in Dialog
+10079=&Horizontal
+10080=&Vertical
+10081=Set Tabindex
+10082=Auto Renumber ID's
+10083=&Case Convert\tCtrl+F12
+10084=&Indent\tShift+Ctrl+F12
+10091=&View
+10092=&Output\tF6
+10085=&Immediate
+10093=&Project
+10094=Property
+10020=Toolbar
+10058=Tabselect
+10059=Statusbar
+10095=Preview &Dialog
+10096=Split Screen
+10097=Full Screen\tCtrl+W
+10098=Dual Pane\tShift+Ctrl+D
+10101=&Project
+10102=Add &New
+10103=&File
+10104=&Module
+10105=Add &Existing
+10106=&Files
+10107=&Modules
+10018=Set Selected as &Main File
+10019=Toggle Selected as Module / File
+10108=&Remove Selected
+10109=Rename Selected
+10086=Insert selected as #Include
+10110=Project &Options
+10111=Create &Template
+10121=&Resource
+10122=Add &Dialog
+10123=Add &Menu
+10124=Add Acceleratortable
+10125=Add Stringtable
+10126=Add Versioninfo
+10127=Add XP Manifest
+10128=Add RCData
+10129=Language
+10130=Include files
+10131=Resources
+10132=Names
+10133=Export Names
+10134=Remove
+10135=Undo Remove
+10141=&Make
+10142=&Compile\tF5
+10143=&Run\tShift+F5
+10144=&Go\tCtrl+F5
+10145=Run With Debug
+10146=Compile &Modules
+10147=&Quick Run\tShift+Ctrl+F5
+10151=&Tools
+10152=&Export properties
+10161=&Options
+10017=&Language
+10162=&Code Editor
+10163=&Dialog Editor
+10164=&Path Options
+10165=Deb&ug / &Quick run Option
+10166=&Build Options
+10167=&External Files
+10168=&Addin Manager
+10169=&Tools Menu
+10170=&Help Menu
+10181=&Help
+10182=&About
+;--------------------------------------------------------------------------
+[20000]
+20001=&TabTool
+10012=Close Current Tab\tF4
+10013=Close All Tabs\tCtrl+F4
+10203=Close All But Current
+10204=Next Tab\tCtrl+Tab
+10205=Previous Tab\tShift+Ctrl+Tab
+10206=Split / Close Split
+10201=Lock / Unlock Tab
+10202=Unlock All Tabs
+20002=&Project
+10002=New Project
+10003=Open Project
+10004=Close Project
+10102=Add New
+10103=File
+10104=Module
+10105=Add Existing
+10106=File
+10107=Module
+10018=Set Selected as Main File
+10019=Toggle Selected as Module / File
+10108=Remove Selected
+10109=Rename Selected
+10086=Insert selected as #Include
+10110=Project Options
+20003=&Output
+10092=Hide
+10211=Clear
+10212=Select All
+10213=Copy
+20004=&Property
+10221=&Goto Declare
+10222=&Copy to code
+10229=&Find All
+10223=Highlight
+10224=Update
+10225=Reset
+20005=&Form&at
+10022=&Undo\tCtrl+Z
+10024=C&ut\tCtrl+X
+10025=&Copy\tCtrl+C
+10026=&Paste\tCtrl+V
+10027=&Delete\tDel
+10062=&Lock controls
+10063=&Send to Back
+10064=&Bring to Front
+10065=Show &Grid
+10066=&Snap to Grid
+10067=Align Controls
+10068=&Left
+10069=&Center
+10070=&Right
+10071=&Top
+10072=&Middle
+10073=&Bottom
+10074=Same Size
+10075=&Width
+10076=&Height
+10077=&Both
+10078=Center in Dialog
+10079=&Horizontal
+10080=&Vertical
+10081=Set Tabindex
+10082=Auto Renumber ID's
+20006=&Immediate
+10085=Hide
+10226=Clear
+10227=Select All
+10228=Copy
+;--------------------------------------------------------------------------
+[Strings]
+10005=New file
+10007=Open file
+10009=Save file
+10010=Save All files
+10022=Undo
+10023=Redo
+10024=Cut
+10025=Copy
+10026=Paste
+10027=Delete
+10030=Find
+10033=Replace
+10038=Indent
+10039=Outdent
+10040=Comment
+10041=Uncomment
+10051=Toggle bookmark
+10052=Next bookmark
+10053=Previous bookmark
+10054=Delete all bookmarks
+10085=Show / Hide Immediate window
+10092=Show / Hide Output window
+10093=Show / Hide Project
+10094=Show / Hide Properties
+10142=Compile
+10143=Run
+10144=Go
+;--------------------------------------------------------------------------
+[Internal]
+1=Could not find
+100=File
+101=Project
+1000=Find
+1001=Next
+1002=Previous
+1003=Replace...
+1004=Region searched
+1005=Replacements done.
+1006=Project Files searched
+1007=Region searched%c%cFind%c  Founds: %d%c  Repeats: %d%c%cBuild%c  Errors: %d%c  Warnings: %d
+1008=Project Files searched%c%cFind%c  Files: %d%c  Founds: %d%c  Repeats: %d%c%cBuild%c  Errors: %d%c  Warnings: %d
+1009=Open Files searched%c%cFind%c  Files: %d%c  Founds: %d%c  Repeats: %d%c%cBuild%c  Errors: %d%c  Warnings: %d
+1100=Tools Menu Option
+1101=Help Menu Option
+1102=Build Options
+1103=Project Build Options
+1104=Import Build Option
+1200=Files
+1201=Template
+1202=Browse For Folder
+1300=Basic Source
+1301=Include
+1302=Resource
+1303=Misc
+2000=Add New File
+2001=Add Existing File
+2002=Add New Module
+2003=Add Existing Module
+2004=Open Project
+3000=File exists in project.
+3001=Remove file from project?
+3002=Failed to create the folder:
+3003=Folder exists. Create project anyway?
+3004=Project file exists. Create project anyway?
+3005=Failed to create the file:
+3006=Want to save changes?
+3007=File changed outside editor!
+3008=Reopen the file?
+4010=Exports
+4020=Behaviour
+4030=Custom controls
+4031=Custom control
+4032=Style mask
+4040=Custom styles
+4041=Style
+4042=Value
+4043=Mask
+4050=Resource types
+4051=Name
+4052=Value
+4053=Files
+4054=Editor
+5001=Changed state
+5002=Splitter Bar
+5003=Show/Hide Linenumbers
+5004=Expand all
+5005=Collapse all
+5006=Lock/Unlock Tab
+5011=Up One Level
+5012=File Filter
+5021=Current file
+5022=Open files
+5023=Refresh
+;--------------------------------------------------------------------------
+[SnipletAddin]
+SnipletAddin=Code Sniplets
+1=Copy to Code
+2=Close
+10000=Code &Sniplets\tF11
+;--------------------------------------------------------------------------
+[AdvEdit]
+10000=Advanced Edit
+10001=Select Word\tShift+Ctrl+W
+10002=Copy Word\tShift+Ctrl+C
+10003=Cut Word\tShift+Ctrl+X
+10004=Delete Word
+10005=Select Line\tShift+Ctrl+L
+10006=Copy Line\tAlt+Ctrl+C
+10007=Cut Line\tAlt+Ctrl+X
+10008=Delete Line
+10009=Quick run
+10010=Duplicate Line\tCtrl+D
+;--------------------------------------------------------------------------
+[CustomFontAddin]
+CustomFontAddin=Custom Font
+1001=Browse
+1003=OK
+1004=Cancel
+10000=Custom Font
+10001=Add New Font
+;--------------------------------------------------------------------------
+[FBFileAssociation]
+FBFileAssociation=File Association
+1008=Info
+1009=Change File assiciations with FbEdit by checking the extensions you want and click Change Association\r\nIt will associate with our nice icons
+1001=Files
+1002=*.bas - FreeBasic Source
+1003=*.bi    - FreeBasic Headers
+1005=*.rc    - Windows Resource Scripts
+1004=*.fbp  - FBEdit Project File
+1006=Change Association
+1007=Close
+10000=File Association
+10001=File Association changed!\rFBEdit path is:
+;--------------------------------------------------------------------------
+[FileTabStyle]
+10000=File tab style
+10001=Default
+10002=Buttons
+10003=Flat
+10004=Modified state indicator
+10005=Fixed width
+10006=Highlight icon
+10007=Asterisk character
+10008=No indicator
+10009=Multiline
+;--------------------------------------------------------------------------
+[Toolbar]
+Toolbar=Toolbar Creator
+2000=Button Name:
+2001=ID
+2002=Bitmap File:
+2003=Bitmap Name:
+2004=Nbr
+1008=Add Btn.
+1009=Ins. Btn.
+1011=Add Sep.
+1010=Ins. Sep.
+1012=Delete
+2005=Toolbar Style
+1018=Flat
+1020=Wrap
+1021=No Divider
+1023=Tip
+1022=List
+2006=Button Style
+1025=Check
+1024=Group
+2007=Button Size
+1019=Export
+1=Save
+2=Exit
+;--------------------------------------------------------------------------
+[TortoiseSVN]
+10000=SVN Log
+10001=SVN Update
+10002=SVN Commit
+;--------------------------------------------------------------------------
+[ShowVars]
+999=ShowVars
+1000=Hide
+1001=Next Tab\tCtrl+F6
+1002=Prev Tab\tShift+Ctrl+F6
+1003=Clear Tab
+1100=Name
+1101=Signed
+1102=Unsigned
+1103=Hex
+1104=Char
+1105=Bin
+1200=Name
+1201=Result
+1300=Name
+1301=Len
+1302=Content
+1400=Name
+1401=Address
+1402=Dump
+1403=Ascii
+1500=Name
+1501=Address
+1502=Hex
+1503=Assembler
+1600=Time
+1601=Ticks
+1602=Show
+2000= Line: 
+2001=     Function: 
+2002=     File: 
+3000=Clear?
+3001=Too much register
+3002=Internal Error
+9000=Line
+9001=Function
+9002=Path
+9003=File
+;--------------------------------------------------------------------------
+[ProjectZip]
+ProjectZip=FbEdit project zipper
+1009=Zip To:
+1010=Current:
+1007=Select All
+1004=Zip
+1011=All Project Files
+2=Exit
+2000=Name
+2001=Size
+2002=Date
+2003=Creating zip 
+2004=Overwrite existing file?\r
+2005=Could not create file\r
+2006=Added to zip: 
+2007=Done.
+10000=Project Zipper
+;--------------------------------------------------------------------------
+[FbDebug]
+FbDebug=Debug
+1005=Do not debug
+1006=Debug
+1=OK
+10010=&Debug
+10000=Togggle &Breakpoint\tCtrl+T
+10001=&Clear Breakpoints\tShift+Ctrl+T
+10002=&Run\tShift+F7
+10008=&Break\tAlt+Ctrl+F7
+10003=&Stop\tAlt+F7
+10004=Step &Into\tF7
+10005=Step &Over\tCtrl+F7
+10006=Run &To Caret\tShift+Ctrl+F7
+10007=Do not debug
+;--------------------------------------------------------------------------

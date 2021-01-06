@@ -1,0 +1,11 @@
+With this addin you can Associate bas etc files to FBedit
+
+
+FBFileAssociation 1.0.0.1
+Whats new?
+Just changed a bit the dialog 
+Added icons on front of checkbox's
+Added a small info
+
+
+

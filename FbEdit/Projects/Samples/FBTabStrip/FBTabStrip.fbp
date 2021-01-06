@@ -1,0 +1,26 @@
+[Project]
+Version=2
+Description=TabStrip
+Api=fb (FreeBASIC),win (Windows)
+Grouping=1
+AddMainFiles=1
+ResExport=
+[Make]
+Current=1
+1=Windows GUI,fbc -s gui -w 1
+Recompile=0
+Module=Module Build,fbc -c
+Output=
+Run=
+[File]
+1=FBTabStrip.bas
+2=FBTabStrip.rc
+3=
+4=
+[FileInfo]
+2=0,40,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1=0,89,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[BreakPoint]
+1=

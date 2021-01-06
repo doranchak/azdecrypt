@@ -1,0 +1,8 @@
+FONT,hfont:Integer,face:ZString,fsize:Integer,ht:Integer,bold:Byte,italic:Byte,underline:Byte,strikeout:Byte
+FORMAT,bckcol:Integer,txtcol:Integer,txtal:Byte,imgal:Byte,fnt:Byte,tpe:Byte
+GLOBAL,colhdrbtn:Integer,rowhdrbtn:Integer,winhdrbtn:Integer,lockcol:Integer,hdrgrdcol:Integer,grdcol:Integer,bcknfcol:Integer,txtnfcol:Integer,bckfocol:Integer,txtfocol:Integer,ncols:Integer,nrows:Integer,ghdrwt:Integer,ghdrht:Integer,gcellwt:Integer,gcellht:Integer,colhdr:FORMAT,rowhdr:FORMAT,winhdr:FORMAT,cell:FORMAT
+SPR_BUTTON,hdr:NMHDR,lpspri:SPR_ITEM Ptr
+SPR_EDIT,hdr:NMHDR,lpspri:SPR_ITEM Ptr,fcancel:Integer
+SPR_HYPERLINK,hdr:NMHDR,lpspri:SPR_ITEM Ptr
+SPR_ITEM,flag:Integer,col:Integer,row:Integer,expx:Byte,expy:Byte,state:Byte,fmt:FORMAT,wt:Integer,ht:Integer,lpdta:Any Ptr
+SPR_SELCHANGE,hdr:NMHDR,nwin:Integer,col:Integer,row:Integer,fcancel:Integer,fclick:Integer

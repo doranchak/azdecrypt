@@ -1,0 +1,32 @@
+MakeApi api file creator.
+-------------------------
+
+How to use (the example describes how to create api files from fmod.bi):
+1. Select Tools / Api File Creator from the FbEdit menu.
+2. Push the [ Add ] button and select the .bas and/or .bi file(s) you want.
+   (Browse to your FreeBASIC/Inc folder and select fmod.bi).
+3. Type in a prefix for your api files.
+   (Type: fmod).
+4. Type in a description for your api files.
+   (Type: (fmod Sound)).
+5. Select Functions from the combobox and push [ Make api ] button.
+   (This will create fmodCall.api file).
+6. Select Constants from the combobox and push [ Make api ] button.
+   (This will create fmodWord.api file).
+7. Select UDTs from the combobox and push [ Make api ] button.
+   (This will create fmodStruct.api file).
+8. Select Enums from the combobox and push [ Make api ] button.
+   (This will create fmodEnum.api file).
+9. Push [ Update ini ] to update FbEdit.ini file.
+   (This will add "fmod (fmod Sound)" to the list of api files you
+   can use in a project. NOTE! FbEdit must be restarted).
+
+Unfortunatly fmod.bi declares enums but does not reference them.
+To fully take advantage of FbEdits codecomplete you must manually
+edit the fmodCall.api and modify the apis that uses the enums.
+Example:
+FSOUND_SetOutput,outputtype:integer|byte
+Change it to:
+FSOUND_SetOutput,outputtype:FSOUND_OUTPUTTYPES|byte
+
+KetilO

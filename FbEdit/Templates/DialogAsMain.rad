@@ -1,0 +1,126 @@
+This template creates a dialog application using a modeless dialog.
+
+[*BEGINCODE*]
+#include once "windows.bi"
+#Include Once "win/commctrl.bi"
+#Include Once "win/commdlg.bi"
+#Include Once "win/shellapi.bi"
+
+Dim Shared hInstance As HMODULE
+Dim Shared CommandLine As ZString Ptr
+Dim Shared hWnd As HWND
+
+[*ENDCODE*]
+[*BEGINDEF*]
+#Define [*CONTROLNAME*]		[*CONTROLID*]
+[*ENDDEF*]
+[*BEGINPROC*]
+
+Function [*DIALOGPROC*](ByVal hWin As HWND,ByVal uMsg As UINT,ByVal wParam As WPARAM,ByVal lParam As LPARAM) As Integer
+	Dim As Long id, nEvent
+
+	Select Case uMsg
+		Case WM_INITDIALOG
+			'
+		Case WM_COMMAND
+			id=LoWord(wParam)
+			nEvent=HiWord(wParam)
+			If lParam Then
+				' Control events
+				[*BEGINEVENT*]
+				Select Case nEvent
+					[*BEGINBN_CLICKED*]
+					Case BN_CLICKED
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDBN_CLICKED*]
+					[*BEGINEN_CHANGE*]
+					Case EN_CHANGE
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDEN_CHANGE*]
+					[*BEGINLBN_SELCHANGE*]
+					Case LBN_SELCHANGE,CBN_SELCHANGE
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDLBN_SELCHANGE*]
+				End Select
+				[*ENDEVENT*]
+			Else
+				' Menu, toolbar and accelerator events
+				[*BEGINEVENT*]
+				Select Case nEvent
+					[*BEGINMNUSEL*]
+					Case 0,1
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDMNUSEL*]
+				End Select
+				[*ENDEVENT*]
+			Endif
+			'
+		Case WM_CLOSE
+			DestroyWindow(hWin)
+			'
+		Case WM_DESTROY
+			PostQuitMessage(NULL)
+			'
+		Case WM_SIZE
+			'
+		Case Else
+			Return FALSE
+			'
+	End Select
+	Return TRUE
+
+End Function
+[*ENDPROC*]
+
+[*BEGINCODE*]
+Function WinMain(ByVal hInst As HINSTANCE,ByVal hPrevInst As HINSTANCE,ByVal CmdLine As ZString ptr,ByVal CmdShow As Integer) As Integer
+	Dim msg As MSG
+
+	' Create and show the dialog
+	CreateDialogParam(hInstance,Cast(ZString Ptr,[*DIALOGNAME*]),0,@[*DIALOGPROC*],0)
+	ShowWindow(hWnd,SW_SHOWNORMAL)
+	UpdateWindow(hWnd)
+	' Message loop
+	Do While GetMessage(@msg,NULL,0,0)
+		TranslateMessage(@msg)
+		DispatchMessage(@msg)
+	Loop
+	Return msg.wParam
+
+End Function
+
+' Program start
+hInstance=GetModuleHandle(NULL)
+CommandLine=GetCommandLine
+InitCommonControls
+WinMain(hInstance,NULL,CommandLine,SW_SHOWDEFAULT)
+ExitProcess(0)
+[*ENDCODE*]

@@ -1,0 +1,47 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows)
+Description=Mini Debug
+Grouping=2
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export -w all
+Output=addins\fbshowvars.dll
+Run=
+[File]
+1=addin.bas
+2=addinfunc.bas
+3=callbacks.bas
+4=functions.bas
+5=fbshowvars.bi
+6=fbshowvars.txt
+7=..\..\fbedit\inc\addins.bi
+8=..\..\fbedit\inc\raedit.bi
+9=misc.bas
+10=rsrc.rc
+[FileInfo]
+1=0,26,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,33,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,5,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+6=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+7=0,104,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+8=0,207,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+9=0,12,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+10=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[BreakPoint]
+3=
+5=
+1=
+2=
+4=
+9=
+7=
+8=
+[TabOrder]
+TabOrder=1,2,3,4,5,7,9,10,8

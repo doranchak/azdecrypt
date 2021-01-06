@@ -1,0 +1,9 @@
+DEFGEN,szCmntBlockSt:ZString,szCmntBlockEn:ZString,szCmntChar:ZString,szString:ZString,szLineCont:ZString
+DEFTYPE,nType:UByte,nDefType:UByte,nDef:UByte,nlen:UByte,szWord:ZString
+ISINPROC,nLine:Integer,nOwner:Integer,lpszType:ZString Ptr
+MEMSEARCH,lpMem:HGLOBAL,lpFind:ZString Ptr,lpCharTab:Any Ptr,fr:Integer
+MESSAGE,szType:ZString,lpMsgApi:MSGAPI
+MSGAPI,nPos:Integer,lpszApi:ZString Ptr
+OVERRIDE,lpszParam:ZString Ptr,lpszRetType:ZString Ptr
+RAPNOTIFY,nmhdr:NMHDR,nid:Integer,nline:Integer
+TOOLTIP,lpszType:ZString Ptr,lpszLine:ZString Ptr,lpszApi:ZString Ptr,nPos:Integer,novr:Integer,ovr:OVERRIDE

@@ -1,0 +1,5 @@
+Toolbar creator addin
+
+To activate the addin, add a *.tbr file to your project.
+
+KetilO

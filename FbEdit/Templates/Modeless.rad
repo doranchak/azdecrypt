@@ -1,0 +1,77 @@
+This template creates a dialogproc for a modeless dialog.
+
+[*BEGINDEF*]
+#Define [*CONTROLNAME*]		[*CONTROLID*]
+[*ENDDEF*]
+[*BEGINCREATE*]
+
+' Copy the following line to where you want the dialog to be shown. You might need to chane the hInstance and hWin parameters.
+'CreateDialogParam(hInstance,Cast(ZString Ptr,[*DIALOGNAME*]),hWin,@[*DIALOGPROC*],0)
+[*ENDCREATE*]
+[*BEGINPROC*]
+
+Function [*DIALOGPROC*](ByVal hWin As HWND,ByVal uMsg As UINT,ByVal wParam As WPARAM,ByVal lParam As LPARAM) As Integer
+	Dim As Long id, nEvent
+
+	Select Case uMsg
+		Case WM_INITDIALOG
+			'
+		Case WM_COMMAND
+			id=LoWord(wParam)
+			nEvent=HiWord(wParam)
+		Case WM_COMMAND
+			id=LoWord(wParam)
+			nEvent=HiWord(wParam)
+			[*BEGINEVENT*]
+			Select Case nEvent
+				[*BEGINBN_CLICKED*]
+				Case BN_CLICKED
+					[*BEGINSELECTCASEID*]
+					Select Case id
+						[*BEGINCASEID*]
+						Case [*CONTROLNAME*]
+						[*ENDCASEID*]
+					End Select
+					[*ENDSELECTCASEID*]
+					'
+				[*ENDBN_CLICKED*]
+				[*BEGINEN_CHANGE*]
+				Case EN_CHANGE
+					[*BEGINSELECTCASEID*]
+					Select Case id
+						[*BEGINCASEID*]
+						Case [*CONTROLNAME*]
+						[*ENDCASEID*]
+					End Select
+					[*ENDSELECTCASEID*]
+					'
+				[*ENDEN_CHANGE*]
+				[*BEGINLBN_SELCHANGE*]
+				Case LBN_SELCHANGE,CBN_SELCHANGE
+					[*BEGINSELECTCASEID*]
+					Select Case id
+						[*BEGINCASEID*]
+						Case [*CONTROLNAME*]
+						[*ENDCASEID*]
+					End Select
+					[*ENDSELECTCASEID*]
+					'
+				[*ENDLBN_SELCHANGE*]
+			End Select
+			[*ENDEVENT*]
+			'
+		Case WM_CLOSE
+			DestroyWindow(hWin)
+			'
+		Case WM_DESTROY
+			'
+		Case WM_SIZE
+			'
+		Case Else
+			Return FALSE
+			'
+	End Select
+	Return TRUE
+
+End Function
+[*ENDPROC*]

@@ -1,0 +1,37 @@
+
+
+09/09/2006
+----------
+
+- Fixed some stack corruptions.
+- Fixed few typos in the disasm.h database. 
+- Fixed sib_mul_reg special case, when it should be equal to NULL
+- When sign extension is found, DISIT keeps the orginal IMM size
+  (last version was not doing that)
+
+
+I would like to thank "pelle aka i42" for mailing me with some of this
+issues, due to that fact i decided to fork a C version today :)
+
+
+
+
+21/04/2006
+----------
+
+Second, 01B-BETA version release, including:
+
+- bugfixed AAM/AAD/XCHG commands disassembly
+- sign-extension immediate values
+- small flags updates for CALL instruction (ESP = dest = src) [*]
+
+
+[*] - thanks for Fabrice 'Serpilliere' DESCLAUX 
+      for reporting the issue.
+
+
+
+31/01/2006
+----------
+
+First 01A-BETA version release. Initial.

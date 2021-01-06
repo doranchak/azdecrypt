@@ -1,0 +1,19 @@
+[Project]
+Version=2
+Description=fbgfx
+Api=fb (FreeBASIC)
+Grouping=1
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=2
+Current=1
+1=Windows Gui,fbc -s gui -w 1
+2=Windows Console,fbc -s console -w 1
+Output=
+Run=
+[File]
+1=fbgfx.bas
+[FileInfo]
+1=0,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

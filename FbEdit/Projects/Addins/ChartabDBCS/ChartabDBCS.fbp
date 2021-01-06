@@ -1,0 +1,31 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows)
+Description=Defines characters 81H to FFH as characters
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=ChartabDBCS.bas
+2=ChartabDBCS.bi
+3=ChartabDBCS.txt
+4=..\..\Inc\Addins.bi
+5=..\..\Inc\RAEdit.bi
+[BreakPoint]
+3=
+1=
+2=
+4=
+5=
+[FileInfo]
+1=0,26,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,7,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[TabOrder]
+TabOrder=1,2,3,4,5

@@ -1,0 +1,18 @@
+[Project]
+Version=2
+Api=fb (FreeBASIC),win (Windows)
+Description=Picture viewer control
+[Make]
+Recompile=0
+Module=Module Build,fbc -c
+Current=1
+1=Windows GUI,fbc -s gui
+2=Windows GUI (Debug),fbc -s gui -g
+[File]
+1=PictCtrl.Bas
+2=PictCtrl.Bi
+3=PictCtrl.Rc
+[FileInfo]
+1=0,8,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

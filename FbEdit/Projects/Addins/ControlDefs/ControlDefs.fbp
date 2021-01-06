@@ -1,0 +1,28 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows)
+Description=Resource control definition
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=ControlDefs.bas
+2=ControlDefs.bi
+3=ControlDefs.txt
+4=..\..\Inc\Addins.bi
+[FileInfo]
+1=0,36,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,38,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[TabOrder]
+TabOrder=1,2,3,4
+[BreakPoint]
+1=
+2=
+3=
+4=

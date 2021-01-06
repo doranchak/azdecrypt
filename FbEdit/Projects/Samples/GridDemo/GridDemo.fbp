@@ -1,0 +1,33 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows),rag (RAGrid)
+Description=Demo using RAGrid custom control
+Grouping=1
+AddMainFiles=1
+AddModuleFiles=1
+ResExport=
+CompileIfNewer=0
+IncVersion=0
+RunCmd=0
+[Make]
+Recompile=0
+Module=Module Build,fbc -c
+Current=1
+1=Windows GUI,fbc -s gui
+2=Windows GUI (Debug),fbc -s gui -g
+Output=
+Run=
+Delete=
+[File]
+1=GridDemo.Bas
+2=GridDemo.Bi
+3=GridDemo.Rc
+[FileInfo]
+3=0,14,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1=0,52,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,23,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[TabOrder]
+TabOrder=1,2,3
+[BreakPoint]
+1=
+2=

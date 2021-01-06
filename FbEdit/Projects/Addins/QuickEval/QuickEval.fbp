@@ -1,0 +1,29 @@
+[Project]
+Version=2
+Api=fb (FreeBASIC),win (Windows)
+Description=Simple expression evaluator for FbEdit
+Grouping=1
+AddMainFiles=1
+AddModuleFiles=1
+ResExport=
+CompileIfNewer=0
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=QuickEval.bas
+2=QuickEval.bi
+3=QuickEval.txt
+4=..\..\..\Inc\Addins.bi
+5=exception.bi
+6=QuickEval.rc
+[FileInfo]
+1=0,783,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,22,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,43,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,103,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+6=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

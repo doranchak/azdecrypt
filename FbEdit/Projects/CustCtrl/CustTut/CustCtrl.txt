@@ -1,0 +1,83 @@
+Properties description1 starting with bit 31
+
+(Name)		*
+(ID)			*
+Left			*
+Top			*
+Width			*
+Height		*
+Caption		*
+Border		*
+SysMenu
+MaxButton
+MinButton
+Enabled		*
+Visible		*
+Clipping		*
+ScrollBar	*
+Default
+Auto
+Alignment
+Mnemonic
+WordWrap
+MultiLine
+Type
+Locked
+Child			*
+SizeBorder
+TabStop		*
+Font
+Menu
+Class
+Notify
+AutoScroll
+WantCr
+
+Properties description2 starting with bit 31
+
+Sort
+Flat
+(StartID)
+TabIndex		*
+Format
+SizeGrip
+Group			*
+Icon
+UseTabs
+StartupPos
+Orientation
+SetBuddy
+MultiSelect
+HideSel
+TopMost
+xExStyle		*
+xStyle		*
+IntegralHgt
+Image
+Buttons
+PopUp
+OwnerDraw
+Transp
+Timer
+AutoPlay
+WeekNum
+AviClip
+AutoSize
+ToolTip
+Wrap
+Divider
+DragDrop
+
+Properties description3 starting with bit 31
+
+Smooth
+Ellipsis
+Language
+HasStrings
+(HelpID)		*
+
+Properties description4 starting with bit 31
+
+Note:
+Only some of the properties are general and can be used by the custom control.
+These properties are marked with *

@@ -1,0 +1,5 @@
+Sniplet addin
+
+Makes it easy to browse your collection of snipplets
+and copy part of or the whole sniplet to your code.
+

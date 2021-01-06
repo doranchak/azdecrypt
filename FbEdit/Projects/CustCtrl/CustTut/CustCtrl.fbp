@@ -1,0 +1,26 @@
+[Project]
+Version=2
+Description=Custom Control Tutorial
+Grouping=1
+Api=fb (FreeBASIC),win (Windows)
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=1
+Current=1
+1=Custom Control build,fbc -dll -l kernel32 -l gdi32 -l user32
+Output=
+Run=
+[File]
+1=CustCtrl.rc
+2=CustCtrl.bi
+3=CustCtrl.txt
+4=Res\ToolBox.bmp
+1001=CustCtrl.bas
+[FileInfo]
+4=0,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1=0,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1001=0,218,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

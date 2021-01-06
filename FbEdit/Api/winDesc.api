@@ -1,0 +1,12 @@
+hDlg,Handle to a dialog.
+hWnd,Handle to a window.
+hWndChild,Handle to a child window.
+hWndNewParent,Handle to the new parent window.
+hDC,Handle to device context.
+hDestDC,Handle to destination device context.
+hSrcDC,Handle to source device context.
+lpRect,Pointer to a RECT structure.
+lpBuffer,Pointer to a buffer.
+lpString,Pointer to a string.
+nCount,Number of items.
+hKL,Handle to Keyboard Locale.

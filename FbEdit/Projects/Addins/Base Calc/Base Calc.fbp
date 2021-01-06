@@ -1,0 +1,30 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows)
+Description=Convert between number bases
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=Base Calc.bas
+2=Base Calc.bi
+3=Base Calc.txt
+4=Base Calc.rc
+5=..\..\..\Inc\Addins.bi
+[FileInfo]
+1=0,26,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,13,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[TabOrder]
+TabOrder=1,2,3,4,5
+[BreakPoint]
+1=
+2=
+3=
+5=

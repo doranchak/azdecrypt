@@ -1,0 +1,11 @@
+DebugAsm,label
+DebugClear,tabs
+DebugHide
+DebugLog,[[integer][float][string]]
+DebugMem,label,address,nlines
+DebugSelect,tab
+DebugState,state
+DebugShow
+DebugVar,label,[[integer][float][string]]
+Mark1
+Mark2

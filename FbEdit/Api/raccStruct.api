@@ -1,0 +1,4 @@
+CC_ADDLIST,lpszList:ZString Ptr,lpszFilter:ZString Ptr,nType:Integer
+CC_COLOR,back:Integer,text:Integer
+TT_COLOR,back:Integer,text:Integer,api:Integer,hilite:Integer
+TTITEM,lpszApi:ZString Ptr,lpszParam:ZString Ptr,nitem:Integer,lpszRetType:ZString Ptr,lpszDesc:ZString Ptr,novr:Integer,nsel:Integer,nwidth:Integer

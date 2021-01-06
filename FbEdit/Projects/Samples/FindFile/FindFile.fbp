@@ -1,0 +1,31 @@
+[Project]
+Version=2
+Api=fb (FreeBASIC),win (Windows)
+Description=Find file
+Grouping=1
+AddMainFiles=1
+AddModuleFiles=1
+ResExport=
+CompileIfNewer=0
+IncVersion=0
+[Make]
+Recompile=0
+Module=Module Build,fbc -c
+Current=1
+1=Windows GUI,fbc -s gui
+2=Windows GUI (Debug),fbc -s gui -g
+Output=
+Run=
+Delete=*.obj
+[File]
+1=FindFile.Bas
+2=FindFile.Bi
+3=FindFile.Rc
+[BreakPoint]
+1=
+2=
+[FileInfo]
+1=0,19,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,17,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[NoDebug]

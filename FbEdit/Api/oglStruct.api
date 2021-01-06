@@ -1,0 +1,2 @@
+GLFWvidmode,Width,Height,RedBits,BlueBits,GreenBits
+GLFWimage,Width,Height,Format,BytesPerPixel,Data

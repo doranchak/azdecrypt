@@ -1,0 +1,769 @@
+;--------------------------------------------------------------------------
+[Lang]
+Lang=Magyar (Hungarian), By Lajos Martonffy
+;--------------------------------------------------------------------------
+[1100]
+1100=Sorra ugrás
+1002=Sor:
+1=OK
+2=Mégse
+;--------------------------------------------------------------------------
+[1200]
+1200=Nyelv
+1004=Nyelv:
+1=OK
+2=Mégse
+1002=A változások az FbEdit újraindításakor lépnek érvénybe.
+;--------------------------------------------------------------------------
+[1300]
+;--------------------------------------------------------------------------
+[1400]
+1401=Mentés UniKód formában
+;--------------------------------------------------------------------------
+[2000]
+2000=Opciók
+1=OK
+2=Mégse
+;--------------------------------------------------------------------------
+[2100]
+2115=Név export formátum
+2101=Assembler equ's
+2102=C definíciók
+2103=hla
+2104=PureBasic
+2116=Név export
+2110=Fájl
+2111=Vágólap
+2112=Kimenet
+2117=Alapértelmezett export fájlnév:
+2114=Automatikusmatikus export mentéskor
+;--------------------------------------------------------------------------
+[2200]
+2204=Hozzáadás
+2205=Törlés
+2206=A változások az FbEdit újraindításakor lépnek érvénybe.
+;--------------------------------------------------------------------------
+[2300]
+4020=Rács X-méret
+4021=Rács Y-méret
+4022=Rács szín
+4003=Rács megjelenítése
+4002=Rácshoz igazítás
+4001=Méret/pozíció megjelenítése
+4009=Sor szerû rács 
+4010=Hexa forma
+4011=Dialogus betûmérethez igazítása
+4012=Egyszerû tulajdonságpk
+4013=IDC_STATIC definiálása
+;--------------------------------------------------------------------------
+[2400]
+2402=Hozzáadás
+2401=Törlés
+;--------------------------------------------------------------------------
+[2410]
+2502=Hozzáadás
+2501=Törlés
+2504=A változások az FbEdit újraindításakor lépnek érvénybe.
+;--------------------------------------------------------------------------
+[2500]
+2500=Keresés ...
+2216=Keresendõ:
+2009=Csere:
+2003=Kis/nagy betûk különböznek
+2007=Teljes szavak
+2013=Komment sorok kihagyása
+2014=Naplózás
+2217=Irány
+2004=Mind
+2006=Fel
+2005=Le
+2501=Keresés
+2505=Aktuális kijelölés
+2502=Aktuális eljárás
+2503=Aktuális modul
+2504=Megnyitott fájlok
+2012=Aktuális projekt
+1=Keress
+2010=Csere
+2015=Összes keresése 
+2008=Összes cseréje
+2=Mégse
+;--------------------------------------------------------------------------
+[3000]
+1=OK
+;--------------------------------------------------------------------------
+[3200]
+1=OK
+2=Mégse
+3209=Import
+3205=Beillesztés
+3206=Törlés
+3211=Menû pont:
+3210=Parancs:
+;--------------------------------------------------------------------------
+[4000]
+4000=Kód editor opciók
+4050=Színséma 
+4016=Új hozzáadása 
+4051=Színek
+4052=Színek:
+4038=Kövér
+4037=Dõlt
+4053=Szintaktika
+4054=Csoport:
+4055=Aktív:
+4009=>
+4008=<
+4056=Inaktív:
+4011=Hozzáadás
+4010=Törlés
+4004=Kövér
+4003=Dõlt
+4005=RC fájl
+4064=Inline asszembler
+4057=Kód fájlok (.bas.bi.):
+4058=Vegyes
+4059=Tabulátor
+4060=Mentések
+4006=Sorszámok
+4019=Tabulátorok érvényesítése
+4031=Egyedi példány
+4035=Blokk kész
+4034=Mentés létrehozáskor
+4044=Automatikusmatikus projekt betöltés
+4047=Foglaltság esetén bezárás
+4020=Automatikus behúzás
+4036=Intelligens behúzás
+4033=Automatikus zárójel
+4032=Zárójel párosítás
+4021=Aktív sor kiemelése
+4026=Kommentek kiemelése 
+4049=Intelligens matemetika
+4061=Betûk
+4024=Kód
+4022=AaBbCc
+4025=Sorszám
+4023=12345
+4066=Eszközök
+4065=AaBbCc
+4062=Kód kiegészítés
+4039=Aktiv
+4046=Include/Inclib
+4045=Automatikus méret
+4048=Kód ajánlat
+4063=Kis-/nagybetû váltás
+4040=Nincs konvertálás
+4041=Vegyes
+4042=Kisbetû 
+4043=Nagybetû
+4002=Alkalmaz
+1=OK
+2=Mégse
+;--------------------------------------------------------------------------
+[4100]
+4100=Külsõ állomány opciók
+4107=Fájltípus:
+1=OK
+2=Mégse
+4102=Hozzáadás
+4103=Törlés
+4108=Parancs:
+;--------------------------------------------------------------------------
+[5000]
+5000=Állományok mentése
+2=Mégse
+1=OK
+1003=Egysem
+1002=Mind
+;--------------------------------------------------------------------------
+[5100]
+5100=Hibakeresés/Próbafuttatás
+1002=Debugger:
+1004=Próbafuttatás fordítási parancs:
+1=OK
+2=Mégse
+;--------------------------------------------------------------------------
+[5200]
+5200=Blokk beillesztés
+1=OK
+2=Mégse
+5202=A kiválasztott blokk minden sorába beillesztendõ szöveg.
+;--------------------------------------------------------------------------
+[5300]
+5300=Új projekt
+1015=Projekt név:
+1016=Projekt leírás:
+1017=Projekt útvonal:
+1018=Új mappa 
+1014=Projekt alkönyvtár
+1012=Bak
+1010=Mod
+1011=Res
+1013=Inc
+1=OK
+2=Mégse
+;--------------------------------------------------------------------------
+[5360]
+1010=Projekt típus:
+1009=Text fájl (.txt)
+1008=Építõelem fájl (.rc)
+1007=Include fájl (.bi)
+1006=Kód fájl (.bas)
+1011=Fájl létrehozás
+1012=Ezek a beállítások séma használata esetén hatástalanok.
+;--------------------------------------------------------------------------
+[5380]
+;--------------------------------------------------------------------------
+[5400]
+5400=FbEdit útvonal opciók
+1009=Alapértelmezett projekt útvonal:
+1010=Compiler útvonal:
+5403=Súgó útvonal:
+1=OK
+2=Mégse
+;--------------------------------------------------------------------------
+[5500]
+5500=Projekt opciók
+5511=Projekt leírás:
+5512=Projekt típus:
+5513=Build parancs:
+5510=Main fájl a Build parancshoz
+5514=Api fájlok:
+5523=Verziószám léptetésse Build-enként
+5515=Modul kezelés
+5522=modul hozzáadása a Build parancshoz
+5516=modul Build parancs:
+5521=Fordítás csak ha újabb
+5504=Kézi szerkesztés
+5505=Újrafordítás
+5506=Parancs sor
+5517=Eredmény fájlnév:
+5518=Futtatás parancssori parameterek:
+5526=Cmd.exe hívása
+5525=Fájlok automatikus törlése szerkesztés után (*.obj ; *.a):
+5519=Építõelem név export fájl:
+5520=Projekt fájl csoportosítás
+5501=Nincs
+5502=Könvtár szerint
+5503=Típus szerint
+1=OK
+2=Mégse
+;--------------------------------------------------------------------------
+[5600]
+5600=Tulajdonságok exportálása
+1=OK
+2=Mégse
+1001=Függvények
+1002=Konstansok
+1003=Változók
+1004=UDT-k (öndefiniált típusok)
+1005=Enums (sorozatzok)
+1006=Névterek
+1007=Makrók
+1008=Konstruktorok
+1009=Destruktorok
+1010=Tulajdonságok
+1011=Operátorok
+5601=Üzenetek
+;--------------------------------------------------------------------------
+[6000]
+6000=Séma létrehozása
+1006=Leírás:
+1007=További állományok:
+1002=Hozzáadás
+1003=Eltávolítás
+1008=Séma fájlnév:
+2=Mégse
+1=OK
+;--------------------------------------------------------------------------
+[6100]
+6100=Addin Manager
+1=OK
+2=Mégse
+1002=Súgó
+1003=A változások az FbEdit újraindításakor lépnek érvénybe.
+;--------------------------------------------------------------------------
+[6200]
+6200=Projekt Api fájls
+2=Mégse
+1=OK
+;--------------------------------------------------------------------------
+[6300]
+6300=Keresés ...
+1001=Keresendõ:
+1003=Csere:
+1005=Típus
+1006=Hexa
+1007=Ascii
+1008=Irány
+1009=Le
+1010=Fel
+1=Keres
+1011=Csere
+1012=Összes cseréje
+2=Mégse
+;--------------------------------------------------------------------------
+[10000]
+10001=&Fájl
+10002=Új Projekt\tShift+Ctrl+N
+10003=Projekt megnyitása\tShift+Ctrl+O
+10004=Projekt bezárása\tShift+Ctrl+F4
+10005=&Új kód fájl\tCtrl+N
+10006=Új &ép.elem fájl\tCtrl+Alt+N
+10007=Megnyitás\tCtrl+O
+10060=Megnyitás &Hex formában
+10008=Utóljára megnyitott fájlok
+10009=&Mentés\tCtrl+S
+10010=Összes mentése\tShift+Ctrl+S
+10011=Mentés másként\tCtrl+Alt+S
+10012=&Bezárás\tF4
+10013=Osszes bezárása\tCtrl+F4
+10015=Oldal beállítás
+10016=&Nyomtatás
+10014=&Kilépés\tAlt+F4
+10021=&Szerkesztés
+10022=&Visszavonás\tCtrl+Z
+10023=Újra\tCtrl+Y
+10024=Kivágás\tCtrl+X
+10025=Másolás\tCtrl+C
+10026=&Beillesztés\tCtrl+V
+10027=&Törlés\tDel
+10028=Összes kiválasztása\tCtrl+A
+10029=Sorra ugrás\tCtrl+G
+10030=Keresés\tCtrl+F
+10031=Következõ keresése\tF3
+10032=Elõzõ keresése\tCtrl+F3
+10033=&Csere\tCtrl+R
+10034=Deklaráció keresése \tF2
+10035=Vissza\tCtrl+F2
+10036=Kibont / Összezár\tCtrl+E
+10037=Blokk
+10038=Behúzás\tTab
+10039=Kitolás\tShift+Tab
+10040=Megjegyzéssé változtat\tF9
+10041=Megjegyzés jelölés törlése\tCtrl+F9
+10042=Követõ szóközök törlése
+10043=Konvertál
+10044=Behúzás szóközig
+10045=Behúzás tabolátorig
+10046=Nagybetû\tCtrl+U
+10047=Kisbetû\tCtrl+L
+10048=Blokk mód\tShift+Ctrl+B
+10049=Blokk beillesztés\tCtrl+B
+10050=Könyvjelzõ
+10051=Ki/be\tShift+F8
+10052=Következõ\tF8
+10053=Elõzõ\tCtrl+F8
+10054=Összes törlése\tShift+Ctrl+F8
+10055=Hiba
+10056=&Következõ hiba\tShift+F9
+10057=Hibák &törlése\tShift+Ctrl+F9
+10061=Fo&rmázás
+10062=Vezérlõelemek &zárolása
+10063=&Háttérbe küldés
+10064=&Elõtérbere hozás
+10065=&Rács megjelenítése
+10066=Rácshoz &igazítás
+10067=Vezérlõelemek igazítása
+10068=&Balra
+10069=&Középre
+10070=&Jobbra
+10071=&Fent
+10072=&Középen
+10073=&Lent
+10074=Azonos méret
+10075=&Szélesség
+10076=&Magasság
+10077=Mindkettõ
+10078=Középre az ablakban
+10079=&Vízszintesen
+10080=&Fûggõlegesen
+10081=Tabindex beállítása
+10082=ID-k automatikus újraszámozása
+10083=Kis-/nagybetû konverzió\tCtrl+F12
+10084=&Behúzás\tShift+Ctrl+F12
+10091=&Nézet
+10092=&Eredmény ablak\tF6
+10085=&Azonnali ablak
+10093=&Projekt ablak
+10094=Tulajdonságok ablak
+10020=Eszközsáv
+10058=Fül választás
+10059=Állapotsor
+10095=&Ablak elõnézete
+10096=Képernyõ megosztás
+10097=Teljes képernyõ\tCtrl+W
+10098=Kettõs nézet\tShift+Ctrl+D
+10101=&Projekt
+10102=&Új hozzáadása
+10103=&Fájl
+10104=&Modul
+10105=&Létezõ hozzáadása 
+10106=&Fájlok
+10107=&Modulok                                    
+10018=Kijelölt beállítása &Main fájlként
+10019=Kijelölt &váltása: modul/fájl
+10108=Kijelölt &eltávolítása
+10109=Kijelölt átnevezése
+10086=Kijelölt beillesztése #Include fájlként
+10110=Projekt &opciók
+10111=&Séma létrehozása
+10121=&Építõelemek
+10122=&Ablak hozzáadása
+10123=&Menû hozzáadása
+10124=Gyorsbillentyû tábla hozzáadása
+10125=Szöveg tábla hozzáadása
+10126=Verzió info hozzáadása
+10127=XP Manifest hozzáadása
+10128=RCData hozzáadása
+10129=Nyelv
+10130=Include fájlok
+10131=Ép.elem (Resource)
+10132=Nevek
+10133=Nevek exportja
+10134=Eltávolítás
+10135=Eltávolítás visszavonása
+10141=&Make
+10142=&Fordítás\tF5
+10143=F&uttatás\tShift+F5
+10144=F&ord.+Fut\tCtrl+F5
+10145=Futtatás hibakeresés módban
+10146=&Modulok fordítása
+10147=&Próbafuttatás\tShift+Ctrl+F5
+10151=&Eszközök
+10152=Tulajdonságok &exportja 
+10161=&Opciók
+10017=&Nyelv
+10162=&Kód szerkesztõ
+10163=&Ablak szerkesztõ
+10164=&Útvonal opciók
+10165=Hibakeresés/próbafuttartás opciói
+10166=&Build opciók
+10167=&Külsõ fájlok
+10168=&Addin Manager
+10169=&Eszközök menû
+10170=&Súgó menû
+10181=&Súgó
+10182=&Névjegy
+;--------------------------------------------------------------------------
+[20000]
+20001=&Tabulátor (tabtool)
+10012=Aktuális bezárása\tF4
+10013=Összes bezárása\tCtrl+F4
+10203=Aktuális kivételével az összes bezárása
+10204=Következõ Tab\tCtrl+Tab
+10205=Elõzõ Tab\tShift+Ctrl+Tab
+10206=Felosztás / Felosztás megszüntetése
+10201=Tab zárolása / feloldása
+10202=Összes tab feloldása
+20002=&Projekt
+10002=Új Projekt
+10003=Projekt megnyitása
+10004=Projekt bezárása
+10102=Új projekt hozzáadása 
+10103=Fájl
+10104=Modul
+10105=Létezõ hozzáadása
+10106=Fájl
+10107=Modul
+10018=Kijelölt beállítása Main-ként
+10019=Kijelölt váltása: modul / fájl
+10108=Kijelölt eltávolítása
+10109=Kijelölt átnevezése
+10086=Kijelölt beillesztése #Include fájlként
+10110=Projekt opciók
+20003=&Eredmény ablak
+10092=Elrejtés
+10211=Törlés
+10212=Mind
+10213=Másolás
+20004=&Tulajdonság
+10221=&Ugrás deklarációhoz
+10222=&Másolás kódba
+10223=Kiemelés
+10224=Frissítés
+10225=Visszaállítás
+20005=&Formázás
+10022=&Visszavonás\tCtrl+Z
+10024=Kivágás\tCtrl+X
+10025=&Másolás\tCtrl+C
+10026=&Beillesztés\tCtrl+V
+10027=&Törlés\tDel
+10062=&Vezérlõk rögzítése
+10063=&Háttérbe küldés
+10064=&Elõtérbe hozás
+10065=&Rács megjelenítése 
+10066=Rácshoz &igazítás
+10067=Vezérlõk igazítása
+10068=&Bal
+10069=&Közép
+10070=&Jobb
+10071=&Fent
+10072=&Középen
+10073=&Lent
+10074=Azonos méret
+10075=&Szélesség
+10076=&Kagasság
+10077=&Mindkettõ
+10078=Ablak közepére
+10079=&Vízszintesen
+10080=&Függõlegesen
+10081=Tabindex beállítása
+10082=ID-k aut. újraszámozása
+20006=&Közvetlen (immediate)
+10085=Elrejtés
+10226=Törlés
+10227=Mind
+10228=Másolás
+;--------------------------------------------------------------------------
+[Strings]
+10005=Új fájl
+10007=Fájl megnyitás
+10009=Fájl mentése
+10010=Összes fájl mentése
+10022=Visszavonás
+10023=Újra 
+10024=Kivágás
+10025=Másolás
+10026=Beillesztés
+10027=Törlés
+10030=Keres
+10033=Csere
+10038=Behúzás
+10039=Kitolás
+10040=Megjegyzéssé változtat
+10041=Megjegyzés jel törlése
+10051=Könyvjelzõ be/ki
+10052=Következõ könyvjelzõ
+10053=Elõzõ könyvjelzõ
+10054=Összes könyvjelzõ törlése
+10085=Azonnali ablak megjelenítése / elrejtése
+10092=Eredmény ablak megjelenítése / elrejtése
+10093=Projekt ablak megjelenítése / elrejtése
+10094=Tulajdonságok ablak megjelenítése / elrejtése
+10142=Fordítás
+10143=Futtatás
+10144=Fordítás és futtatás
+;--------------------------------------------------------------------------
+[Internal]
+1=Nem található
+100=Fájl
+101=Projekt
+1000=Keresés
+1001=Következõ
+1002=Elõzõ
+1003=Csere...
+1004=Tartomány végigkeresve
+1005=Kicserélve
+1006=Projekt állományok végigkeresve
+1007=Tartományban%c%cKeresett%c  Talált: %d%c  Ismétlés: %d%c%cBuild%c  Hibás: %d%c  Figyelmeztetés: %d
+1008=Projekt fájlokban %c%cKeresett%c  Fájlok: %d%c  Talált: %d%c  Ismétlés: %d%c%cBuild%c  Hibás: %d%c  Figyelmeztetés: %d
+1009=Open fájls searched%c%cKeresett%c  Fájlok: %d%c  Talált: %d%c  Ismétlés: %d%c%cBuild%c  Hibás: %d%c  Figyelmeztetés: %d
+1100=Eszközök menû opciói
+1101=Súgó menû opciói
+1102=Build opciók
+1103=Projekt Build opciók
+1104=Import Build opciók
+1200=Fájok
+1201=Sablon
+1202=Mappa keresése
+1300=Basic forrás
+1301=Include
+1302=Építõelem
+1303=Vegyes
+2000=Új fájl hozzáadása
+2001=Létezõ fájl hozzáadása
+2002=Új modul hozzáadása
+2003=Létezõ modul hozzáadása
+2004=Projekt megnyitása
+3000=A fájl már létezik a projektben
+3001=Eltávolítja a fájlt a projektbõl?
+3002=Mappa létrehozása nem sikerült:
+3003=Mappa létezik. Mégis létrehozza a projektet?
+3004=Projekt fájl létezik. Mégis létrehozza a projektet?
+3005=Fájl létrehozása nem sikerült:
+3006=Menti a változásokkat?
+3007=A fájl megváltozott az editoron kívül!
+3008=Újranyitja a fájlt?
+4010=Export
+4020=Viselkedés
+4030=Egyéni vezérlõk
+4031=Egyéni vezérlõ
+4032=Stílus maszk
+4040=Egyéni stílusok
+4041=Stílus
+4042=Érték
+4043=Maszk
+4050=Építõelem típusok
+4051=Név
+4052=Érték
+4053=Fájlok
+4054=Editor
+5001=Megváltozott állapot
+5002=Elválasztó 
+5003=Sorszámok megjelenítése/elrejtése
+5004=Összes kinyitása
+5005=Összes bezárása
+5006=Tab zárolása/feloldása
+5011=Egy szinttel feljebb
+5012=Fájl szûrõ
+5021=Aktuális fájl
+5022=Fájlok megnyitása
+5023=Frissítés
+;--------------------------------------------------------------------------
+[Sniplet Addin]
+Snipletaddin=Kódmorzsák
+1=Másolás a kódba
+2=Bezárás
+10000=Kód &morzsák\tF11
+;--------------------------------------------------------------------------
+[AdvEdit]
+10000=Bõvitett edit
+10001=Szó kijelölése\tShift+Ctrl+W
+10002=Szó másolása\tShift+Ctrl+C
+10003=Szó kivágása\tShift+Ctrl+X
+10004=Szó törlése
+10005=Sor kijelölése\tShift+Ctrl+L
+10006=Sor másolása\tAlt+Ctrl+C
+10007=Sor kivágása\tAlt+Ctrl+X
+10008=Sor törlése
+10009=Próbafuttatás
+10010=Sor duplikálása\tCtrl+D
+;--------------------------------------------------------------------------
+[CustomFontAddin]
+CustomFontAddin=Egyéni betûtipus
+1001=Böngészés
+1003=OK
+1004=Mégse
+10000=Egyéni betûtipus
+10001=Új betûtípus hozzáadása 
+;--------------------------------------------------------------------------
+[FBFileAssociation]
+FBFileAssociation=Fájl hozzárendelés
+1008=Info
+1009=A fájl hozzárendelés megváltoztatásához jelölje ki a kiterjesztést, és klikkeljen a "Hozzárendelés változtatása" gombra.\r\nIt will associate with our nice icons
+1001=fájlok
+1002=*.bas - FreeBasic forráskód
+1003=*.bi  - FreeBasic fej
+1005=*.rc  - Windows Építõelem Scripts
+1004=*.fbp - FBEdit Projekt fájl
+1006=Hozzárendelés változtatása
+1007=Bezárás
+10000=Fájl hozzárendelés
+10001=A fájl hozzárendelés megváltozott!\rFBEdit útvonal:
+;--------------------------------------------------------------------------
+[FileTabStyle]
+10000=Fájl fül stílus
+10001=Alapértelmezett
+10002=Gombok
+10003=Egyszerû
+10004=MÓdosított állapot jelzõ
+10005=Rögzített szélesség
+10006=Icon kiemelése
+10007=Csillag karakter
+10008=Nincs állapotjelzés
+10009=Többsoros
+;--------------------------------------------------------------------------
+[Toolbar]
+Toolbar=Eszközsáv szerkesztõ
+2000=Gomb név:
+2001=ID
+2002=Bitmap fájl:
+2003=Bitmap név:
+2004=Szám
+1008=Gomb hoz.a
+1009=Gomb besz.
+1011=Elv. hoz.a
+1010=Elv. besz.
+1012=Törlés
+2005=Eszközsáv stílus
+1018=Egyszerû
+1020=Többsoros
+1021=Osztó nélkül
+1023=Tipp
+1022=Lista
+2006=Gomb stílus
+1025=Pipa
+1024=Csoport
+2007=Gomb méret
+1019=Export
+1=Mentés
+2=Kilépés
+;--------------------------------------------------------------------------
+[TortoiseSVN]
+10000=Verziószám napló
+10001=Verziószám változtatás
+10002=Jóváhagyás
+;--------------------------------------------------------------------------
+[ShowVars]
+999=Változók (ShowVars)
+1000=Elrejtés
+1001=Következõ ablak\tCtrl+F6
+1002=Elõzõ ablak\tShift+Ctrl+F6
+1003=Ablak törlése
+1100=Név
+1101=Elõjeles
+1102=Elõjel nélküli
+1103=Hexa
+1104=Karakter
+1105=Bináris
+1200=Név
+1201=Eredmény
+1300=Név
+1301=Hossz
+1302=Tartalom
+1400=Név
+1401=Cím
+1402=Dump
+1403=Ascii
+1500=Név
+1501=Cím
+1502=Hexa
+1503=Asszembler
+1600=Idõ
+1601=Ütemek (Ticks)
+1602=Megjelenítés
+2000=  Sor: 
+2001=     Függvény: 
+2002=     Fájl: 
+3000=Törli?
+3001=Túl sok regiszter
+3002=Belsõ hiba
+9000=Sor
+9001=Függvény
+9002=Útvonal
+9003=Fájl
+;--------------------------------------------------------------------------
+[ProjektZip]
+ProjektZip=FbEdit Projekt tömörítõ 
+1009=Cél:
+1010=Aktuális:
+1007=Mind
+1004=Tömörítés
+1011=Minden projekt fájlt
+2=Kilépés
+2000=Név
+2001=Méret
+2002=Dátum
+2003=Tömörítés végrehajtása
+2004=Felülírja a meglévõt?\r
+2005=A fájl nem hozható létre\r
+2006=Hozzáadás a tömörített állományhoz: 
+2007=Kész.
+10000=Projekt tömörítõ
+;--------------------------------------------------------------------------
+[FbDebug]
+FbDebug=Hibakeresés
+1005=Nincs hibakeresés
+1006=Hibakeresés
+1=OK
+10010=&Hibakeresés
+10000=&Töréspont be/ki\tCtrl+T
+10001=&Összes töréspont törlése\tShift+Ctrl+T
+10002=&Indul\tShift+F7
+10003=&Leáll\tAlt+F7
+10004=&Lépés\tF7
+10005=&Átlépés\tCtrl+F7
+10006=Elõre a kurzorig\tShift+Ctrl+F7
+10007=Nincs hibakeresés
+;--------------------------------------------------------------------------

@@ -1,0 +1,36 @@
+[Project]
+Version=3
+Description=Advanced edit functions
+Grouping=2
+Api=fb (FreeBASIC),win (Windows)
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=AdvEdit.bas
+2=AdvEdit.bi
+3=AdvEdit.txt
+4=..\..\FbEdit\Inc\RAEdit.bi
+5=..\..\FbEdit\Inc\Addins.bi
+6=AdvEdit.rc
+7=Res\QuickRun.bmp
+[FileInfo]
+1=0,109,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,29,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+6=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[TabOrder]
+TabOrder=1,2,3,5,6
+[BreakPoint]
+1=
+2=
+3=
+5=

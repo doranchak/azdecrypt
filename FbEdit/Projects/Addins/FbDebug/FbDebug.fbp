@@ -1,0 +1,57 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows)
+Description=Debug addin
+Grouping=1
+AddMainFiles=1
+AddModuleFiles=1
+ResExport=
+CompileIfNewer=0
+IncVersion=0
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+Delete=*.obj;*.a
+[File]
+1=FbDebug.bas
+2=FbDebug.bi
+3=FbDebug.txt
+4=Debug.bas
+5=..\..\..\..\..\Inc\Addins.bi
+6=Debug.bi
+7=..\..\..\..\..\Inc\RAEdit.bi
+8=FbDebug.rc
+9=..\..\..\..\..\Inc\RAProperty.bi
+Main=1
+10=Immediate.bas
+11=Immediate.bi
+[FileInfo]
+1=0,1405,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,86,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,171,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,437,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,150,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+6=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+7=0,134,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+8=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+9=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+10=0,1439,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+11=0,21,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[BreakPoint]
+1=
+2=
+3=
+4=
+5=
+6=
+7=
+0=
+9=
+10=
+11=
+[TabOrder]
+TabOrder=1,2,3,4,5,6,8,10,11

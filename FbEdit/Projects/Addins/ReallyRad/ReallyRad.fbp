@@ -1,0 +1,44 @@
+[Project]
+Version=2
+Api=fb (FreeBASIC),win (Windows)
+Description=Really rad dialogproc creator
+Grouping=2
+AddMainFiles=1
+ResExport=
+CompileIfNewer=0
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=ReallyRad.bas
+2=ReallyRad.bi
+3=ReallyRad.txt
+4=..\..\FbEdit\Inc\RAProperty.bi
+5=..\..\FbEdit\Inc\RAResEd.bi
+6=ReallyRad.rc
+7=..\..\..\..\..\Templates\Modal.rad
+8=..\..\..\..\..\Templates\Modeless.rad
+9=CreateFile.bas
+10=..\..\FbEdit\Inc\Addins.bi
+11=..\..\..\..\..\Templates\DialogAsMain.rad
+12=..\..\..\..\..\Templates\DialogApp.rad
+[FileInfo]
+1=0,254,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,36,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,89,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,87,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+6=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+7=0,45,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+8=0,59,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+9=0,85,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+10=0,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+11=0,27,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+12=0,23,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[ReallyRad]
+IDD_DLGREALLYRAD=Modal.rad,ReallyRad.bas,ReallyRadProc
+IDD_DLGREALLYRADCTRL=,,ReallyRadCtl

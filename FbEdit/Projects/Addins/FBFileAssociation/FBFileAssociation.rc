@@ -1,0 +1,68 @@
+#define IDC_STC1 1009
+#define IDC_STC1 1009
+#define IDD_DLG1 1000
+#define IDC_GRP1 1001
+#define baBAS 1002
+#define baBI 1003
+#define baFBP 1004
+#define baRC 1005
+#define baDOIT 1006
+#define baCLOSE 1007
+#define IDC_GRP2 1008
+#define IDC_STC1 1009
+#define IDC_IMG1 1010
+#define IDC_IMG2 1011
+#define IDC_IMG3 1012
+#define IDC_IMG4 1013
+#define ICO_BAS 1
+#define ICO_BI 2
+#define ICO_FBP 3
+#define ICO_RC 4
+#define IDR_VERSION 1
+
+IDD_DLG1 DIALOGEX 6,5,162,159
+CAPTION "File Association"
+FONT 8,"MS Sans Serif",0,0,0
+STYLE 0x90C00800
+BEGIN
+  CONTROL "Files",IDC_GRP1,"Button",0x50000007,0,48,160,92
+  CONTROL "*.bas - FreeBasic Source",baBAS,"Button",0x50010003,32,60,118,9
+  CONTROL "*.bi    - FreeBasic Headers",baBI,"Button",0x50010003,32,80,118,9
+  CONTROL "*.fbp  - FBEdit Project File",baFBP,"Button",0x50010003,32,120,116,9
+  CONTROL "*.rc    - Windows Resource Scripts",baRC,"Button",0x50010003,32,100,124,10
+  CONTROL "Change Association",baDOIT,"Button",0x50010000,6,140,94,17
+  CONTROL "Close",baCLOSE,"Button",0x50010001,108,140,46,17
+  CONTROL "Info",IDC_GRP2,"Button",0x50000007,0,0,160,46
+  CONTROL "Change File associations with FbEdit by checking the extensions you want and click Change Association                          It will associate with our nice icons",IDC_STC1,"Static",0x50000001,16,8,134,36
+  CONTROL ICO_BAS,IDC_IMG1,"Static",0x50000203,8,56,21,19
+  CONTROL ICO_BI,IDC_IMG2,"Static",0x50000203,8,76,21,19
+  CONTROL ICO_FBP,IDC_IMG3,"Static",0x50000203,8,116,21,19
+  CONTROL ICO_RC,IDC_IMG4,"Static",0x50000203,8,96,21,19
+END
+
+ICO_BAS ICON DISCARDABLE "Res/bas.ico"
+ICO_BI ICON DISCARDABLE "Res/bi.ico"
+ICO_FBP ICON DISCARDABLE "Res/fbp.ico"
+ICO_RC ICON DISCARDABLE "Res/rc.ico"
+
+IDR_VERSION VERSIONINFO
+FILEVERSION 1,0,0,1
+PRODUCTVERSION 1,0,0,1
+FILEOS 0x00000004
+FILETYPE 0x00000002
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "FFFF0000"
+    BEGIN
+      VALUE "FileVersion", "1.0.0.0\0"
+      VALUE "ProductVersion", "1.0.0.0\0"
+      VALUE "FileDescription", "File Association Changer Addin for FBEdit\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0xFFFF, 0x0000
+  END
+END
+

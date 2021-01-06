@@ -1,0 +1,18 @@
+[Project]
+Version=2
+Api=fb (FreeBASIC),win (Windows)
+Description=Show bitmap
+[Make]
+Recompile=0
+Module=Module Build,fbc -c
+Current=1
+1=Windows GUI,fbc -s gui
+2=Windows GUI (Debug),fbc -s gui -g
+[File]
+1=Bitmap.Bas
+2=Bitmap.Bi
+3=Bitmap.Rc
+[FileInfo]
+1=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

@@ -1,0 +1,4 @@
+HEBMK,hWin:HWND,nLine:Integer
+HECOLOR,bckcol:Integer,adrtxtcol:Integer,dtatxtcol:Integer,asctxtcol:Integer,selbckcol:Integer,sellfbckcol:Integer,seltxtcol:Integer,selascbckcol:Integer,selbarbck:Integer,selbarpen:Integer,lnrcol:Integer
+HEFONT,hFont:HFONT,hLnrFont:HFONT
+HESELCHANGE,nmhdr:NMHDR,chrg:CHARRANGE,seltyp:Integer,nline:Integer,nlines:Integer,fchanged:Integer

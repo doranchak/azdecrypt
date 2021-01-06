@@ -1,0 +1,6 @@
+BLOCKRANGE,lnMin:Long,clMin:Long,lnMax:Long,clMax:Long
+LINERANGE,lnMin:Long,lnMax:Long
+RABLOCKDEF,lpszStart:ZString Ptr,lpszEnd:ZString Ptr,lpszNot1:ZString Ptr,lpszNot2:ZString Ptr,flag:Long
+RACOLOR,bckcol:Long,txtcol:Long,selbckcol:Long,seltxtcol:Long,cmntcol:Long,strcol:Long,oprcol:Long,hicol1:Long,hicol2:Long,hicol3:Long,selbarbck:Long,selbarpen:Long,lnrcol:Long,numcol:Long,cmntback:Long,strback:Long,numback:Long,oprback:Long,changed:Long,changesaved:Long
+RAFONT,hFont:HFONT,hIFont:HFONT,hLnrFont:HFONT
+RASELCHANGE,nmhdr:NMHDR,chrg:CHARRANGE,seltyp:Word,Line:Long,cpLine:Long,lpLine:Long,nlines:Long,nhidden:Long,fchanged:Long,npage:Long,nWordGroup:Long

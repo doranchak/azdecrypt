@@ -1,0 +1,18 @@
+[Project]
+Version=2
+Description=Exploring classes
+Grouping=1
+ResExport=
+AddMainFiles=1
+Api=fb (FreeBASIC),win (Windows)
+[Make]
+Module=Module Build,fbc -c
+Recompile=2
+Current=1
+1=Windows Gui,fbc -s gui -w 1
+Output=
+Run=
+[File]
+1=Class.bas
+[FileInfo]
+1=0,102,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

@@ -1,0 +1,24 @@
+[Project]
+Version=2
+Description=FbEdit Help addin
+Api=fb (FreeBASIC),win (Windows)
+Grouping=1
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=HelpAddin.bas
+2=HelpAddin.bi
+3=HelpAddin.txt
+4=..\..\FbEdit\Inc\Addins.bi
+[FileInfo]
+1=0,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,13,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,103,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

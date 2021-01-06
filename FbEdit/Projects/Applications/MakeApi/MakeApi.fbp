@@ -1,0 +1,40 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows),rap (RAProperty)
+Description=Make api files from bi files
+Grouping=1
+AddMainFiles=1
+AddModuleFiles=1
+ResExport=
+CompileIfNewer=0
+IncVersion=0
+RunCmd=0
+[Make]
+Recompile=0
+Module=Module Build,fbc -c
+Current=1
+1=Windows GUI,fbc -s gui
+2=Windows GUI (Debug),fbc -s gui -g
+Output=
+Run=
+Delete=*.obj
+[TabOrder]
+TabOrder=1,2,4,5,3
+[File]
+1=MakeApi.Bas
+2=MakeApi.Bi
+3=MakeApi.Rc
+4=RAProperty.bi
+5=MakeApi.txt
+[BreakPoint]
+2=
+1=
+3=
+4=
+5=
+[FileInfo]
+3=0,25,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1=0,520,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,67,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,132,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,30,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

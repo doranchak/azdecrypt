@@ -1,0 +1,695 @@
+;--------------------------------------------------------------------------
+[Lang]
+Lang=Português (Brasil), By Frederico Ramos
+;released: 04/07/2008
+;--------------------------------------------------------------------------
+[1100]
+1100=Ir para a linha
+1002=Linha:
+1=OK
+2=Cancelar
+;--------------------------------------------------------------------------
+[1200]
+1200=Linguagem
+1004=Linguagem:
+1=OK
+2=Cancelar
+1002=As mudanças terão efeito após reiniciar o FbEdit.
+;--------------------------------------------------------------------------
+[1300]
+;--------------------------------------------------------------------------
+[2000]
+2000=Opções
+1=OK
+2=Cancelar
+;--------------------------------------------------------------------------
+[2100]
+2115=Exportar como
+2101=Equ's Assembly
+2102=Definições C
+2103=hla
+2104=Basic Puro
+2116=Exportar para
+2110=Arquivo
+2111=ClipBoard
+2112=Saída
+2117=Arquivo padrão de exportação
+2114=Auto-exportar quando salvo
+;--------------------------------------------------------------------------
+[2200]
+2204=Adicionar
+2205=Apagar
+2206=As mudanças terão efeito após reiniciar o FbEdit.
+;--------------------------------------------------------------------------
+[2300]
+4020=Grade tamanho-X
+4021=Grade tamanho-Y
+4022=Cor da grade
+4003=Mostrar grade
+4002=Ajustar a grade
+4001=Mostrar Tam/Pos
+4009=Grade como linhas
+4010=Estilos como hex
+4011=Ajustar diálogo à fonte
+4012=Propriedades básicas
+4013=Define IDC_STATIC
+;--------------------------------------------------------------------------
+[2500]
+1=Procurar
+2=Cancelar
+2500=Procurar...
+2216=Procurar que:
+2009=Substituir:
+2003=Coincidir
+2007=Palavra inteira
+2012=Arquivos do projeto
+2013=Pular comentário
+2014=Log da operação
+2217=Direção
+2004=Todos
+2006=Para cima
+2005=Para baixo
+2010=Substituir
+2015=Procurar todos
+2008=Substituir todos
+;--------------------------------------------------------------------------
+[3000]
+1=OK
+;--------------------------------------------------------------------------
+[3200]
+1=OK
+2=Cancelar
+3209=Importar
+3205=Inserir
+3206=Apagar
+3211=Item do Menu:
+3210=Comando:
+;--------------------------------------------------------------------------
+[4000]
+4000=Opções do Editor de Código
+4050=Cor do tema
+4016=Adicionar novo
+4051=Cores
+4052=Cores:
+4038=Negrito
+4037=Italico
+4053=Sintaxe
+4054=Grupo:
+4055=Ativo:
+4009=>
+4008=<
+4056=Reservar:
+4011=Adicionar
+4010=Apagar
+4004=Negrito
+4003=Itálico
+4005=Arquivo RC
+4064=inline asm
+4057=Arquivos de código (.bas.bi.):
+4058=Miscelânea
+4059=Tab (espaços)
+4060=Backups
+4006=Número da linha
+4019=Expandir tabs
+4031=Instância simples
+4035=Completar bloco
+4034=Salvar ao construir
+4044=Autocarregar projeto
+4047=Fechar ao bloquear
+4020=Auto-Tabular
+4036=Tabulador inteligente
+4033=Parênteses automáticos
+4032=Combinar parênteses
+4021=Destacar linha ativa
+4026=Destacar comentários
+4049=Coincidência inteligente
+4061=Fontes
+4024=Código
+4022=AaBbCc
+4025=Número da linha
+4023=12345
+4062=Completar Código
+4039=Ativo
+4046=Include/Inc lib
+4045=Tamanho automático
+4048=Dicas
+4063=Conversões
+4040=Nenhuma
+4041=Misturada
+4042=Minúsculas
+4043=Maiúsculas
+4002=Aplicar
+1=OK
+2=Cancelar
+;--------------------------------------------------------------------------
+[4100]
+4100=Opções de Arquivos Externos
+4107=Tipo de arquivo:
+1=OK
+2=Cancelar
+4102=Adicionar
+4103=Apagar
+4108=Comando:
+;--------------------------------------------------------------------------
+[5000]
+5000=Salvar arquivos
+2=Cancelar
+1=OK
+1003=Desel todos
+1002=Selec todos
+;--------------------------------------------------------------------------
+[5100]
+5100=Opções de Debug
+1=OK
+2=Cancelar
+;1002=Debugador:
+;--------------------------------------------------------------------------
+[5200]
+5200=Inserir bloco
+1=OK
+2=Cancelar
+5202=Texto a ser inserido nas linhas do bloco selecionado.
+;--------------------------------------------------------------------------
+[5300]
+5300=Novo projeto
+1015=Nome do projeto:
+1016=Descrição do projeto:
+1017=Path do projeto:
+1018=Criação de pastas
+1014=Sub-pastas do projeto
+1012=Bak
+1010=Mod
+1011=Res
+1013=Inc
+1=OK
+2=Cancelar
+;--------------------------------------------------------------------------
+[5360]
+1010=Tipo de projeto:
+1009=Arquivo de texto (.txt)
+1008=Arquivo de recursos (.rc)
+1007=Arquivo de declarações (.bi)
+1006=Arquivo de código (.bas)
+1011=Criar arquivo
+1012=As configurações desta Aba serão anuladas se um modelo é selecionado.
+;--------------------------------------------------------------------------
+[5380]
+;--------------------------------------------------------------------------
+[5400]
+5400=Opções de Path
+1009=Path Padrão dos Projetos:
+1010=Path do Compilador:
+5403=Path do Help:
+1=OK
+2=Cancelar
+;--------------------------------------------------------------------------
+[5500]
+5500=Opções do Projeto
+5511=Descrição do Projeto:
+5512=Tipo de Projeto:
+5513=Comando para Construir:
+5510=Adicionar Arquivos ao Comando de Construir
+5514=Arquivos Api:
+5515=Manipulador de Modulo
+5522=Adicionar comando para construir modulo
+5516=Comando para Construir Modulo:
+5521=Compilar o mais recente
+5504=Construção manual
+5505=Recompilar
+5506=Linha de Comando
+5517=Arquivo de Saída:
+5518=Parâmetro de execução:
+5519=Exportar Nome do Arquivo de Recursos:
+5520=Agrupando o Projeto
+5501=Nenhum
+5502=Por Pasta
+5503=Por Tipo
+1=OK
+2=Cancelar
+;--------------------------------------------------------------------------
+[5600]
+5600=Exportar as propriedades para...
+1=OK
+2=Cancelar
+1001=Funções
+1002=Constantes
+1003=Variáveis
+1004=UDT's
+1005=Enumerações
+1006=Namespaces
+1007=Macros
+1008=Construtores
+1009=Destrutores
+1010=Propriedades
+1011=Operadores
+5601=Mensagens
+;--------------------------------------------------------------------------
+[6000]
+6000=Criar Modelo
+1006=Descrição:
+1007=Arquivos Adicionais:
+1002=Adicionar
+1003=Remover
+1008=Nome do Modelo:
+2=Cancelar
+1=OK
+;--------------------------------------------------------------------------
+[6100]
+6100=Gerenciador de Addin
+1=OK
+2=Cancelar
+1002=Ajuda
+1003=As mudanças terão efeito após reiniciar o FbEdit.
+;--------------------------------------------------------------------------
+[6200]
+6200=Apis do Projeto
+2=Cancelar
+1=OK
+;--------------------------------------------------------------------------
+[6300]
+6300=Procurar ...
+1001=Procurar que:
+1003=Substituir:
+1005=Tipo
+1006=Hex
+1007=Ascii
+1008=Direção
+1009=Para Baixo
+1010=Para Cima
+1=Procurar
+1011=Substituir
+1012=Subs.Tudo
+2=Cancelar
+;--------------------------------------------------------------------------
+[10000]
+10001=&Arquivo
+10002=Novo Projeto\tShift+Ctrl+N
+10003=Abrir Projeto...\tShift+Ctrl+O
+10004=Fechar Projeto\tShift+Ctrl+F4
+10005=&Novo Arquivo de Código\tCtrl+N
+10006=Novo Arquivo de &Recursos\tCtrl+Alt+N
+10007=&Abrir\tCtrl+O
+10060=Abrir como &Hex
+10008= Arquivos Recentes
+10009=Sal&var\tCtrl+S
+10010=Salvar &Todos\tShift+Ctrl+S
+10011=Salvar Como...\tCtrl+Alt+S
+10012=&Fechar\tF4
+10013=Fechar Todos\tCtrl+F4
+10015=Configurar Página
+10016=Im&Primir
+10014=&Sair\tAlt+F4
+10021=&Editar
+10022=Desfazer\tCtrl+Z
+10023=R&efazer\tCtrl+Y
+10024=Cor&tar\tCtrl+X
+10025=&Copiar\tCtrl+C
+10026=Colar\tCtrl+V
+10027=&Apagar\tDel
+10028=Selecionar &Todos\tCtrl+A
+10029=Ir para a Lin&ha\tCtrl+G
+10030=&Procurar\tCtrl+F
+10031=Procurar Seguinte\tF3
+10032=Procurar Anterior\tCtrl+F3
+10033=&Substituir\tCtrl+R
+10034=Procurar Declaração\tF2
+10035=Voltar\tCtrl+F2
+10036=Expandir/Contrair\tCtrl+E
+10037=Bloco
+10038=Tabular\tTab
+10039=Destabular\tShift+Tab
+10040=Comentar\tF9
+10041=Descomentar\tCtrl+F9
+10042=Recortar espaços Finais
+10043=Converter
+10044=Tabulação a (Espaços)
+10045=Tabulação (Tabs)
+10046=Maiúsculas\tCtrl+U
+10047=Minúsculas\tCtrl+L
+10048=Modo Bloco\tCtrl+B
+10049=Inserir Bloco\tShift+Ctrl+B
+10050=Marcador
+10051=Inverter\tShift+F8
+10052=Seguinte\tF8
+10053=Anterior\tCtrl+F8
+10054=Apagar Todos\tShift+Ctrl+F8
+10055=Erro
+10056=Erro Segui&nte\tF7
+10057=Li&mpar erros\tShift+Ctrl+F7
+10061=Form&atar
+10062=&Bloquear controles
+10063=Enviar para trá&s
+10064=Trazer para &frente
+10065=Mostrar &Grade
+10066=Ajustar a Grade
+10067=Alinhar Controles
+10068=&Esquerda
+10069=&Centro
+10070=Di&reita
+10071=&Topo
+10072=&Meio
+10073=&Fundo
+10074=Mesmo tamanho
+10075=&Largura
+10076=&Altura
+10077=Am&bos
+10078=Centralizar no Formulário
+10079=&Horizontal
+10080=&Vertical
+10081=Definir Tabindex
+10082=AutoRenumerar ID's
+10083=&Corrigir\tCtrl+F12
+10084=Tabular\tShift+Ctrl+F12
+10091=&Visualizar
+10092=Janela de &Saída\tF6
+10093=Janela de &Projeto
+10094=Janela de Propriedades
+10020=Barra de Ferramentas
+10058=Barra de Arquivos
+10059=Barra de Estado
+10095=Prever &Formulário
+10096=Dividir tela
+10097=Tela cheia\tCtrl+W
+10098=Painel Duplo\tShift+Ctrl+D
+10101=&Projeto
+10102=Adicionar &Novo
+10103=&Arquivo
+10104=&Modulo
+10105=Adicionar &Existente
+10106=&Arquivo
+10107=&Module
+10018=Defina Arquivo Selecionado como &Main
+10019=Trocar Seleção como Modulo/Arquivo
+10108=&Remover Selecionado
+10109=Renomear Selecionado
+10110=&Opções de Projeto
+10111=Criar &Modelo
+10121=&Recursos
+10122=Adicionar &Formulário
+10123=Adicionar &Menu
+10124=Adicionar Acelerador
+10125=Adicionar Tabela de Textos
+10126=Adicionar Informação de Versão
+10127=Adicionar Manifesto XP
+10128=Adicionar RCData
+10129=Linguagem
+10130=Incluir Arquivos
+10131=Recursos
+10132=Nomes
+10133=Exportar Nomes
+10134=Remover
+10135=Repor
+10141=Construir
+10142=&Compilar\tF5
+10143=&Compilar e Executar\tShift+F5
+10144=&Executar\tCtrl+F5
+10145=Executar com Debug
+10146=Compilar &Modulos
+10147=Execução Rápida\tShift+Ctrl+F5
+10151=&Ferramentas
+10152=&Exportar propriedades
+10161=&Opções
+10017=&Linguagem
+10162=Editor de &Código
+10163=Editor de &Formulários
+10164=Opções de &Path
+10165=Opções de Deb&ug
+10166=Opções de &Construção
+10167=Arquivos &Externos
+10168=Gerenciador de &Addin
+10169=Menu &Ferramentas
+10170=Menu A&juda
+10181=A&juda
+10182=&Sobre
+;--------------------------------------------------------------------------
+[20000]
+20001=Abas de Ferramen&tas	
+10012=Fechar Aba Atual\tF4
+10013=Fechar Todas as Abas\tCtrl+F4
+10203=Fechar Todas Menos a Atual
+10204=Aba Seguinte\tCtrl+Tab
+10205=Aba Anterior\tShift+Ctrl+Tab
+10206=Cortar/Fechar Dividir
+10201=Bloquear/Desbloquear Aba
+10202=Desbloquear Todas as Abas
+20002=&Projeto
+10002=Novo Projeto
+10003=Abrir Projeto...
+10004=Fechar Projeto
+10102=Adicionar Novo
+10103=Arquivo
+10104=Modulo
+10105=Adicionar Existente
+10106=Arquivo
+10107=Modulo
+10018=Definir Arquivo Selecionado como Principal
+10019=Mudar Selecionado como Modulo/Arquivo
+10108=Remover Selecionado
+10109=Renomear Selecionado
+10110=Opções de Projeto
+20003=&Saída
+10092=Ocultar
+10211=Limpar
+10212=Selecionar Todos
+10213=Copiar
+20004=&Propriedades
+10221=Ir para a Declaração
+10222=&Copiar
+10223=Destacar
+10224=Atualizar
+10225=Reiniciar
+20005=&Formato
+10022=Desfazer\tCtrl+Z
+10024=C&ortar\tCtrl+X
+10025=&Copiar\tCtrl+C
+10026=Colar\tCtrl+V
+10027=&Apagar\tDel
+10062=&Bloquear controles
+10063=Enviar para trás
+10064=Trazer para frente
+10065=Mostrar &Grade
+10066=Ajustar a Grade
+10067=Alinhar Controles
+10068=&Esquerda
+10069=&Centro
+10070=&Direita
+10071=&Topo
+10072=&Meio
+10073=&Fundo
+10074=Mesmo Tamanho
+10075=&Largura
+10076=&Altura
+10077=Am&bos
+10078=Centralizar no Formulário
+10079=&Horizontal
+10080=&Vertical
+10081=Definir Tabindex
+10082=Auto Renumerar ID's
+;--------------------------------------------------------------------------
+[Strings]
+10005=Novo Arquivo
+10007=Abrir Arquivo
+10009=Salvar Arquivo
+10010=Salvar Todos os Arquivos
+10022=Desfazer
+10023=Refazer
+10024=Cortar
+10025=Copiar
+10026=Colar
+10027=Apagar
+10030=Procurar
+10033=Substituir
+10038=Tabular
+10039=Destabular
+10040=Comentar
+10041=Descomentar
+10051=Trocar Marcador
+10052=Marcador Seguinte
+10053=Marcador Anterior
+10054=Apagar Todos os Marcadores
+10092=Mostrar/Ocultar Janela de Saída
+10093=Mostrar/Ocultar Janela de Projeto
+10094=Mostrar/Ocultar Janela de Propriedades
+10142=Compilar
+10143=Compilar e Executar
+10144=Executar
+;--------------------------------------------------------------------------
+[Internal]
+1=Não encontrei
+100=Arquivo
+101=Projeto
+1000=Procurar
+1001=Seguinte
+1002=Anterior
+1003=Substituir...
+1004=Região procurada
+1005=Substituições feitas.
+1006=Arquivos de Projeto procurados
+1007=Região procurada%c%cProcurar%c  Encontrados: %d%c  Repetidos: %d%c%cConstruções%c  Erros: %d%c  Alertas: %d
+1008=Arquivos de Projeto procurados%c%cProcurar%c  Arquivos: %d%c  Encontrados: %d%c  Repetidos: %d%c%cConstruções%c  Erros: %d%c  Alertas: %d
+1100=Opções do Menu Ferramentas
+1101=Opções do Menu de Ajuda
+1102=Opções de Construir
+1103=Opções de Construir Projeto
+1104=Opções de Importar Construção
+1200=Arquivos
+1201=Modelo
+1202=Navegar por Pastas
+1300=Fonte de Basic
+1301=Include
+1302=Recursos
+1303=Misc
+2000=Adicionar Novo Arquivo
+2001=Adicionar Arquivo Existente
+2002=Adicionar Novo Modulo
+2003=Adicionar Modulo Existente
+2004=Abrir Projeto
+3000=O Arquivo existe no Projeto.
+3001=Remover o Arquivo do Projeto?
+3002=Erro as criar a pasta:
+3003=A Pasta existe. Continua?
+3004=O Projeto existe. Continua?
+3005=Erro ao criar o Arquivo:
+3006=Salvar alterações?
+3007=O arquivo foi alterado!
+3008=Reabrir o Arquivo?
+;--------------------------------------------------------------------------
+[SnipletAddin]
+SnipletAddin=Código Sniplets
+1=Copiar
+2=Fechar
+10000=Código &Sniplets\tF11
+;--------------------------------------------------------------------------
+[AdvEdit]
+10000=Edição Avançada
+10001=Selecionar Palavra\tShift+Ctrl+W
+10002=Copiar Palavra\tShift+Ctrl+C
+10003=Cortar Palavra\tShift+Ctrl+X
+10004=Apagar Palavra
+10005=Selecionar Linha\tShift+Ctrl+L
+10006=Copiar Linha\tAlt+Ctrl+C
+10007=Cortar Linha\tAlt+Ctrl+X
+10008=Apagar Linha
+10009=Execução rápida
+10010=Duplicar Linha\tCtrl+D
+;--------------------------------------------------------------------------
+[CustomFontAddin]
+CustomFontAddin=Personalizar Fonte
+1001=Navegar
+1003=OK
+1004=Cancelar
+10000=Personalizar Fonte
+10001=Adicionar Nova Fonte
+;--------------------------------------------------------------------------
+[FBFileAssociation]
+FBFileAssociation=Associações de Arquivo
+1008=Informações
+1009=Altere as associações de arquivo com FbEdit marcando as extensões e clicando 'Alterar Associação'.\r\n
+1001=Arquivos
+1002=*.bas - Fontes FreeBasic
+1003=*.bi  - Cabeçalhos FreeBasic
+1005=*.rc  - Scripts de Recursos
+1004=*.fbp - Arquivo FBEdit
+1006=Alterar Associação
+1007=Fechar
+10000=Associação de Arquivo
+10001=Alteração de Associação de Arquivo!\rPath do FBEdit é:
+;--------------------------------------------------------------------------
+[FileTabStyle]
+10000=Estilo da barra de arquivos
+10001=Padrão
+10002=Botões
+10003=Plano
+10004=Indicador de alteração
+10005=Largura fixa
+10006=Destacar Ícone
+10007=Asterisco (*)
+10008=Sem indicador
+;--------------------------------------------------------------------------
+[Toolbar]
+Toolbar=Criador de Barra de Ferramentas
+2000=Nome do Botão:
+2001=ID
+2002=Arquivo de Bitmap:
+2003=Nome do Bitmap:
+2004=Nbr
+1008=Add Bot
+1009=Ins Bot
+1011=Add Sep
+1010=Ins Sep
+1012=Apagar
+2005=Estilo da Barra de Ferramentas
+1018=Plano
+1020=Embalar
+1021=Sem divisor
+1023=Dica
+1022=Lista
+2006=Estilo do botão
+1025=Checar
+1024=Grupo
+2007=Tamanho do botão
+1019=Exportar
+1=Salvar
+2=Sair
+;--------------------------------------------------------------------------
+[TortoiseSVN]
+10000=SVN Log
+10001=SVN Update
+10002=SVN Commit
+;--------------------------------------------------------------------------
+[ShowVars]
+1000=Ocultar
+1001=-> Tab\tCtrl+F6
+1002=<- Tab\tShift+Ctrl+F6
+1003=Limpar Tab
+1100=Nome
+1101=Com Sinal
+1102=Sem Sinal
+1103=Hex
+1104=Char
+1105=Bin
+1200=Nome
+1201=Resultado
+1300=Nome
+1301=Compr
+1302=Conteúdo
+1400=Nome
+1401=Endereço
+1402=Jogado
+1403=Ascii
+1500=Nome
+1501=Endereço
+1502=Hex
+1503=Assembler
+1600=Tempo
+1601=Dica
+1602=Mostrar
+2000= Linha: 
+2001=     Função: 
+2002=     Arquivo: 
+3000=Limpar?
+3001=Muitos registros
+3002=Erro Interno
+9000=Linha
+9001=Função
+9002=Path
+9003=Arquivo
+;--------------------------------------------------------------------------
+[ProjectZip]
+ProjectZip=Projeto Zip
+1009=Zipar para:
+1010=Atual:
+1007=Selecionar Todos
+1004=Zip
+1011=Todos os Arquivos de Projeto
+2=Sair
+2000=Nome
+2001=Tamanho
+2002=Data
+2003=Criando zip 
+2004=Sobrescrever Arquivo?\r
+2005=Não posso criar Arquivo\r
+2006=Adicionado para zip: 
+2007=Feito.
+10000=Projeto Zip
+;--------------------------------------------------------------------------

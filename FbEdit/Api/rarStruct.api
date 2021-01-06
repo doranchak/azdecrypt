@@ -1,0 +1,12 @@
+CTLDBLCLICK,nmhdr:NMHDR,lpDlgMem:DIALOG Ptr,nCtlId:Integer,lpCtlName:ZString Ptr,nDlgId:Integer,lpDlgName:ZString Ptr
+CUSTSTYLE,szStyle:ZString,nValue:Integer,nMask:Integer
+DIALOG,hwnd:HWND,style:Integer,exstyle:Integer,dux:Integer,duy:Integer,duccx:Integer,duccy:Integer,caption:ZString,class:ZString,ntype:Integer,ntypeid:Integer,tab:Integer,id:Integer,idname:ZString,helpid:Integer,himg:Integer
+DLGHEAD,locked:Integer,class:ZString,menuid:ZString,font:ZString,fontsize:Integer,charset:UByte,italic:UByte,weight:UShort,lang:Integer,sublang:Integer,undo:Integer,ctlid:Integer,hmnu:Integer,lpmnu:Integer,htlb:HWND,hstb:HWND,hred:HWND,ftextmode:Integer
+INITID,dlg:RESID,mnu:RESID,acl:RESID,ver:RESID,man:RESID,rcd:RESID,tbr:RESID,res:RESID,usr:RESID
+LANGUAGEMEM,lang:Integer,sublang:Integer
+MNUHEAD,menuname:ZString,menuid:Integer,startid:Integer,menuex:Integer,lang:LANGUAGEMEM
+MNUITEM,itemflag:Integer,itemname:ZString,itemid:Integer,itemcaption:ZString,level:Integer,ntype:Integer,nstate:Integer,shortcut:Integer,helpid:Integer
+RARESEDCOLOR,back:Integer,text:Integer,styles:Integer,words:Integer
+RARSTYPE,sztype:ZString,nid:Integer,szext:ZString,szedit:ZString
+RESID,startid:Integer,incid:Integer
+WINSIZE,htpro:Integer,wtpro:Integer,htout:Integer,wttbx:Integer,ptstyle:POINT

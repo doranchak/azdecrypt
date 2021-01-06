@@ -1,0 +1,16 @@
+local_advstats=thread(tn).advstats
+local_pcmode=thread(tn).pcmode
+local_outputdir=solvesub_outputdir
+local_outputbatch=solvesub_outputbatch
+local_outputimp=solvesub_outputimp
+local_over=solvesub_scoreover
+dim as integer random_restarts=thread(tn).restarts
+dim as double entweight=thread(tn).entweight
+dim as double ngramfactor=thread(tn).ngramfactor
+dim as uinteger iterations_total=thread(tn).iterations
+dim as double multiplicityweight=thread(tn).multiplicityweight
+dim as double temp1=thread(tn).temperature
+dim as integer abc_size=ngram_alphabet_size
+dim as integer abc_sizem1=ngram_alphabet_size-1
+dim as integer l=thread(tn).l 'cipher length
+dim as integer s=thread(tn).s 'cipher symbols

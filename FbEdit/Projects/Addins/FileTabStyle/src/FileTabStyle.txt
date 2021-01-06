@@ -1,0 +1,6 @@
+This addin adds some options to file tab control.
+It allows you to:
+- choose between three different tab styles (default, button and flat button)
+- make tabs be fixed width
+- make multiline tabs
+- choose how file state (modified/saved) will be shown on tab (it can hillite tab's icon or add an asterisk character or both)

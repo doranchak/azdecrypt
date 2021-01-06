@@ -1,0 +1,28 @@
+[Project]
+Version=3
+Api=fb (FreeBASIC),win (Windows)
+Description=Converts CP1251 to CP866
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[TabOrder]
+TabOrder=1,2,3,4
+[File]
+1=CP1251ToCP866.bas
+2=CP1251ToCP866.bi
+3=CP1251ToCP866.txt
+4=Addins.bi
+[BreakPoint]
+1=
+2=
+3=
+4=
+[FileInfo]
+1=0,47,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,201,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

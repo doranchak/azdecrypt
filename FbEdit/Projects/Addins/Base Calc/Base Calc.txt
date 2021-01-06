@@ -1,0 +1,8 @@
+Not long ago, Merick asked, on the FB.net forums, for a feature addition in FB IDE.  He wanted to have something to convert between number bases.  I said it sounded like an AddIn.  So I made it.
+
+Base Calc
+It adds an Item in the Tools menu.  When it's window comes up, just type the number in the appropriate box, and it will convert it to to the other bases.
+
+It supports Binary, Octal, Decimal, and Hexadecimal.
+
+If anyone finds any problems, let me know.

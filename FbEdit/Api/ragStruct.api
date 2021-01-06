@@ -1,0 +1,3 @@
+COLUMN,colwt:Integer,lpszhdrtext:PTSTR,halign:Integer,calign:Integer,ctype:Integer,ctextmax:Integer,lpszformat:PTSTR,himl:Integer,hdrflag:Integer,colxp:Integer,edthwnd:Integer,lParam:Integer
+GRIDNOTIFY,nmhdr:NMHDR,col:Integer,row:Integer,hwnd:HWND,lpdata:Any Ptr,fcancel:Integer
+ROWCOLOR,backcolor:Integer,textcolor:Integer

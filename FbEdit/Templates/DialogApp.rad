@@ -1,0 +1,118 @@
+This template creates a dialog application using a modal dialog.
+
+[*BEGINCODE*]
+#include once "windows.bi"
+#Include Once "win/commctrl.bi"
+#Include Once "win/commdlg.bi"
+#Include Once "win/shellapi.bi"
+
+Dim Shared hInstance As HMODULE
+
+[*ENDCODE*]
+[*BEGINDEF*]
+#Define [*CONTROLNAME*]		[*CONTROLID*]
+[*ENDDEF*]
+[*BEGINPROC*]
+
+Function [*DIALOGPROC*](ByVal hWin As HWND, ByVal uMsg As UINT, ByVal wParam As WPARAM, ByVal lParam As LPARAM) As Integer
+	Dim As Long id, nEvent
+
+	Select Case uMsg
+		Case WM_INITDIALOG
+			'
+		Case WM_COMMAND
+			id=LoWord(wParam)
+			nEvent=HiWord(wParam)
+			If lParam Then
+				' Control events
+				[*BEGINEVENT*]
+				Select Case nEvent
+					[*BEGINBN_CLICKED*]
+					Case BN_CLICKED
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDBN_CLICKED*]
+					[*BEGINEN_CHANGE*]
+					Case EN_CHANGE
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDEN_CHANGE*]
+					[*BEGINLBN_SELCHANGE*]
+					Case LBN_SELCHANGE,CBN_SELCHANGE
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDLBN_SELCHANGE*]
+				End Select
+				[*ENDEVENT*]
+			Else
+				' Menu, toolbar and accelerator events
+				[*BEGINEVENT*]
+				Select Case nEvent
+					[*BEGINMNUSEL*]
+					Case 0,1
+						[*BEGINSELECTCASEID*]
+						Select Case id
+							[*BEGINCASEID*]
+							Case [*CONTROLNAME*]
+							[*ENDCASEID*]
+						End Select
+						[*ENDSELECTCASEID*]
+						'
+					[*ENDMNUSEL*]
+				End Select
+				[*ENDEVENT*]
+			Endif
+			'
+		Case WM_CLOSE
+			EndDialog(hWin, 0)
+			'
+		Case WM_SIZE
+			'
+		Case Else
+			Return FALSE
+			'
+	End Select
+	Return TRUE
+
+End Function
+[*ENDPROC*]
+[*BEGINCODE*]
+
+'''
+''' Program start
+'''
+
+	''
+	'' Create the Dialog
+	''
+	hInstance=GetModuleHandle(NULL)
+	DialogBoxParam(hInstance,Cast(ZString Ptr,[*DIALOGNAME*]),0,@[*DIALOGPROC*],0)
+	''
+	'' Program has ended
+	''
+
+	ExitProcess(0)
+	End
+
+'''
+''' Program end
+'''
+[*ENDCODE*]

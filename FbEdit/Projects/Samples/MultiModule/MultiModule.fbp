@@ -1,0 +1,29 @@
+[Project]
+Version=2
+Description=Multi module application
+Grouping=2
+Api=fb (FreeBASIC),win (Windows)
+AddMainFiles=1
+ResExport=
+[File]
+1=MultiModule.Bas
+2=MultiModule.Bi
+3=MultiModule.rc
+1001=Mod\Module1.bas
+1002=Mod\Module2.bas
+1003=Mod\Module3.bas
+[FileInfo]
+1001=0,0,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+1002=0,0,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+1003=0,0,1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+1=0,71,1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+2=0,3,1,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[Make]
+Module=Module Build,fbc -c
+Recompile=2
+Current=1
+1=Windows GUI,fbc -s gui -w 1
+2=Windows GUI (Debug),fbc -s gui -w 1 -g
+Run=This is a test
+Output=Test.exe

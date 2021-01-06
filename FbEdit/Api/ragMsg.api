@@ -1,0 +1,45 @@
+GM_ADDCOL,0,lpCOLUMN:COLUMN Ptr
+GM_ADDROW,0,lpROWDATA:Any Ptr
+GM_CELLCONVERT,nRowCol:Integer,lpszBuffer:ZString Ptr
+GM_COLUMNSORT,nCol:Integer,nSort[SORT_ASCENDING,SORT_DESCENDING,SORT_INVERT]
+GM_COMBOADDSTRING,nCol:Integer,lpszString:ZString Ptr
+GM_COMBOCLEAR,nCol:Integer,0
+GM_COMBOFINDSTRING,nCol:Integer,lpszString:ZString Ptr
+GM_DELROW,nRow:Integer,0
+GM_ENDEDIT,nRowCol:Integer,bCancel[FALSE,TRUE]
+GM_ENTEREDIT,nCol:Integer,nRow:Integer
+GM_GETBACKCOLOR,0,0
+GM_GETCELLDATA,nRowCol:Integer,lpData:Any Ptr
+GM_GETCELLRECT,nRowCol:Integer,lpRECT:RECT Ptr
+GM_GETCOLCOUNT,0,0
+GM_GETCOLDATA,nCol:Integer,lpCOLUMN:COLUMN Ptr
+GM_GETCOLFORMAT,nCol:Integer,lpBuffer:ZString Ptr
+GM_GETCOLWIDTH,nCol:Integer,0|Integer
+GM_GETCURCOL,0,0|Integer
+GM_GETCURROW,0,0|Integer
+GM_GETCURSEL,0,0|Integer
+GM_GETGRIDCOLOR,0,0|Integer
+GM_GETHDRHEIGHT,0,0|Integer
+GM_GETHDRTEXT,nCol:Integer,lpBuffer:ZString Ptr
+GM_GETROWCOLOR,nRow:Integer,lpROWCOLOR:ROWCOLOR Ptr
+GM_GETROWCOUNT,0,0|Integer
+GM_GETROWHEIGHT,nRow:Integer,0|Integer
+GM_GETTEXTCOLOR,0,0|Integer
+GM_INSROW,nRow:Integer,lpROWDATA:Any Ptr
+GM_MOVEROW,nFromRow:Integer,nToRow:Integer
+GM_RESETCOLUMNS,0,0
+GM_RESETCONTENT,0,0
+GM_SCROLLCELL,0,0
+GM_SETBACKCOLOR,nColor:Integer,0
+GM_SETCELLDATA,nRowCol:Integer,lpData:Any Ptr
+GM_SETCOLFORMAT,nCol:Integer,lpszText:ZString Ptr
+GM_SETCOLWIDTH,nCol:Integer,nWidth:Integer
+GM_SETCURCOL,nCol:Integer,0
+GM_SETCURROW,nRow:Integer,0
+GM_SETCURSEL,nCol:Integer,nRow:Integer
+GM_SETGRIDCOLOR,nColor:Integer,0
+GM_SETHDRHEIGHT,0,nHeight:Integer
+GM_SETHDRTEXT,nCol:Integer,lpszText:ZString Ptr
+GM_SETROWCOLOR,nRow:Integer,lpROWCOLOR:ROWCOLOR Ptr
+GM_SETROWHEIGHT,0,nHeight:Integer
+GM_SETTEXTCOLOR,nColor:Integer,0

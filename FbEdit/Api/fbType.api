@@ -1,0 +1,15 @@
+Byte
+UByte
+Short
+UShort
+Integer
+UInteger
+Long
+ULong
+LongInt
+ULongInt
+Single
+Double
+String
+ZString
+WString

@@ -1,0 +1,20 @@
+[Project]
+Version=2
+Api=fb (FreeBASIC),win (Windows),sv (Showvars)
+Description=Sample 1
+Grouping=2
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Console exe,fbc -s console -w all
+Output=sample1.exe
+Run=
+[File]
+1=sample1.bas
+2=showvars.bi
+[FileInfo]
+1=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

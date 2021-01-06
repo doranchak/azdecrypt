@@ -1,0 +1,31 @@
+Installing Project zipper
+-------------------------
+Copy ProjectZip.dll to C:\FbEdit\Addins and ProjectZip.txt to C:\FbEdit\Addins\Help
+
+How to use.
+-----------
+On FbEdit's Project menu select Project zipper.
+The upper editbox shows the zip path & filename and can be changed.
+The next editbox shows current path.
+The listview shows the files in current path. You can select
+individual files by clicking on the filename. Holding down Ctrl or Shift
+while clicking will multiselect. Selecting a folder will zip all files in
+that folder. Double clicking on a folder will open that folder. Double
+click on back arrow to go up one level. Push Select All button to select
+all files and folders in the listview. Push Zip button to create the archive.
+
+Push All Project Files button to zip all the files in current open project.
+Push Exit to close project zipper.
+
+You can set some project zipper options by manually editing FbEdit.ini section [ProjectZip]
+
+[ProjectZip]
+;Optional. Skip all files in folder \bak
+skip=\bak
+; Optional. Folder where to put zip files.
+; NOTE: Project zipper will only create one level if folder does not exist.
+folder=E:\Archive
+; Optional incluse date=1 or date and time=2
+opt=2
+
+KetilO

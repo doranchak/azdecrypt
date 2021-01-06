@@ -1,0 +1,29 @@
+[Project]
+Version=3
+Description=FBEdit File Tab Styler
+Grouping=2
+ResExport=
+Api=fb (FreeBASIC),win (Windows)
+AddMainFiles=1
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=FileTabStyle.bas
+2=icons.rc
+3=FileTabStyle.txt
+4=..\..\..\FbEdit\Inc\Addins.bi
+[FileInfo]
+1=0,192,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,173,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[BreakPoint]
+1=
+4=
+[TabOrder]
+TabOrder=1,4,2

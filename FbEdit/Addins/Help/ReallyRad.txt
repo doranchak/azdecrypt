@@ -1,0 +1,6 @@
+The Really RAD addin can:
+
+1. Create a DialogProc in selected file using selected template.
+2. Create the startup code for a dialog based application.
+3. Jump to code when a control is double clicked.
+4. Jump to code when a menuitem is selected.

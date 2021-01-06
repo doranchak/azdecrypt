@@ -1,0 +1,23 @@
+UpdateChecker addin.
+--------------------
+
+The addin adds Check for Uptates to the Tools menu.
+
+The addin lets you:
+1. Get the version at Sourceforge and compare it to your version.
+2. Download FbEdit.zip file to the chosen folder (C:\FbEdit\FbEdit_Update).
+3. Unzip the file to the chosen folder.
+   The chosen folder will contain all the latest FbEdit files.
+4. View the WhatsNew.txt file.
+5. Test the new version.
+
+If the test turns out OK then move all the files from
+the Download folder (C:\FbEdit\FbEdit_Update) to the
+FbEdit root (C:\FbEdit)
+
+How to install.
+---------------
+1. Copy UpdateChecker.dll To the addins folder (C:\FbEdit\Addins).
+2. Copy UpdateChecker.txt To the addins help folder (C:\FbEdit\Addins\Help).
+
+KetilO

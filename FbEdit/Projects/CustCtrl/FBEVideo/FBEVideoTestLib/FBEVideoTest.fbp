@@ -1,0 +1,25 @@
+[Project]
+Version=2
+Description=Test FBEVideo control (lib)
+Grouping=1
+Api=fb (FreeBASIC),win (Windows)
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows GUI,fbc -s gui -p ".."
+2=Windows GUI (Debug),fbc -s gui -g
+Output=..\FBEVideoTestLib.exe
+Run=
+[File]
+1=FBEVideoTest.Bas
+2=FBEVideoTest.Bi
+3=FBEVideoTest.Rc
+4=..\FBEVideo.bi
+[FileInfo]
+1=0,26,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,18,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

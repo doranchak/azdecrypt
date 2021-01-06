@@ -1,0 +1,25 @@
+[Project]
+Version=2
+Description=A video custom control
+Grouping=2
+Api=fb (FreeBASIC),win (Windows)
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=1
+Current=1
+1=Custom Control build Dll,fbc -dll -l kernel32 -l gdi32 -l user32 -x "..\FBEVideo.dll"
+2=Custom Control build Lib,fbc -lib -l kernel32 -l gdi32 -l user32 -x ..\FBEVideo
+Output=
+Run=
+[File]
+1=FBEVideo.rc
+2=..\FBEVideo.bi
+1001=FBEVideo.bas
+3=Data.bi
+[FileInfo]
+1=0,14,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+1001=0,188,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

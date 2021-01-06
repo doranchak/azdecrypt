@@ -1,0 +1,36 @@
+[Project]
+Version=3
+Description=Beautify addin
+Api=fb (FreeBASIC),win (Windows)
+Grouping=1
+AddMainFiles=1
+ResExport=
+[Make]
+Module=Module Build,fbc -c
+Recompile=0
+Current=1
+1=Windows dll,fbc -s gui -dll -export
+Output=
+Run=
+[File]
+1=Beautify.bas
+2=Beautify.bi
+3=Beautify.txt
+4=Beautify.rc
+5=..\..\FbEdit\Inc\Addins.bi
+6=Res\Check.bmp
+7=Res\Toolbar.bmp
+8=Res\MnuArrow.bmp
+[FileInfo]
+1=0,418,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,27,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+5=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+[BreakPoint]
+1=
+2=
+3=
+5=
+[TabOrder]
+TabOrder=1,2,3,4,5

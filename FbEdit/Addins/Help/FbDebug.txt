@@ -1,0 +1,191 @@
+FbEdit debug addin version 1.0.1.2
+
+Big thanks to SARG.
+His FB DEBUGGER proof of concept post
+(http://www.freebasic.net/forum/viewtopic.php?t=10244&highlight=)
+saved me a lot of time understanding how to parse the debug info.
+
+FbDebug addin:
+  In most cases I find that a full blown debugger is too much.
+  This debug addin acts pretty much like the debugger in vb.net
+  or VB6. Unlike other FreeBASIC debuggers the debugged exe will
+  run at normal speed until a breakpoint is reached. This makes
+  it possible to comfortable debug even large projects and event
+  driven applications like windows gui projects.
+
+Limitations:
+- You can only debug exe's compiled with the -g option.
+- You can not inspect the value of variables in an array.
+  However you can use the immediate window. You can also use the
+  OutputDebugString api to have the value displayed in FbEdit's
+  output window. This will also work if the project is compiled
+  without the -g option.
+- Immediate window:
+  Due to limitted debug info on zstring size, zstring arrays are
+  not supported.
+  You can not set a string variable longer than its allocated string space.
+- You can not debug libraries.
+- Debugging dll's is not supported yet.
+- OOP briefly tested, seem OK.
+- Will only work on FbEdit version 1.0.6.2 or higher.
+
+Breakpoints:
+- Breakpoints are saved in the project file if a project is open.
+- At designtime it is possible to set a breakpoint on a line
+  that does not produce any code. This breakpoint will have
+  no effect. You will be warned if this is the case. At runtime
+  you can only set breakpoints on lines that produces code.
+
+Inspecting variables:
+- You can inspect the value of variables in the current scope by
+  moving the mouse over the variable (arrays will only show dimensions).
+- You can use the immediate window to print the value of variables.
+  Example:
+  ?x                Will print the value of x.
+- You can also insert the OutputDebugString api in your code to
+  have the value displayed in FbEdit's output window.
+- Watch
+  You can watch max 30 variables at a time.
+  Example:
+  Watch x,y,z			Will watch variables x, y and z.
+                     Varialble that changes will have a red color.
+
+Threads:
+FbDebug can only debug one thread at a time.
+The first breakpoint that the debugger handles will determine what
+thread will be debugged. If the debugged thread terminates then a
+new thread can be debugged.
+
+Debug menu:
+- Toggle Breakpoint
+  Sets or clears a breakpoint.
+
+- Clear Breakpoints
+  Clears all breakpoints in current file.
+
+- Run
+  Starts the execution. Execution will be halted on a breakpoint.
+  You will be warned if there are unsaved source files or if any
+  source files are newer than the exe. You will also be warned if
+  there are unhandled breakpionts.
+
+- Stop
+  Terminates the execution.
+
+- Step Into
+  Will single step, including a call to a sub or function.
+
+- Step Over
+  Will jump over a call to a sub or function (unless there is a
+  breakpoint).
+
+- Run To Caret
+  Execution will be halted on the current line (unless there is
+  a breakpoint).
+
+- Do not debug
+  Lets you exclude subs and functions from debugging.
+  This is useful when you are confident that a sub or function is working properly
+  and hence can be excluded from debugging.
+  It is also useful when debugging applications with threads. Excluding thread
+  subs and functions from debugging will ensure that the thread is running at full
+  speed.
+
+- Immediate window
+  With the immediate window you can print or set the value of
+  variables in the current scope.
+  Example:
+  ?x                Will print the value of x.
+  x=99              Will set the value of x to 99.
+  You can also evaluete a limitted numper of fb functions like:
+  Asc, Len, InStr, InStrRev
+  Str, Chr, Left, Right, Mid, Space, String
+  Example:
+  ?Asc("A")         Will print 65
+  Supported operators:
+  Eqv, Imp, Xor, Or, And, Not, =, <>,< , >, <=, >=, +, -, Shr, Shl,
+  Mod, \, *, /, ^, &
+  Example:
+  ?(1+2)*3          Will print 9
+  You can also add Watch to variables.
+  Variables that changes will have a red color.
+  Example:
+  Watch x,y,z
+  The command Dump will show a list of all variables.
+  The command Dump MyUdt will show a list of all members in the udt MyUdt.
+  Example:
+  Dump RECT				Will show this list:
+  LEFT As Integer
+  TOP As Integer
+  RIGHT As Integer
+  BOTTOM As Integer
+
+Whats New:
+----------
+Version 1.0.0.0
+o Posted on FbEdit forum.
+Version 1.0.0.1
+o Added support for namespace.
+o Added support for with block.
+o Added support for threads and nested threads.
+o Arrays will show dimensions.
+o While debugging the debug menu is the context menu.
+o Fixed cosmetic bug if Highlight active line option is enabled.
+o Fixed bug with label in asm block.
+Version 1.0.0.2
+o Added support for modules.
+o Improved breakpoint setting.
+o Improved Stop function. If a safe exit is not possible you will
+  be asked to terminate the process.
+o Fixed bug with exe filename.
+Version 1.0.0.3
+o Fixed bug with threads in libraries.
+o Fixed bug with module filenames.
+Version 1.0.0.4
+o Fixed bug with showing parameters and locals.
+o Added immediate window.
+  While debugging you can inspect or set the
+  value of variables in the current scope.
+  Example:
+  ?x             Will print the value of x.
+  x=Asc("A")     Will set the value of x.
+Version 1.0.0.5
+o Changed the way debug info is read from the process.
+  This should prevent the 'Error reading memory at xxxx' message.
+o Added support for namespaces to immediate window.
+o Added support for foreign datatypes (like HINSTANCE) to immediate window.
+o Added Dump command to immediate window. The command
+  will create a list of all variables.
+o Fixed bug with UDT's in immediate window.
+Version 1.0.0.6
+o Fixed bug with parsing debug info on common variables.
+Version 1.0.0.7
+o Fixed bug with parsing debug info.
+  The bug would create some kind of random parsing of UDT's.
+Version 1.0.0.8
+o Added Watch to immediate window.
+o Fixed bug with parsing Common variables.
+Version 1.0.0.9
+o Fixed bug while parsing huge UDT's.
+o Run wil bring the debugged window / console to top.
+Version 1.0.1.0
+o Added Dump udt. Will show all members of the requested udt.
+o Fixed bugs with showing variables in multimodule projects.
+  This involved a major redesign on how variables are parsed
+  from the debug info.
+Version 1.0.1.1
+o The internal debugger now also works without a project.
+Version 1.0.1.2
+o Added option to add subs and functions to Do not debug.
+o Fixed bugs with debugging applacations that uses threads.
+o Fixed bugs with debug tooltip.
+Version 1.0.1.3
+o Debugging now works on FreeBASIC 021
+o Added Files command to immediate window.
+  Will show a list of files.
+Version 1.0.1.4
+o Added Debug / Break. Very useful if your program hangs in a loop.
+o Added FPU and MMX register windows.
+o The debugger now breaks on an exception.
+
+KetilO

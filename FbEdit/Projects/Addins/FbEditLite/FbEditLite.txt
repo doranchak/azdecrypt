@@ -1,0 +1,5 @@
+Turns FbEdit into a Lite version for beginners.
+It does this by removing menu items and deactivating addins.
+
+If you later want the full version, just use Options / Addin Manager
+and deactivate the FbEditLite.dll addin.

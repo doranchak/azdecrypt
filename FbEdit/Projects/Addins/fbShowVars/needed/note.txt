@@ -1,0 +1,2 @@
+disassembler engine compiled as static lib for freebasic.
+copy the content of the folder freebasic where we have installed ours freebasic. that's all.

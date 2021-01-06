@@ -1,0 +1,25 @@
+[Project]
+Version=2
+Description=Test web browser Dll
+Grouping=2
+ResExport=
+AddMainFiles=1
+Api=fb (FreeBASIC),win (Windows)
+[Make]
+Recompile=0
+Module=Module Build,fbc -c
+Current=1
+1=Windows GUI,fbc -s gui
+2=Windows GUI (Debug),fbc -s gui -g
+Output=..\TestFBEWebDll.exe
+Run=
+[File]
+1=TestFBEWeb.Bas
+2=TestFBEWeb.Bi
+3=TestFBEWeb.Rc
+4=..\FBEWeb.bi
+[FileInfo]
+1=0,55,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,7,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

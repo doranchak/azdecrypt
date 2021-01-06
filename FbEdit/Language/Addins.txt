@@ -1,0 +1,156 @@
+[SnipletAddin]
+SnipletAddin=Code Sniplets
+1=Copy to Code
+2=Close
+10000=Code &Sniplets\tF11
+;--------------------------------------------------------------------------
+[AdvEdit]
+10000=Advanced Edit
+10001=Select Word\tShift+Ctrl+W
+10002=Copy Word\tShift+Ctrl+C
+10003=Cut Word\tShift+Ctrl+X
+10004=Delete Word
+10005=Select Line\tShift+Ctrl+L
+10006=Copy Line\tAlt+Ctrl+C
+10007=Cut Line\tAlt+Ctrl+X
+10008=Delete Line
+10009=Quick run
+10010=Duplicate Line\tCtrl+D
+;--------------------------------------------------------------------------
+[CustomFontAddin]
+CustomFontAddin=Custom Font
+1001=Browse
+1003=OK
+1004=Cancel
+10000=Custom Font
+10001=Add New Font
+;--------------------------------------------------------------------------
+[FBFileAssociation]
+FBFileAssociation=File Association
+1008=Info
+1009=Change File assiciations with FbEdit by checking the extensions you want and click Change Association\r\nIt will associate with our nice icons
+1001=Files
+1002=*.bas - FreeBasic Source
+1003=*.bi    - FreeBasic Headers
+1005=*.rc    - Windows Resource Scripts
+1004=*.fbp  - FBEdit Project File
+1006=Change Association
+1007=Close
+10000=File Association
+10001=File Association changed!\rFBEdit path is:
+;--------------------------------------------------------------------------
+[FileTabStyle]
+10000=File tab style
+10001=Default
+10002=Buttons
+10003=Flat
+10004=Modified state indicator
+10005=Fixed width
+10006=Highlight icon
+10007=Asterisk character
+10008=No indicator
+10009=Multiline
+;--------------------------------------------------------------------------
+[Toolbar]
+Toolbar=Toolbar Creator
+2000=Button Name:
+2001=ID
+2002=Bitmap File:
+2003=Bitmap Name:
+2004=Nbr
+1008=Add Btn.
+1009=Ins. Btn.
+1011=Add Sep.
+1010=Ins. Sep.
+1012=Delete
+2005=Toolbar Style
+1018=Flat
+1020=Wrap
+1021=No Divider
+1023=Tip
+1022=List
+2006=Button Style
+1025=Check
+1024=Group
+2007=Button Size
+1019=Export
+1=Save
+2=Exit
+;--------------------------------------------------------------------------
+[TortoiseSVN]
+10000=SVN Log
+10001=SVN Update
+10002=SVN Commit
+;--------------------------------------------------------------------------
+[ShowVars]
+999=ShowVars
+1000=Hide
+1001=Next Tab\tCtrl+F6
+1002=Prev Tab\tShift+Ctrl+F6
+1003=Clear Tab
+1100=Name
+1101=Signed
+1102=Unsigned
+1103=Hex
+1104=Char
+1105=Bin
+1200=Name
+1201=Result
+1300=Name
+1301=Len
+1302=Content
+1400=Name
+1401=Address
+1402=Dump
+1403=Ascii
+1500=Name
+1501=Address
+1502=Hex
+1503=Assembler
+1600=Time
+1601=Ticks
+1602=Show
+2000= Line: 
+2001=     Function: 
+2002=     File: 
+3000=Clear?
+3001=Too much register
+3002=Internal Error
+9000=Line
+9001=Function
+9002=Path
+9003=File
+;--------------------------------------------------------------------------
+[ProjectZip]
+ProjectZip=FbEdit project zipper
+1009=Zip To:
+1010=Current:
+1007=Select All
+1004=Zip
+1011=All Project Files
+2=Exit
+2000=Name
+2001=Size
+2002=Date
+2003=Creating zip 
+2004=Overwrite existing file?\r
+2005=Could not create file\r
+2006=Added to zip: 
+2007=Done.
+10000=Project Zipper
+;--------------------------------------------------------------------------
+[FbDebug]
+FbDebug=Debug
+1005=Do not debug
+1006=Debug
+1=OK
+10010=&Debug
+10000=Togggle &Breakpoint\tCtrl+T
+10001=&Clear Breakpoints\tShift+Ctrl+T
+10002=&Run\tShift+F7
+10008=&Break\tAlt+Ctrl+F7
+10003=&Stop\tAlt+F7
+10004=Step &Into\tF7
+10005=Step &Over\tCtrl+F7
+10006=Run &To Caret\tShift+Ctrl+F7
+10007=Do not debug

@@ -1,0 +1,125 @@
+'====================================================================
+'' Version 0.51g
+''
+'' fixed: file was selected wrong. freebasic likes "/" versus "\" for paths
+'' fixed: another paths bug. for projects like "FbEdit" the file/module was selected wrong
+''
+'' Version 0.51f
+''
+'' added: translation support
+''
+'' Version 0.51e
+''
+'' added: dual pane support
+'' disabled float window mode temporarily
+''
+'' Version 0.51d
+''
+'' fixed: address in dump memory was incorrect
+'' changed: styles in listview
+''
+'' Version 0.51c
+''
+'' added: ketilo's suggestions
+'' fixed: return focus to editor when hide window
+''
+'' Version 0.51b
+''
+'' fixed: incorrect selected tab in init
+'' changed: disassembler "call form" to more friendly ones
+''
+'' Version 0.51
+''
+'' added: menu for clear (right click)
+'' and now remember position of float window
+''
+'' Version 0.5
+''
+'' added: integration with ide
+'' added: dock system. double click on titlebar or left graphics.
+'' added: goto to line. dobleclick in listview
+'' changed: show extra info -> fbedit's statusbar
+'' changed: split the code from the declaration and created a static lib (thanks porfirio)
+'' changed: DebugClear( tab ) -> DebugClear( tabs ) (see examples)
+'' changed: tab control -> radio button
+'' removed: toolbar button. now it's in showoutput
+''
+'' default time for auto off "selection tab" is 2500 ms
+'' to change edit the last item in fbedit.ini showvars->dock
+''
+'' TODO:
+''  add menu for clear/options (this version is coded from scratch)
+''  restore position of floating window when undock
+''
+'' thanks ketilo for points me in correct way.
+''
+'' Version 0.4
+''
+'' added: disassembler tab
+'' added: status bar for show extra info (line number, function, file)
+'' new command:
+''  mark1( ) set disassembler start position
+''  mark2( ) set disassembler end position
+''  DebugAsm( "label" ) disassembler between marks
+''
+'' note. dump and disassembler is limit to 8kb of code.
+''
+'' Version 0.3
+''
+'' changed: to addins
+'' changed: layout (now it's a multitab)
+'' added: button to toolbar (toggle window)
+'' added: bin "type" to variables viewer
+'' added: len to string viewer
+'' added: logs
+'' commands:
+''  DebugVar( "label", integer )
+''  DebugVar( "label", float )
+''  DebugVar( "label", string )
+''  DebugLog( integer )
+''  DebugLog( float )
+''  DebugLog( string )
+''  DebugMem( "label", address, nlines )
+''  DebugSelect( tab )
+''  DebugClear( tab )
+''  DebugState( state )
+''  DebugShow( )
+''  DebugHide( )
+''
+'' Version 0.2
+''
+'' added: DumpMem ( "label", address, num lines )
+'' added: char "type" to variables viewer
+'' added: 3 internal variables for "custom design"
+'' cleanup the source
+''
+'' Version 0.1
+''
+'' initial release
+''
+'====================================================================
+
+'====================================================================
+'' original code: Public Domain, by Brad Byrne 2004
+'' routines for dialogs by MichaelW (thx)
+'' adapted and modified for freebasic, by Denise_Amiga
+''
+'' here is a handy little include file which will allow you to easily view
+'' a string, double precision Float, or a Integer value during runtime,
+'' can be very helpful while debugging or designing.
+''
+'' syntax:
+''  ShowVar ( "label", integer var )
+''  ShowVar ( "label", string var )
+''  ShowVar ( "label", float var )
+''
+'' (see following example.bas file for use)
+'' also should mention that the "label" label portion can be anything, and the
+'' routine checks for and updates on simalar labels so if you wish to check
+'' the same variable before and after something you can just: as example;
+'' ShowVar ( "before xxx", varA )
+'' do something
+'' ShowVar ( "after xxx", varA )
+''
+'' happy debugging!!!
+'====================================================================

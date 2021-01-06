@@ -1,0 +1,25 @@
+[Project]
+Version=2
+Api=fb (FreeBASIC),win (Windows)
+Description=Test picture viewer Dll
+Grouping=1
+AddMainFiles=1
+ResExport=
+[Make]
+Recompile=0
+Module=Module Build,fbc -c
+Current=1
+1=Windows GUI,fbc -s gui
+2=Windows GUI (Debug),fbc -s gui -g
+Output=..\TestFBEPictViewDll.exe
+Run=
+[File]
+1=TestFBEPictViewDll.Bas
+2=TestFBEPictViewDll.Bi
+3=TestFBEPictViewDll.Rc
+4=..\FBEPictView.bi
+[FileInfo]
+1=0,76,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+2=0,10,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+3=0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+4=0,9,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

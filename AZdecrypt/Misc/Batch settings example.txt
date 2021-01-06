@@ -1,0 +1,4 @@
+file: \ciphers\batch\1000 ciphers accuracy batch.txt
+range: entropy 1 temperature 100 1000 100
+range: entropy 0.5 1.5 0.1 temperature 750
+process

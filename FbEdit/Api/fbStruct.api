@@ -1,0 +1,3 @@
+EVENT,type:integer,scancode:integer,ascii:integer,x:integer,y:integer,dx:integer,dy:integer,button:integer,z:integer
+_OLD_HEADER,bpp:,width:,height:ushort
+IMAGE,old:_OLD_HEADER,type:uinteger,bpp:integer,width:uinteger,height:uinteger,pitch:uinteger,_reserved:ubyte

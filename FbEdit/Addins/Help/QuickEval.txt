@@ -1,0 +1,161 @@
+
+ --------------------------------------------------------------
+ 
+	QuickEval FBEdit Addin
+	
+	version: 1.1.0.0
+	author:	Aleksandar Ruzicic <krckoorascic@gmail.com>
+	
+	big thanks goes to KetilO, he saved me lot of gray hairs :)
+	
+ --------------------------------------------------------------
+
+	QuickEval Adding enables you to use Output window (F6 toggles this window)
+	to evaluate some simple (or complex) math expressions.
+	
+	To invoke addin you type expression in Output window and hit Enter key, but line
+	on which you typed your expression must begin with question mark (?)
+	
+	example:
+	
+		? (2 + 2) / 2
+		
+	will print:
+		
+		2
+	
+	
+	QuickEval supports following operators (sorted by precedence):
+	
+	( top of the list has highest precedence )
+	
+	
+	( )	- parentheeses (used to override order operator precedence)
+	
+	^		- exponentiation
+	
+	-		- negation (unary minus)
+	
+	*		- multiplication
+	/		- division
+	
+	\		- integer division
+	
+	Mod	- modulus (remainder of integer division)
+	
+	+		- addition
+	-		- subtraction
+	
+	Shl	- shift bits left
+	Shr	- shift bits right
+	
+	=		- equal
+	<>		- not equal
+	<		- less than
+	>		- greater than
+	<=		- less than or equal
+	>=		- greater than or equal
+	
+	Not	- bitwise Not (unary)
+	
+	And	- bitwise And
+	
+	Or		- bitwise Or
+	
+	Xor	- bitwise Xor
+	Imp	- bitwise Imp
+	Eqv	- bitwise Eqv
+	
+	
+	all this operators behave just like FB's corresponding operators
+	
+	
+	QuickEval also has support for calling functions.
+	
+	List of supported functions:
+	
+	LoByte
+	HiByte
+	LoWord
+	Bit
+	BitReset
+	BitSet
+	Abs
+	Exp
+	Log
+	Sqr
+	Fix
+	Frac
+	Int
+	Sgn
+	Sin
+	ASin
+	Cos
+	ACos
+	Tan
+	Atn
+	ATan2
+	
+	These functions behave just like FB's corresponding function.
+	
+	
+	NOTE: 
+		QuickEval is (like FreeBASIC) case-insensitive meaning that LOBYTE is same as lobyte 
+		(this is true for functions and also for operators)
+		
+		
+	QuickEval recognizes number in decimal (either integer or floating-point), hexadecimal,
+	octal and binary formats. 
+	
+	They are written just like in FB, for example hexadecimal 1FF is written as &H1FF
+	
+	This feature (numbers in hexadecimal, octal and binary format) lets you use QuickEval
+	as simple base converter, for example:
+	
+	if you type:
+	
+		? &B101010
+	
+	you'll get:
+	
+		42
+	
+ --------------------------------------------------------------	 
+ 	
+ 	Version 1.1 changes:
+ 	
+ 	- added support for strings ("double quote delimited strings")
+ 	
+ 	- added string concatenation operator & (same precedence as + and -)
+ 	
+ 	- added string handling functions:
+ 	
+ 	Asc
+ 	Chr		(limited to maximum of 8 parameters)
+ 	Bin
+ 	Oct
+ 	Hex
+ 	Format
+ 	Val
+ 	ValInt
+ 	ValUInt
+ 	Mkd
+ 	Mki
+ 	Mkl
+ 	Mks
+ 	MkShort
+ 	Cvd
+ 	Cvi
+ 	Cvs
+ 	CvShort
+ 	Left
+ 	Mid		(function, not stamenet)
+ 	Right
+ 	LCase
+ 	UCase
+ 	LTrim		(only one parameter version supported)
+ 	RTrim		(only one parameter version supported)
+ 	Trim		(only one parameter version supported)
+ 	InStr		(Any keyword not supported)
+ 
+ --------------------------------------------------------------	 

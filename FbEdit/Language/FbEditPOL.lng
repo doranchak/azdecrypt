@@ -1,0 +1,646 @@
+;--------------------------------------------------------------------------
+[Lang]
+Lang=Polski
+;--------------------------------------------------------------------------
+[1100]
+1100=IdŸ do linii
+1002=Linia:
+1=OK
+2=Anuluj
+;--------------------------------------------------------------------------
+[1200]
+1200=Jêzyk
+1004=Jêzyk:
+1=OK
+2=Anuluj
+1002=Zmiany bêd¹ widoczne po restarcie FbEdit
+;--------------------------------------------------------------------------
+[2000]
+2000=Opcje
+1=OK
+2=Anuluj
+;--------------------------------------------------------------------------
+[2100]
+2115=Format eksportu nazw
+2101=equ asemblera
+2102=definicje C
+2103=hla
+2104=PureBasic
+2116=Nazwa wyjœcia eksportu
+2110=Plik
+2111=Schowek
+2112=Wyjœcie
+2117=Standardowa nazwa pliku eksprtu:
+2114=Auto export przy zapisie
+;--------------------------------------------------------------------------
+[2200]
+2204=Dodaj
+2205=Skasuj
+;--------------------------------------------------------------------------
+[2300]
+4020=Rozmiar X siatki
+4021=Rozmiar Y siatki
+4022=Kolor siatki
+4003=Poka¿ siatkê
+4002=Przyci¹gaj do siatki
+4001=Poka¿ rozmiar/poz.
+4009=Linie siatki
+4010=Style jako heksadecymalne
+4011=Dopasuj okno do czcionki
+4012=Proste w³aœciwoœci
+;--------------------------------------------------------------------------
+[2500]
+2500=Wyszukaj ...
+2216=ZnajdŸ:
+2009=Zast¹p:
+2003=Du¯e liTEry
+2007=Ca³e wyra¿enie
+2012=Wszystkie pliki projektu
+2013=Opuœæ linie komentarza
+2014=Pamiêtaj dzia³ania
+2217=Kierunek
+2004=Dowolny
+2006=W górê
+2005=W dó³
+1=ZnajdŸ
+2010=Zast¹p
+2015=ZnajdŸ wsz.
+2008=Zast¹p wsz.
+2=Anuluj
+;--------------------------------------------------------------------------
+[3000]
+1=OK
+;--------------------------------------------------------------------------
+[3200]
+1=OK
+2=Anuluj
+3209=Importuj
+3205=Wstaw
+3206=Kasuj
+3211=Pozycja Menu:
+3210=Polecenie:
+;--------------------------------------------------------------------------
+[4000]
+4000=Opcje Edytora Kodu
+4050=Schemat Koloru
+4016=Dodaj Nowy
+4051=Kolory
+4052=Kolory:
+4038=Pogrubiony
+4037=Kursywa
+4053=Sk³adnia
+4054=Grupa:
+4055=Aktywny:
+4009=>
+4008=<
+4056=Na wstrzymanie:
+4011=Dodaj
+4010=Kasuj
+4004=Pogrubiony
+4003=Kursywa
+4005=Plik RC
+4057=Pliki kodu (.bas.bi.):
+4058=Ró¿ne
+4059=Tabulator
+4060=Kopie zapasowe
+4006=Numery linii
+4019=Rozwiñ tabulatory
+4031=Jedna instancja
+4035=Uzupe³niaj kod
+4034=Zapisz przed kompil.
+4044=Auto£aduj projekt
+4020=Automat. wciêcia
+4036=Inteligentne wciêcia
+4033=Auto nawiasy
+4032=Podœwietl nawiasy
+4021=Podœwietl aktywn¹ liniê
+4026=Podœwietl komentarze
+4047=Zamknijprzy blokowaniu
+4061=Czcionki
+4024=Kod
+4022=AaBbCc
+4025=Numer linii
+4023=12345
+4062=Uzupe³nianie kodu
+4039=Aktywny
+4046=Do³¹cz/Inclib
+4045=Automatyczny rozmiar
+4048=Podpowiedzi
+4063=Zamiana Na Du¿e
+4040=Brak
+4041=Du¿e i ma³e litery
+4042=ma³e litery
+4043=DU¯E LITERY
+4002=Zastosuj
+1=OK
+2=Anuluj
+;--------------------------------------------------------------------------
+[4100]
+4100=Opcje plików zewnêtrznych
+4107=Rodzaj pliku:
+1=OK
+2=Anuluj
+4102=Dodaj
+4103=Kasuj
+4108=Polecenie:
+;--------------------------------------------------------------------------
+[5000]
+5000=Zapisz pliki
+2=Anuluj
+1=OK
+1003=Odznacz wszystko
+1002=Zaznacz wszystko
+;--------------------------------------------------------------------------
+[5100]
+5100=Opcje debuggera
+2=Anuluj
+1=OK
+1002=Debugger:
+;--------------------------------------------------------------------------
+[5200]
+5200=Wstawianie bloku
+1=OK
+2=Anuluj
+5202=WprowadŸ tekst który bêdzie wstawiany do ka¿dej linii w zaznaczonym bloku
+;--------------------------------------------------------------------------
+[5300]
+5300=Nowy projekt
+1015=Nazwa projektu:
+1016=Opis projektu:
+1017=Œcie¿ka do projektu:
+1018=Tworzenie folderu
+1014=Podfolder projektu
+1012=Bak
+1010=Mod
+1011=Res
+1013=Inc
+1=OK
+2=Anuluj
+;--------------------------------------------------------------------------
+[5360]
+1010=Rodzaj projektu:
+1009=Plik tekstowy (.txt)
+1008=Plik zasobów (.rc)
+1007=Plik do³¹czany (.bi)
+1006=Plik kodu (.bas)
+1011=Tworzenie pliku
+1012=Te ustawienia nie dzia³aj¹ jeœli jest wybrany wzorzec
+;--------------------------------------------------------------------------
+[5380]
+;--------------------------------------------------------------------------
+[5400]
+5400=Opcje œcie¿ek
+1009=Bie¿¹ca œcie¿ka projektu:
+1010=Œcie¿ka kompilatora:
+1=OK
+2=Anuluj
+;--------------------------------------------------------------------------
+[5500]
+5500=Opcje projektu
+5511=Opis projektu
+5512=Rodzaj projektu
+5513=Linia komendy:
+5510=Dodaj g³owne pliki do linii komendy
+5514=Pliki Api:
+5515=Obs³uga modu³ów
+5516=Komenda kompilowania modu³u:
+5504=Podaj polecenie
+5505=Rekompiluj
+5506=Linia polecenia
+5517=Plik wyjœciowy:
+5518=Uruchom z parametrami linii komendy:
+5519=Nazwa eksportowanego pliku zasobów:
+5520=Grupowanie plików projektu
+5501=¯aden
+5502=Wg folderu
+5503=Wg typu
+1=OK
+2=Anuluj
+;--------------------------------------------------------------------------
+[5600]
+5600=Eksportuj w³aœciwoœci
+1=OK
+2=Anuluj
+1001=Funkcje
+1002=Sta³e
+1003=Zmienne
+1004=UDT's
+1005=Enums
+1006=Namespaces
+1007=Makra
+1008=Konstruktory
+1009=Destruktory
+1010=W³aœciwoœci
+1011=Operatory
+;--------------------------------------------------------------------------
+[6000]
+6000=Stwórz wzorzec
+1006=Opis:
+1007=Pliki dodatkowe:
+1002=Dodaj
+1003=Usuñ
+1008=Nazwa pliku wzorca:
+2=Anuluj
+1=OK
+;--------------------------------------------------------------------------
+[6100]
+6100=Mened¿er dodatków
+1=OK
+2=Anuluj
+1002=Pomoc
+1003=Zmiany zostan¹ uwidocznione po restarcie FbEdit
+;--------------------------------------------------------------------------
+[6200]
+6200=Pliki Api projektu
+2=Anuluj
+1=OK
+;--------------------------------------------------------------------------
+[10000]
+10001=&Plik
+10002=Nowy projekt\tShift+Ctrl+N
+10003=Otwórz projekt\tShift+Ctrl+O
+10004=Zamknij projekt\tShift+Ctrl+F4
+10005=&Nowy plik kodu\tCtrl+N
+10006=Nowy plik &Zasobów\tCtrl+Alt+N
+10007=&Otwórz\tCtrl+O
+10008=Ostatnie pliki
+10009=&Zapisz\tCtrl+S
+10010=Zapisz &wszystko\tShift+Ctrl+S
+10011=Zapisz jako\tCtrl+Alt+S
+10012=Z&amknij\tF4
+10013=Zamknij wszystko\tCtrl+F4
+10015=Ustawienia strony
+10016=&Drukuj
+10014=&Wyjœcie\tAlt+F4
+10021=&Edycja
+10022=&Cofnij\tCtrl+Z
+10023=Pow&tórz\tCtrl+Y
+10024=W&ytnij\tCtrl+X
+10025=&Kopiuj\tCtrl+C
+10026=&Wklej\tCtrl+V
+10027=K&asuj\tDel
+10028=Wybierz ws&zystko\tCtrl+A
+10029=&IdŸ do linii\tCtrl+G
+10030=&ZnajdŸ\tCtrl+F
+10031=ZnajdŸ &Nastêpny\tF3
+10032=ZnajdŸ P&oprzedni\tCtrl+F3
+10033=Z&ast¹p\tCtrl+R
+10034=Zeklaracja wyszukiwania\tF2
+10035=Wróæ\tCtrl+F2
+10036=Rozwiñ/ Collapse\tCtrl+E
+10037=Blok
+10038=Wciêcia\Tabulatory
+10039=Wysuniêcia\tShift+Tab
+10040=Komentarz\tF9
+10041=Usuñ komentarz\tCtrl+F9
+10042=Usuñ poprzedzaj¹ce spacje
+10043=Konwertuj
+10044=Wciêcia na spacje
+10045=Wciêcia na Tabulatory
+10046=Du¿e litery\tCtrl+U
+10047=Ma³e litery\tCtrl+L
+10048=Tryb blokowy\tCtrl+B
+10049=Wstaw blook\tShift+Ctrl+B
+10050=Zak³adka
+10051=Prze³¹cz\tShift+F8
+10052=Nastêpny\tF8
+10053=Poprzedni\tCtrl+F8
+10054=Skasuj wszystko\tShift+Ctrl+F8
+10055=B³¹d
+10056=&Nastêpny b³¹d\tF7
+10057=&Czyœæ b³êdy\tShift+Ctrl+F7
+10061=Form&atuj
+10062=&Blokuj kontrolki
+10063=&Wyœlij na ty³
+10064=&Przenieœ na przód
+10065=Poka¿ &siatkê
+10066=&Doci¹gaj do siatki
+10067=Równaj kontrolki
+10068=Do &lewej
+10069=&Centruj
+10070=Do &prawej
+10071=Do &góry
+10072=&Wyœrodkuj
+10073=Do &do³u
+10074=Ten sam rozmiar
+10075=&Szerokoœæ
+10076=&Wysokoœæ
+10077=&Oba
+10078=Wyœrodkuj w oknie
+10079=&Poziomo
+10080=Pio&nowo
+10081=Ustaw tabulator
+10082=Automatycznie przenumeruj  ID
+10083=&Zmieñ litery du¿e/ma³e\tCtrl+F12
+10084=&Wciêcie\tShift+Ctrl+F12
+10091=&Widok
+10092=&Wyjœcie\tF6
+10093=&Projekt
+10094=W³aœciwoœci
+10095=Podgl¹d &Okna
+10096=Podziel ekran
+10097=Pe³ny ekran\tCtrl+W
+10098=Dwa panele\tCtrl+D
+10101=&Projekt
+10102=Dodaj &Nowy
+10103=&Plik
+10104=&Modu³
+10105=Dodaj &istniej¹cy
+10106=&Pliki
+10107=&Modu³y
+10018=Ustaw zaznaczony jako plik &Main
+10019=Zamieñ zaznaczone jako Modu³/Plik
+10108=&Usuñ zaznaczone
+10109=Zmieñ nazwê zaznaczonych
+10110=&Opcje projektu
+10111=Stwórz &Wzorzec
+10121=&Zasoby
+10122=Dodaj &Dialogowe okno
+10123=Dodaj &Menu
+10124=Dodaj tablicê akceleratora
+10125=Dodaj tablicê znaków
+10126=Dodaj info o wersji
+10127=Dodaj Manifest XP
+10128=Dodaj dane RCData
+10129=Jêzyk
+10130=Pliki do³¹czane (Inc)
+10131=Zasoby
+10132=Nazwy
+10133=Eksportuj Nazwy
+10134=Usuñ
+10135=Cofnij Usuñ
+10141=&Twórz
+10142=&Kompiluj\tF5
+10143=U&ruchom\tShift+F5
+10144=&IdŸ do\tCtrl+F5
+10145=Uruchom z inf. Debug
+10146=Kompiluj &Modu³y
+10147=&Szybkie uruchamianie\tShift+Ctrl+F5
+10151=&Narzêdzia
+10152=&Exportuj w³aœciwoœci
+10161=&Opcje
+10017=&Jêzyk
+10162=&Edytor kodu
+10163=Edytor okien &dialogowych
+10164=&Opcje œcie¿ek
+10165=Opcje deb&ugowania
+10166=Opcje &budowania
+10167=Pliki &zewnêtrzne
+10168=Manager &dodatków
+10169=Menu &narzêdzi
+10170=Menu &pomocy
+10181=&Pomoc
+10182=&O programie
+;--------------------------------------------------------------------------
+[20000]
+20001=Narzêdzie &kart
+10012=Zamknij bie¿¹c¹ kartê\tF4
+10013=Zamknij wszystkie karty\tCtrl+F4
+10203=Zamknij wszystkie oprócz bie¿¹cej
+10204=Nastêpna karta\tCtrl+Tab
+10205=Poprzednia karta\tShift+Ctrl+Tab
+10206=Podziel / Zamknij podzielenie
+10201=Zablokuj / Odblokuj kartê
+10202=Odblokuj wszystkie karty
+20002=&Projekt
+10002=Nowy Projekt
+10003=Otwórz Projekt
+10004=Zamknij Projekt
+10102=Dodaj nowy
+10103=Plik
+10104=Modu³
+10105=Dodaj istniej¹cy
+10106=Plik
+10107=Modu³
+10018=Ustaw bie¿¹cy jako plik g³ówny
+10019=Zamieñ zaznaczone jako Modu³/Plik
+10108=Usuñ zaznaczone
+10109=Zmieñ nazwy zaznaczonych
+10110=Opcje projektu
+20003=&Wyjœcie
+10092=Ukryj
+10211=Wyczyœæ
+10212=Wybierz wszystkie
+10213=Kopiuj
+20004=&W³aœciwoœci
+10221=&Deklaracja IdŸDo
+10222=&Kopiuj do kodu
+10223=Podœwietl
+10224=Aktualizuj
+10225=Resetuj
+20005=&Form&atuj
+10022=&Cofnij\tCtrl+Z
+10024=&Wytnij\tCtrl+X
+10025=&Kopiuj\tCtrl+C
+10026=&Wklej\tCtrl+V
+10027=&Kasuj\tDel
+10062=&Blokuj kontrolki
+10063=&Wyœlij na ty³
+10064=&Przesuñ na przód
+10065=Poka¿ &siatkê
+10066=P&rzyci¹gaj do siatki
+10067=Równaj kontrolki
+10068=Do &lewej
+10069=&Centruj
+10070=Do &prawej
+10071=Do &góry
+10072=&Wyœrodkuj
+10073=Do &do³u
+10074=Ten sam rozmiar
+10075=&Szerokoœæ
+10076=W&ysokoœæ
+10077=&Oba
+10078=Wyœrodkuj w oknie dialogowym
+10079=&Poziomo
+10080=P&ionowo
+10081=Ustaw indeks tabulatora
+10082=Auto przenumerowanie IDentyfikatorów
+;--------------------------------------------------------------------------
+[Strings]
+10005=Nowy plik
+10007=Otwórz plik
+10009=Zapisz plik
+10010=Zapisz wszystkie pliki
+10022=Cofnij
+10023=Powtórz
+10024=Wytnij
+10025=Kopiuj
+10026=Wklej
+10027=Kasuj
+10030=ZnajdŸ
+10033=Zast¹p
+10038=Wciêcia
+10039=Wysuniêcia
+10040=Komentarz
+10041=Usuñ komentarz
+10051=Ustaw zak³adkê
+10052=Nastêpna zak³adka
+10053=Poprzednia zak³adka
+10054=Kasuj wszystkie zak³adki
+10092=Poka¿ / Ukryj okno wyjœcia
+10093=Poka¿ / Ukryj projekt
+10094=Poka¿ / Ukryj w³aœciwoœci
+10142=Tylko kompiluj
+10143=Uruchom
+10144=Kompiluj i uruchom
+;--------------------------------------------------------------------------
+[Internal]
+1=Nie mog³em znaleŸæ
+100=Plik
+101=Projekt
+1000=Find
+1001=Nastêpny
+1002=Poprzedni
+1003=Zast¹p...
+1004=Obszar przeszukany
+1005=Wszystkie teksty zast¹pione.
+1006=Pliki projektu przeszukane
+1007=Obszar przeszukany%c%cFind%c  Wyst¹pienia: %d%c  Powtórzenia: %d%c%cBuild%c  B³êdy: %d%c  Ostrze¿enia: %d
+1008=Pliki projektu przeszukane%c%cFind%c  Pliki: %d%c  Wyst¹pienia: %d%c  Powtórzenia: %d%c%cBuild%c  B³êdy: %d%c  Ostrze¿enia: %d
+1100=Opcje menu narzêdzi
+1101=Opcje menu pomocy
+1102=Opcje kompilacji
+1103=Opcje kompilacji projektu
+1104=Importuj opcje kompilacji
+1200=Pliki
+1201=Wzorzec
+1202=Szukaj folderu
+1300=ród³o w Basic'u
+1301=Do³¹cz
+1302=Zasoby
+1303=Ró¿ne
+2000=Dodaj nowy plik
+2001=Dodaj istniej¹cy plik
+2002=Dodaj nowy modu³
+2003=Dodaj istniej¹cy modu³
+2004=Otwórz projekt
+3000=Plik ju¿ istnieje w projekcie
+3001=Czy usun¹æ plik z projektu?
+3002=Nie uda³o siê stworzyæ folderu:
+3003=Folder istnieje. Czy mimo to utworzyæ projekt?
+3004=Plik projektu istnieje. Czy mimo to utworzyæ projekt?
+3005=Nie uda³o siê otworzyæ pliku:
+3006=Czy zapisaæ zmiany?
+3007=Plik zmieniony poza edytorem!
+3008=Czy otworzyæ ponownie plik?
+;--------------------------------------------------------------------------
+[SnipletAddin]
+SnipletAddin=Code Sniplets
+1=Kopiuj do kodu
+2=Zamknij
+10000=&Wzorce kodu\tF11
+;--------------------------------------------------------------------------
+[AdvEdit]
+10000=Zaawansowana edycja
+10001=Wybierz s³owo\tShift+Ctrl+W
+10002=Kopiuj s³owo\tShift+Ctrl+C
+10003=Wytnij s³owo\tShift+Ctrl+X
+10004=Kasuj s³owo
+10005=Zaznacz liniê\tShift+Ctrl+L
+10006=Kopiuj liniê\tAlt+Ctrl+C
+10007=Wytnij liniê\tAlt+Ctrl+X
+10008=Kasuj liniê
+10009=Uruchom z pliku tymczasowego
+;--------------------------------------------------------------------------
+[CustomFontAddin]
+CustomFontAddin=Custom Font
+1001=Przeszukuj
+1003=OK
+1004=Anuluj
+10000=Czcionka u¿ytkownika
+10001=Dodaj now¹ czcionkê
+;--------------------------------------------------------------------------
+[FBFileAssociation]
+FBFileAssociation=File Association
+1008=Informacje
+1009=Zmienia przypisanie rodzaju plików do FbEdit zaznaczaj¹c rozszerzenia które chcesz i klikaj¹c Zmieñ przypisanie\r\nIt przypisze nasz¹ œliczn¹ ikonê
+1001=Pliki
+1002=*.bas - Pliki Ÿród³owe FreeBasic'a
+1003=*.bi    - Nag³ówki FreeBasic'a
+1005=*.rc    - Skrypty zasobów Windows
+1004=*.fbp  - Plik projektu FBEdit
+1006=Zmieñ przypisanie
+1007=Zamknij
+10000=Przypisanie plików
+10001=Przypisanie plików zmienione!\rFBEdit œcie¿ka to:
+;--------------------------------------------------------------------------
+[FileTabStyle]
+10000=Styl tabulatora plików
+10001=Standardowy
+10002=Przyciski
+10003=P³aski
+10004=Zmodyfikowany wskaŸnik stanu
+10005=Sta³a szerokoœæ
+10006=Podœwietlenie ikon
+10007=Znak odsy³acza
+10008=Brak wskaŸnika
+;--------------------------------------------------------------------------
+[Toolbar]
+Toolbar=Kreator belki menu
+2000=Nazwa przycisku:
+2001=IDentyfikator
+2002=Plik bitmapy:
+2003=Nazwa bitmapy:
+2004=Num.
+1008=Dod. prz.
+1009=Wst. prz.
+1011=Dod. sep.
+1010=Wst. sep.
+1012=Kasuj
+2005=Styl belki menu
+1018=P³aski
+1020=Zawijaj
+1021=Bez ogranicznika
+1023=PodpowiedŸ
+1022=Lista
+2006=Styl przycisku
+1025=SprawdŸ
+1024=Grupuj
+2007=Rozmiar przycisku
+1019=Eksportuj
+1=Zapisz
+2=WyjdŸ
+;--------------------------------------------------------------------------
+[TortoiseSVN]
+10000=Log SVN
+10001=Aktualizuj SVN
+10002=Œci¹gnij SVN
+;--------------------------------------------------------------------------
+[ShowVars]
+1000=Ukryj
+1001=Nastêpna zak³adka\tCtrl+F6
+1002=Poprzednia zak³adka\tShift+Ctrl+F6
+1003=Czyœæ zak³adki
+1100=nazwa
+1101=Ze znakiem
+1102=Bez znaku
+1103=Heksadecymalnie
+1104=Znak
+1105=Binarnie
+1200=Nazwa
+1201=Wynik
+1300=Nazwa
+1301=D³ugoœæ
+1302=Zawartoœæ
+1400=Nazwa
+1401=Adres
+1402=Zrzut
+1403=Ascii
+1500=Nazwa
+1501=Adres
+1502=Heksadecymalnie
+1503=Assembler
+1600=Czas
+1601=Kliki
+1602=Poka¿
+2000= Liniê: 
+2001=     Funkcjê: 
+2002=     Plik: 
+3000=Wyczyœciæ?
+3001=Zbyt du¿o rejestru
+3002=B³¹d wewnêtrzny
+9000=Linia
+9001=Funkcja
+9002=Œcie¿ka
+9003=Plik
+;--------------------------------------------------------------------------

@@ -1,0 +1,3 @@
+This addin searches a list of fb keywords.
+If it is found the fb.chm file is opened,
+else Win32.hlp file will be opened.
