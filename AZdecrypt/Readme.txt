@@ -1,12 +1,12 @@
-AZdecrypt 1.19 by jarlve@yahoo.com (10/11/2020) dd/mm/yy
+AZdecrypt 1.21 by jarlve@yahoo.com (23/04/22) dd/mm/yy
 --------------------------------------------------------
 A powerful multi-threaded letter n-gram based substitution cipher solver for Windows since 2014. Originally written in attempt to solve the Zodiac Killer's unsolved 340 code.
 
 FreeBASIC: http://www.freebasic.net/
 Simple GUI: http://www.freebasic.net/forum/viewtopic.php?f=8&t=24617
-Discussion and support: http://www.zodiackillersite.com/viewtopic.php?f=81&t=3198
+Discussion and support: https://www.freebasic.net/forum/viewtopic.php?t=23188
 
-- FreeBASIC version 1.07.1 using GCC 5.2.0 / GCC 8.1.0.
+- FreeBASIC version 1.09.0 using GCC 9.3.0.
 - Reddit n-grams version 1912.
 - beijinghouse n-grams version 6.
 
@@ -29,7 +29,7 @@ Discussion and support: http://www.zodiackillersite.com/viewtopic.php?f=81&t=319
 - Thanks to David Oranchak for all his work surrounding the Zodiac ciphers and cryptology. And for spreading awareness about AZdecrypt.
 - Thanks to Richard @ https://www.freebasic.net/forum/ for his fast exponentiate approximation function.
 - Many thanks to the people of the Zodiackillersite cipher forums for their help and support: daikon, doranchak, glurk, Largo, Marclean, Mr lowe, smokie treats, f.reichmann, beldenge and many more.
-- Many thanks to the people of the FreeBASIC forum for helping me out with code issues: counting_pine, dodicat, fxm, jj2007, Lothar Schirm, MichaelW, MrSwiss, paul doe, PaulSquires and many more.
+- Many thanks to the people of the FreeBASIC forum for helping me out with code issues: counting_pine, dodicat, fxm, jj2007, Lothar Schirm, MichaelW, MrSwiss, paul doe, PaulSquires, SARG, srvaldez, St_W and many more.
 
 David Oranchak's Zodiac Ciphers wiki: http://zodiackillerciphers.com/wiki/index.php?title=Main_Page
 David Oranchak's Cipher Explorer: http://zodiackillersite.com/viewtopic.php?f=81&t=3661
@@ -39,11 +39,16 @@ glurk's zkdecrypto: https://code.google.com/archive/p/zkdecrypto/
 Largo's Peek-a-boo: http://www.zodiackillersite.com/viewtopic.php?f=81&t=3255
 CrypTool: https://www.cryptool.org/en/
 George Belden's Project Zenith: http://projectzenith.net/dashboard
-AZdecrypt world record 1: https://scienceblogs.de/klausis-krypto-kolumne/2019/10/27/bigram-1000-challenge-solved-new-world-record-set/
-AZdecrypt world record 2: https://scienceblogs.de/klausis-krypto-kolumne/2019/12/19/bigram-750-challenge-solved-new-world-record-set/
-AZdecrypt mentioned in research paper: https://ep.liu.se/ecp/158/012/ecp19158012.pdf
 f.reichmann's solvers: http://zodiackillersite.com/viewtopic.php?f=81&t=5013
 
 https://zlib.net/
 
 Let me know if I have forgotten you or something else!
+
+AZdecrypt achievements:
+-----------------------
+AZdecrypt mentioned in research paper: https://ep.liu.se/ecp/158/012/ecp19158012.pdf
+AZdecrypt world record 1: https://scienceblogs.de/klausis-krypto-kolumne/2019/10/27/bigram-1000-challenge-solved-new-world-record-set/
+AZdecrypt world record 2: https://scienceblogs.de/klausis-krypto-kolumne/2019/12/19/bigram-750-challenge-solved-new-world-record-set/
+Zodiac 340 cipher: https://www.youtube.com/watch?v=-1oQLPRE21o
+Langrenus cipher: https://scienceblogs.de/klausis-krypto-kolumne/2021/02/18/jarl-van-eycke-loest-400-jahre-alte-laengengrad-botschaft/
