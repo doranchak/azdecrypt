@@ -59,7 +59,7 @@ case button_manipulation_process
 				case "Remove column","Remove row","Remove character","Remove character periodic",_
 					"Randomize positions periodic","Replace periodic with random filler","Encode: homophonic substitution",_
 					"Randomize characters","Encode: caesar shift","Encode: homophonic substitution 2","Encode: fractioned morse",_
-					"Modulo","Add nulls and skips","Math","Randomize and bigrams"
+					"Modulo","Add nulls and skips","Math","Randomize and bigrams","Randomize and trigrams"
 					',"Encode: homophonic substitution (no repeat window)"
 					for i=1 to info_length
 						cstate(1,i)=info(i)
@@ -129,7 +129,7 @@ case button_manipulation_process
 						"Replace periodic with random filler","Disperse symbol","Remove symbol",_
 						"Merge random characters","Merge random symbols","Add null characters",_
 						"Add null symbol","Assign homophones","Add nulls and skips","Randomize and bigrams",_
-						"Add row (using random symbols)","Add column (using random symbols)"
+						"Add row (using random symbols)","Add column (using random symbols)","Randomize and trigrams"
 						ui_editbox_settext(input_text,info_to_string(info(),newlength,info_x,0,info_numerical,0,0))
 					case else
 						ui_editbox_settext(input_text,info_to_string(info(),newlength,info_x,0,1,0,0))

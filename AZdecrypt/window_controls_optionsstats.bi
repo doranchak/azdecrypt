@@ -43,6 +43,13 @@ case button_optionsstats_change
 							ui_listbox_replacestring(list_optionsstats,i,s+": "+str(stats_bigramsmod))
 						else ui_editbox_settext(output_text,"Error: stats options (A1)")
 						end if
+					case "(Format, Convert ..., Into period map) step size"
+						if d>=0 andalso d<=constcip-1 then
+							change=4
+							format_periodmapsteps=d
+							ui_listbox_replacestring(list_optionsstats,i,s+": "+str(format_periodmapsteps))
+						else ui_editbox_settext(output_text,"Error: stats options (A1)")
+						end if
 				end select
 				if change>0 then ui_listbox_setcursel(list_optionsstats,i)
 				'select case change

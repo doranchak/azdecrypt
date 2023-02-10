@@ -196,6 +196,12 @@ case button_optionssolver_change
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_ngramlogcutoff))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
+					case "(General) N-gram log value constant"
+						if d>=0 or d<=255 then
+							solvesub_constantngramvalue=d
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_constantngramvalue))
+						else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						end if
 					case "(Batch n-grams) Iterations"
 						if d>=1 then
 							solvesub_batchngramsrestarts=d
@@ -274,17 +280,17 @@ case button_optionssolver_change
 						end if
 						
 					case "(Substitution + columnar transposition & rearrangement) Search depth"
-						if d>=1 andalso d<=7 then
+						if d>=1 then 'andalso d<=7 then
 							solvesub_ctdepth=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_ctdepth))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(Substitution + columnar transposition & rearrangement) Use bigrams"
-						if d=0 or d=1 then
-							solvesub_ctmode=d
-							ui_listbox_replacestring(list_optionssolver,i,s+": "+yesno(solvesub_ctmode))
-						else ui_editbox_settext(output_text,"Error: solver options (A1)")
-						end if
+					'case "(Substitution + columnar transposition & rearrangement) Use bigrams"
+					'	if d=0 or d=1 then
+					'		solvesub_ctmode=d
+					'		ui_listbox_replacestring(list_optionssolver,i,s+": "+yesno(solvesub_ctmode))
+					'	else ui_editbox_settext(output_text,"Error: solver options (A1)")
+					'	end if
 					case "(Substitution + nulls and skips) Period"
 						if d>=1 andalso d<=constcip then
 							solvesub_pnperiod=d

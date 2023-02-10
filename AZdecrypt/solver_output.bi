@@ -26,9 +26,8 @@ if local_outputdir=1 then
 				solstring="Score: "+rdc(thread(tn).score,2)+" IOC: "+rdc(thread(tn).ioc,4)+" Multiplicity: "+rdc(thread(tn).multiplicity,4)+stt(thread(tn).sectime)+lb
 				if local_advstats=1 then
 					solstring+=str(thread(tn).repeats)+lb
-					solstring+="PC-cycles: "+str(thread(tn).pccycles) '+lb
+					if solvesub_nosub=0 then solstring+="PC-cycles: "+str(thread(tn).pccycles)+lb
 					'if ngram_standardalphabet=1 then solstring+=" Word-flow: "+rdc(thread(tn).wordflow,2)
-					solstring+=lb
 				end if
 				solstring+=lb
 				select case solver_output

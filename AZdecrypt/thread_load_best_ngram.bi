@@ -115,7 +115,6 @@ select case ngram_size
 		'j=0
 		redim g7b(0,0,0,0,0,0,0)
 		redim g7b(6,ngram_alphabet_size-1,ngram_alphabet_size-1,ngram_alphabet_size-1,ngram_alphabet_size-1,ngram_alphabet_size-1,ngram_alphabet_size-1)
-		
 		'dim as ubyte hn(6,1)
 		'for x1=0 to nm1
 		'	for x2=0 to nm1

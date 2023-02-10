@@ -4,11 +4,11 @@ thread(tn).thread_active=1
 thread(tn).thread_stop=0
 thread(tn).solver_waiting=1
 
-dim as integer e,g,h,i,j,k,r
+dim as integer e,f,g,h,i,j,k,r
 dim as integer lv,lr,rr,lvmax 'sub-restarts
 dim as integer blt,bls 'pick letter
 dim as integer b,bl,bm 'ext_hc
-dim as integer solution_improved,improved,accept
+dim as integer solution_improved,improved,accept,wi
 dim as integer local_advstats,local_pcmode,local_outputdir,local_outputbatch,local_outputimp,local_over 'locals
 dim as integer al,ll,new_letter,old_letter,curr_symbol,older_letter,new_ngram_score,old_ngram_score,ioc_int,frcmax
 dim as integer shifts 'hafer
@@ -19,7 +19,8 @@ dim as integer cur_its,cur_pos,match_int,old_match_int,old_mpp2,nl2 'sparse
 dim as integer ngrf,ngrt,ngs 'row-bound
 dim as integer subtract,vig_letter 'vigenere
 
-dim as uinteger state,it,iterations,random_restarts
+dim as uinteger it,iterations,random_restarts
+dim as long state 'faster than 64-bit integer
 
 dim as double m,ls
 dim as double d,mc,mc_minus 'pick letter

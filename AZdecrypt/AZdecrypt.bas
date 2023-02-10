@@ -1,12 +1,5 @@
-'AZdecrypt 1.19
+'AZdecrypt 1.21
 '--------------
-'Known bugs:
-'--------------
-'- Possible small issue with Crib grid and GCC 8.1.0.
-'- Possible threading issues with GAS (not GCC)
-
-'disable 60 secs window for batch ciphers
-'problem with nulls & skip solver: over skip issue? does not solve ciphers anymore?
 
 'cstate table
 '--------------
@@ -17,6 +10,7 @@
 '#1: load n-grams etc
 '#2: file load/save
 '#3: output to batch
+'#4: solvers
 
 'thread_ptr(threadsmax+1): load n-grams, secondary hill-climbers, batch stuff...
 'thread_ptr(threadsmax+2): statistics, measurements...
@@ -33,21 +27,27 @@ randomize timer,1 'rng=rand()
 	#include "win_dialogs.bi"
 #endif
 
+#include "crt.bi"
 #include "fbgfx.bi"
 #include "file.bi"
 #include "zlib.bi"
 #include "ui_specific.bi"
 #include "win/shlobj.bi"
 
-'#include "PCG32II.bas"
-'dim shared pcg(65536) as pcg32
-
 'constants
 '------------------------------------------------------------
 const lb=chr(13)+chr(10) 'line break
 const constcip=2000 'max cipher length
 const constfrq=100 'max alphabet size (ABC...)
-const constent=constcip*8 'max entropy table = constcip * max ngram_size
+const constent=constcip*12 'max entropy table = constcip * max ngram_size
+const const_rulesmaxd=14 'max move/swap size rules solver '16
+const const_rulesmd2m=14*const_rulesmaxd 'move 2-gram
+const const_rulesmd2s=22*const_rulesmaxd 'swap 2-gram
+const const_rulesmd4=20*const_rulesmaxd '4-gram
+const const_rulesmd5=26*const_rulesmaxd '5-gram
+const const_rulesmd6=32*const_rulesmaxd '6-gram
+const const_rulesmd7=38*const_rulesmaxd '7-gram
+const const_rulesmd8=44*const_rulesmaxd '8-gram
 
 'window_main
 '------------------------------------------------------------
@@ -240,7 +240,8 @@ dim shared as hwnd button_transpostionsolver_removeall
 dim shared as hwnd editbox_transpositionsolver_stacksize
 dim shared as hwnd editbox_transpositionsolver_searchstates
 dim shared as hwnd button_transpostionsolver_start
-dim shared as hwnd button_transpostionsolver_batchciphers
+dim shared as hwnd button_transpostionsolver_batchciphers1
+dim shared as hwnd button_transpostionsolver_batchciphers2
 dim shared as hwnd editbox_transpositionsolver_batchciphersrestarts
 
 'window_units
@@ -290,14 +291,51 @@ dim shared as hwnd checkbox_polyphones_increment
 dim shared as hwnd checkbox_polyphones_override
 dim shared as byte pp_windowup
 
+'window_columnar,grid
+'------------------------------------------------------------
+dim shared as hwnd window_columnar
+dim shared as hwnd list_permutations_solver
+dim shared as hwnd list_permutations_mode
+dim shared as hwnd editbox_permutations_key1from
+dim shared as hwnd editbox_permutations_key1to
+dim shared as hwnd editbox_permutations_key2from
+dim shared as hwnd editbox_permutations_key2to
+dim shared as hwnd editbox_permutations_temp
+dim shared as hwnd editbox_permutations_searches
+dim shared as hwnd editbox_permutations_shift
+dim shared as hwnd editbox_permutations_depth
+dim shared as hwnd editbox_permutations_ngrampower
+dim shared as hwnd editbox_permutations_ngramfactor
+dim shared as hwnd editbox_permutations_iterations
+dim shared as hwnd editbox_permutations_iterationsfactor
+dim shared as hwnd checkbox_permutations_override
+dim shared as hwnd checkbox_permutations_regular
+dim shared as hwnd editbox_permutations_custom
+dim shared as byte cl_windowup
+
+'window_rules
+'------------------------------------------------------------
+dim shared as hwnd window_rules
+dim shared as hwnd editbox_rules_its1
+dim shared as hwnd editbox_rules_its2
+dim shared as hwnd editbox_rules_itsfactor1
+dim shared as hwnd editbox_rules_itsfactor2
+dim shared as hwnd editbox_rules_maxperiod
+dim shared as hwnd editbox_rules_rules
+dim shared as hwnd editbox_rules_steps
+dim shared as hwnd editbox_rules_stepsinvert
+dim shared as hwnd editbox_rules_manual
+dim shared as hwnd editbox_rules_nonperiodstrength
+dim shared as byte pt_windowup
+
 'types
 '------------------------------------------------------------
 type list1
 	itemnumber as integer
 	itemname as string
 	itemname2 as string
-	l as short
-	s as short
+	l as ushort
+	s as ushort
 	dim_x as integer
 	dim_y as integer
 	num as integer
@@ -305,11 +343,13 @@ type list1
 	sol(constcip)as long
 	hkey(100,20)as long
 	gkey(constcip,4)as short
+	bkey(4,constcip)as short
 	key(constcip)as long
 	ckey(constcip)as byte 'cribkey
 	graph(constcip)as double
 	update as integer
 	score as double
+	prev_score as double
 	ngrams as double
 	pccycles as double
 	chi as double
@@ -354,6 +394,7 @@ type list1
 	avgioc as double
 	avgpccycles as double
 	wordflow as double
+	n1 as integer
 end type
 
 type combo
@@ -408,6 +449,7 @@ dim shared as integer info_y
 dim shared as integer info_numerical
 dim shared as long info(constcip*2)
 dim shared as long info2(constcip*2)
+dim shared as long infom(constcip*2)
 dim shared as long pinfo(constcip*2)
 dim shared as long nuba(constcip*2)
 dim shared as long freq(constcip*2)
@@ -421,6 +463,7 @@ redim shared as short cstate(100,constcip*2)
 dim shared as long info_out(constcip*2)
 dim shared as short extarg(constcip)
 dim shared as integer empty(0)
+static shared as double enttab()
 redim shared as ulong nscf(0,0)
 redim shared as double ngram_list(0,0)
 redim shared as short extcip(0,0,0)
@@ -450,7 +493,7 @@ dim shared as integer stop_measurement
 dim shared as integer loadngrams_showmsg
 dim shared as integer symbols_ngramsize
 dim shared as integer ngrams_clearprevious
-dim shared as integer ngrams_inmem(8)
+dim shared as integer ngrams_inmem(20)
 dim shared as short encodingnulls_m
 dim shared as short encodingnulls_t
 dim shared as short encodingnulls_u
@@ -482,6 +525,7 @@ dim shared as integer threadsmax=65536
 redim shared as list1 thread(0)
 dim shared as any ptr thread_ptr(threadsmax+10)
 dim shared as any ptr thread_ptr2(threadsmax+10)
+dim shared as any ptr thread_ptr3(threadsmax+10)
 dim shared as integer threads
 dim shared as double ips_timer
 dim shared as integer solve_list_max=1
@@ -497,6 +541,7 @@ dim shared as uinteger ngram_values(255)
 dim shared as string ngram_format
 dim shared as short alphabet(255)
 dim shared as short alpharev(255)
+dim shared as short alpharevp1(255)
 dim shared as integer solvesub_iterations
 dim shared as double solvesub_iterationsfactor
 dim shared as integer solvesub_hciterations
@@ -640,6 +685,34 @@ dim shared as integer ngram_standardalphabet
 dim shared as integer firststart
 dim shared as integer addspaces_ngrams
 dim shared as integer solvesub_addspacesquality
+dim shared as byte solvesub_nosub
+dim shared as double solver_crngramfactor
+dim shared as double solvesub_constantngramvalue
+dim shared as double solvesub_ngrampower
+dim shared as integer solvesub_permutations_depth
+dim shared as integer solvesub_permutations_searches
+dim shared as double solvesub_permutations_shift
+dim shared as double solvesub_permutations_ngrampower
+dim shared as double solvesub_permutations_ngramfactor
+dim shared as integer solvesub_permutations_columns
+dim shared as integer solvesub_permutations_varmode
+dim shared as integer solvesub_permutations_solvermode
+dim shared as integer solvesub_permutations_override
+dim shared as integer solvesub_permutations_regtable
+dim shared as integer solvesub_permutations_redun
+dim shared as integer solvesub_permutations_gpx
+dim shared as integer solvesub_permutations_gpy
+dim shared as integer solvesub_permutations_dx
+dim shared as integer solvesub_permutations_dy
+dim shared as integer solvesub_permutations_its
+dim shared as integer solvesub_permutations_itsmax
+dim shared as integer solvesub_permutations_rules
+dim shared as integer addspaces_ngrams_notloaded
+dim shared as integer solvesub_rules_steps
+dim shared as integer format_periodmapsteps
+'dim shared as integer solvesub_rules_cperiod
+'dim shared as integer solvesub_rules_cperiodutp
+dim shared as integer solvesub_rules_nonperiodstrength
 
 'thread mutex
 '------------------------------------------------------------
@@ -681,6 +754,21 @@ dim shared as integer combine_maxioc
 dim shared as integer combine_fromlen
 dim shared as integer combine_tolen
 
+'permutations variables
+'------------------------------------------------------------
+'static shared as uinteger pk1()
+'static shared as uinteger nk1()
+redim shared as integer ssconf(0)
+redim shared as integer sscheck(0)
+redim shared as double ssscore(0)
+redim shared as ushort sskey(0,0,0)
+redim shared as double pbest(0)
+redim shared as double flat_score(0)
+redim shared as integer latches(0)
+redim shared as ushort pkey(0,0,0)
+redim shared as ushort keysize(0)
+redim shared as ubyte rloop(0,0)
+
 'default n-gram arrays:
 '------------------------------------------------------------
 static shared as ubyte g1(25)
@@ -694,12 +782,27 @@ static shared as ubyte g7(),g7b()
 static shared as ubyte g5p(25,25,25,25,25)
 static shared as ubyte g5s(26,26,26,26,26) '+spaces
 
+static shared as ushort g6w() 'letter n-grams to words
+static shared as ushort g6w2()
+static shared as ushort g7w()
+
+static shared as ushort g2k()
+static shared as ulong g5k()
+static shared as ushort g5kb()
+
+static shared as ubyte wl()
+static shared as ubyte wl2()
+static shared as ubyte wl3()
+static shared as ushort wlptr()
+
 'beijinghouse n-gram arrays/variables:
 '------------------------------------------------------------
 static shared as ubyte bh8()
 static shared as ulong bh4()
-'static shared as ubyte bh10()
-'static shared as ulong bh5()
+static shared as ubyte bh10()
+static shared as ulong bh5()
+static shared as ubyte bh12()
+static shared as ulong bh6()
 static shared as ubyte cachebh80()
 static shared as ubyte cachebh81()
 static shared as ubyte cachebh82()
@@ -731,6 +834,17 @@ dim shared as ulong asc2num1000000(255)
 '------------------------------------------------------------
 redim shared as double cto(0 to 0,0,0,0)
 
+'n-gram position look up arrays
+'------------------------------------------------------------
+static shared as ushort ngp_offset_neg()
+static shared as ushort ngp_offset_pos()
+static shared as ushort ngp_offset2_neg()
+static shared as ushort ngp_offset2_pos()
+static shared as ulong ngp_move_lt()
+static shared as ushort ngp_move()
+static shared as ushort ngp_move2()
+static shared as ushort ngp_swap2()
+
 'declare subs
 '------------------------------------------------------------
 declare sub file_load()
@@ -747,6 +861,7 @@ declare sub create_window_manipulation
 declare sub create_window_optionssolver
 declare sub create_window_cribgrid(byval x0 as long,byval y0 as long,byval fresh as byte)
 declare sub create_window_polyphones
+declare sub create_window_permutations
 
 declare sub mainloop
 
@@ -792,6 +907,10 @@ declare sub set_solverhighlight(byval solvername as string)
 declare sub clean_thread_information
 declare sub pickletter_caching(byval showmsg as ubyte)
 declare sub generate_permutations(n as long)
+declare sub generate_rules_ngrampos(byval l as integer,byval ngs as integer)
+declare sub thread_generate_rules_move(byval tn_ptr as any ptr)
+declare sub thread_generate_rules_move2(byval tn_ptr as any ptr)
+declare sub thread_generate_rules_swap2(byval tn_ptr as any ptr)
 
 'tests
 '------------------------------------------------------------
@@ -813,6 +932,11 @@ declare sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 declare sub azdecrypt_higherorder_810g(byval tn_ptr as any ptr)
 declare sub azdecrypt_810g(byval tn_ptr as any ptr)
 
+declare sub azdecrypt_permutations_23456781012g(byval tn_ptr as any ptr)
+declare sub azdecrypt_rules_45678g(byval tn_ptr as any ptr)
+declare sub azdecrypt_rules_entropy_45678g(byval tn_ptr as any ptr)
+declare sub azdecrypt_nosub_234567810g(byval tn_ptr as any ptr)
+
 'declare threads
 '------------------------------------------------------------
 declare sub thread_benchmark(byval none as any ptr)
@@ -824,6 +948,7 @@ declare sub thread_batch_ciphers_substitution(byval none as any ptr)
 declare sub thread_batch_ciphers_mergeseqhom(byval none as any ptr)
 
 declare sub thread_solve_substitution(byval none as any ptr)
+declare sub thread_solve_nosub(byval none as any ptr)
 declare sub thread_solve_polyphones_user(byval none as any ptr)
 declare sub thread_solve_polyphones_auto(byval none as any ptr)
 declare sub thread_solve_polyphones_hafer(byval none as any ptr)
@@ -832,13 +957,18 @@ declare sub thread_solve_vigenere(byval none as any ptr)
 declare sub thread_solve_vigenerelist(byval none as any ptr)
 declare sub thread_solve_rowbound(byval none as any ptr)
 declare sub thread_solve_mergeseqhom(byval none as any ptr)
+
+declare sub thread_solve_permutations(byval none as any ptr)
 declare sub thread_solve_genhc(byval none as any ptr)
+
 declare sub thread_solve_wordcribs(byval none as any ptr)
 declare sub thread_solve_cribgrid(byval none as any ptr)
 declare sub thread_solve_criblist(byval none as any ptr)
 declare sub thread_solve_units(byval none as any ptr)
 declare sub thread_solve_rowbound_fragments(byval none as any ptr)
-declare sub thread_solve_rectangles(byval none as any ptr)
+
+declare sub thread_solve_rules(byval none as any ptr)
+declare sub thread_solve_rules_manual(byval none as any ptr)
 
 declare sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byval s as short,byval kl as short)
 declare sub ext_bigram_beam_columnarrearrangement(byval t as short,byval l as short,byval s as short,byval kl as short)
@@ -862,6 +992,7 @@ declare function m_unigrams(array()as long,byval l as integer,byval s as integer
 declare function m_posshift(array()as long,byval l as integer,byval s as integer,byval lk as integer,byval n as integer)as double
 declare function info_to_string(array()as long,byval l as integer,byval dx as integer,byval dy as integer,byval numerical as integer,byval addspaces as integer,byval nolinebreaks as integer)as string
 declare function rdc(byval n as double,byval dpa as integer)as string
+declare function rdc2(byval n as double,byval dpa as integer)as string
 declare function frequencies(array()as long,byval l as integer,byval s as integer,byval ngs as integer,byval num as integer,byval mf as integer)as string
 declare function gcd(byval a as integer,byval b as integer)as integer
 declare function cstate_operation(byval instate as integer,byval outstate as integer,byval operation as string,arg()as double)as string
@@ -933,10 +1064,15 @@ declare function m_2cycles_perfect_cyclebreaks(array()as long,byval l as integer
 declare function m_wordflow(sol()as long,byval l as integer)as double
 declare function m_adjacency(array()as long,byval l as integer,byval dx as integer,byval dy as integer)as double
 declare function crc_32(buf as byte ptr,buflen as ulong) as ulong
+declare function m_ascdistance(array()as long,byval l as integer,byval s as integer)as integer
+declare function factorial(byval f as integer)as uinteger
+declare function periodngrams(cip()as long,byval l as integer,byval p as integer,byval r as integer)as double
+declare function compare_ngrampos(ng1()as short,ng2()as short,byval l as integer,byval ngs as integer)as integer
+declare function m_entropymax(byval l as integer)as double
 
 'program root
 '------------------------------------------------------------
-program_name="AZdecrypt 1.19"
+program_name="AZdecrypt 1.21"
 using fb
 mainloop
 
@@ -982,13 +1118,14 @@ sub file_load_settings
 	solvesub_tpseqhom=0
 	solvesub_pnmannulls=0
 	solvesub_pnmanskips=0
-	solvesub_pnover=22500
+	solvesub_pnover=22935
+	solvesub_pnoverskip=0
 	solvesub_vigeneresubtract=0
 	solvesub_seqweight=5
-	solvesub_nshctemp=40
-	solvesub_nshcshift=30
+	solvesub_nshctemp=100
+	solvesub_nshcshift=20
 	solvesub_nshcshiftdiv=2
-	solvesub_nshcrestartsmax=100
+	solvesub_nshcrestartsmax=500
 	solvesub_incpolyphones=1
 	solvesub_tsbatchciphersrestarts=1
 	solvesub_higherorderhomophonicweight=2
@@ -1003,6 +1140,8 @@ sub file_load_settings
 	solvesub_solutionreleasetimer=60
 	solvesub_addspaces=1
 	solvesub_addspacesquality=25
+	solvesub_constantngramvalue=0
+	format_periodmapsteps=1
 	
 	solvesub_bigramheatmap=0
 	solvesub_bigrambestsol=0.5
@@ -1037,6 +1176,7 @@ sub file_load_settings
 		dim as SYSTEM_INFO sysinf
 		getsysteminfo(@sysinf)
 		solvesub_cputhreads=(sysinf.dwnumberofprocessors/4)*3 'use 3/4 of system CPU threads
+		'solvesub_cputhreads=(sysinf.dwnumberofprocessors/2) 'use 1/2 of system CPU threads
 	#else
 		solvesub_cputhreads=GetCPUCores
 	#endif
@@ -1080,7 +1220,7 @@ sub file_load_settings
 			print #1,"(Higher-order homophonic) N-order: "+str(solvesub_higherorderhomophonic)
 			print #1,"(Higher-order homophonic) Separation weight divider: "+str(solvesub_higherorderhomophonicweight)
 			print #1,"(Substitution + columnar transposition & rearrangement) Search depth: "+str(solvesub_ctdepth)
-			print #1,"(Substitution + columnar transposition & rearrangement) Use bigrams: "+yesno(solvesub_ctmode)
+			'print #1,"(Substitution + columnar transposition & rearrangement) Use bigrams: "+yesno(solvesub_ctmode)
 			print #1,"(Substitution + nulls and skips) Period: "+str(solvesub_pnperiod)
 			print #1,"(Substitution + nulls and skips) Nulls and skips: "+str(solvesub_pnnulls)
 			print #1,"(Substitution + nulls and skips) Manual nulls: "+str(solvesub_pnmannulls)
@@ -1197,8 +1337,8 @@ sub file_load_settings
 					if val(suf)>=0 andalso val(suf)<=1000000 then solvesub_bigramhomwdiv=val(suf)
 				case "(substitution + columnar transposition & rearrangement) search depth"
 					if val(suf)>=1 andalso val(suf)<=7 then solvesub_ctdepth=val(suf)
-				case "(substitution + columnar transposition & rearrangement) use bigrams"
-					if val(suf)=0 or val(suf)=1 then solvesub_ctmode=val(suf)
+				'case "(substitution + columnar transposition & rearrangement) use bigrams"
+				'	if val(suf)=0 or val(suf)=1 then solvesub_ctmode=val(suf)
 				case "(substitution + nulls and skips) period"
 					if val(suf)>=1 andalso val(suf)<=constcip then solvesub_pnperiod=val(suf)
 				case "(substitution + nulls and skips) nulls and skips"
@@ -1311,7 +1451,8 @@ sub file_save_as()
 		close #2
 		ui_setwindowtext(window_main,program_name+" - "+file)
 		path_file_name=file
-		file_name=right(file,len(file)-instrrev(file,"\"))
+		dim as string file2=file 'for warning 37
+		file_name=right(file,len(file2)-instrrev(file,"\"))
 	end if
 
 end sub
@@ -1332,9 +1473,10 @@ sub create_window_main
 	ui_menuitem(hfile,3,"Save file as")
 	ui_appendmenu(hfile,MF_SEPARATOR,99,"")
 	ui_menuitem(hfile,16,"Batch ciphers (substitution)")
-	ui_menuitem(hfile,44,"Batch ciphers (merge sequential homophones)")
-	ui_menuitem(hfile,47,"Batch settings")
+	ui_menuitem(hfile,61,"Batch ciphers (non-substitution)")
+	'ui_menuitem(hfile,44,"Batch ciphers (merge sequential homophones)")
 	ui_appendmenu(hfile,MF_SEPARATOR,99,"")
+	ui_menuitem(hfile,47,"Batch settings")
 	ui_menuitem(hfile,22,"Batch n-grams (substitution)")
 	ui_appendmenu(hfile,MF_SEPARATOR,99,"")
 	ui_menuitem(hfile,14,"Load n-grams")
@@ -1394,6 +1536,9 @@ sub create_window_main
 	ui_menuitem(hhconvert,51,"Into intersymbol distances")
 	ui_menuitem(hhconvert,52,"Into incrementality map")
 	ui_menuitem(hhconvert,49,"Into symbol frequencies")
+	ui_menuitem(hhconvert,38,"Into ASCII distance")
+	ui_menuitem(hhconvert,62,"Into period map")
+	ui_menuitem(hhconvert,63,"Into period map 1 to length")
 	ui_appendmenu(hhconvert,MF_SEPARATOR,99,"")
 	ui_menuitem(hhconvert,55,"Character pairs to numbers")
 	ui_menuitem(hhconvert,56,"Character triples to numbers")
@@ -1503,6 +1648,7 @@ sub create_window_main
 	ui_menuitem(hhencodedir,232,"Using sub string position")
 	ui_menuitem(hhencodedir,235,"Using horizontal symbol leaning")
 	ui_menuitem(hhencodedir,236,"Using vertical symbol leaning")
+	ui_menuitem(hhencodedir,237,"Using ASCII distance bigrams")
 	ui_appendmenu(hstats,MF_SEPARATOR,99,"")
 	
 	hhperfectcycles=ui_createmenu()
@@ -1587,7 +1733,7 @@ sub create_window_main
 	hoptions=ui_createmenu()
 	ui_menutitle(hmenu,hoptions,"Options")
 	ui_menuitem(hoptions,12,"Solvers")
-	ui_menuitem(hoptions,42,"Statistics")
+	ui_menuitem(hoptions,42,"Statistics and format")
 	ui_appendmenu(hoptions,MF_SEPARATOR,99,"")
 	ui_menuitem(hoptions,13,"Benchmark")
 	ui_menuitem(hoptions,48,"Solver n-gram statistics")
@@ -1606,7 +1752,8 @@ sub create_window_main
 	button_main_swapinout=ui_button_new(140,110,100,30,"Swap",,window_main)
 	
 	list_main=ui_listbox_new(260,20,313,140,,window_main)
-	
+	'ui_listbox_addstring(list_main,"Select a solver:")
+	'ui_listbox_addstring(list_main,"-----------------------------------------------------------------------")
 	ui_listbox_addstring(list_main,"Substitution")
 	ui_listbox_addstring(list_main,"Substitution + columnar rearrangement")
 	ui_listbox_addstring(list_main,"Substitution + columnar transposition")
@@ -1615,7 +1762,6 @@ sub create_window_main
 	ui_listbox_addstring(list_main,"Substitution + monoalphabetic groups")
 	ui_listbox_addstring(list_main,"Substitution + nulls and skips")
 	ui_listbox_addstring(list_main,"Substitution + polyphones")
-	'ui_listbox_addstring(list_main,"Substitution + rectangles")
 	ui_listbox_addstring(list_main,"Substitution + row bound")
 	ui_listbox_addstring(list_main,"Substitution + row bound fragments")
 	ui_listbox_addstring(list_main,"Substitution + sequential homophones")
@@ -1624,7 +1770,21 @@ sub create_window_main
 	ui_listbox_addstring(list_main,"Substitution + units")
 	ui_listbox_addstring(list_main,"Substitution + vigenère")
 	ui_listbox_addstring(list_main,"Substitution + vigenère word list")
-	'ui_listbox_addstring(list_main,"Substitution + word cribs")
+	ui_listbox_addstring(list_main,"-----------------------------------------------------------------------")
+	ui_listbox_addstring(list_main,"Non-substitution")
+	ui_listbox_addstring(list_main,"Columnar transposition")
+	ui_listbox_addstring(list_main,"Columnar rearrangement")
+	ui_listbox_addstring(list_main,"Row rearrangement")
+	ui_listbox_addstring(list_main,"Grid rearrangement")
+	ui_listbox_addstring(list_main,"Periodic transposition")
+	ui_listbox_addstring(list_main,"Periodic transposition (automatic)") 'the big gun
+	ui_listbox_addstring(list_main,"Simple transposition")
+	'ui_listbox_addstring(list_main,"Columnar transposition")
+	'ui_listbox_addstring(list_main,"Columnar rearrangement")
+	'ui_listbox_addstring(list_main,"Grid rearrangement")
+	'ui_listbox_addstring(list_main,"Periodic transposition")
+	'ui_listbox_addstring(list_main,"Simple transposition")
+	ui_listbox_addstring(list_main,"-----------------------------------------------------------------------")
 	ui_listbox_addstring(list_main,"Bigram substitution")
 	ui_listbox_addstring(list_main,"Higher-order homophonic")
 	ui_listbox_addstring(list_main,"Merge sequential homophones")
@@ -1764,6 +1924,7 @@ sub create_window_optionssolver
 	ui_listbox_addstring(list_optionssolver,"(General) Add spaces to output: "+yesno(solvesub_addspaces))
 	ui_listbox_addstring(list_optionssolver,"(General) Add spaces to output iterations: "+str(solvesub_addspacesquality))
 	ui_listbox_addstring(list_optionssolver,"(General) N-gram log value cut-off: "+str(solvesub_ngramlogcutoff))
+	'ui_listbox_addstring(list_optionssolver,"(General) N-gram log value constant: "+str(solvesub_constantngramvalue))
 	
 	ui_listbox_addstring(list_optionssolver,"(Batch n-grams) Iterations: "+str(solvesub_batchngramsrestarts))
 	ui_listbox_addstring(list_optionssolver,"(Batch ciphers) Only process ciphers with bigram repeats over: "+str(solvesub_batchciphersbigrams))
@@ -1784,7 +1945,7 @@ sub create_window_optionssolver
 	
 	'ui_listbox_addstring(list_optionssolver,"(Substitution + columnar transposition & rearrangement) Columns: "+str(solvesub_ctcolumns))
 	ui_listbox_addstring(list_optionssolver,"(Substitution + columnar transposition & rearrangement) Search depth: "+str(solvesub_ctdepth))
-	ui_listbox_addstring(list_optionssolver,"(Substitution + columnar transposition & rearrangement) Use bigrams: "+yesno(solvesub_ctmode))
+	'ui_listbox_addstring(list_optionssolver,"(Substitution + columnar transposition & rearrangement) Use bigrams: "+yesno(solvesub_ctmode))
 	
 	ui_listbox_addstring(list_optionssolver,"(Substitution + nulls and skips) Period: "+str(solvesub_pnperiod))
 	ui_listbox_addstring(list_optionssolver,"(Substitution + nulls and skips) Nulls and skips: "+str(solvesub_pnnulls))
@@ -1847,12 +2008,13 @@ sub create_window_optionsstats
 	ui_window_getposition(window_main,x0,y0,x1,y1)
 	
 	ui_destroywindow(window_optionsstats)
-	window_optionsstats=ui_window_new(x0,y0,600,470,"Statistics options",WS_VISIBLE or WS_SYSMENU or WS_MINIMIZEBOX)
+	window_optionsstats=ui_window_new(x0,y0,600,470,"Statistics and format options",WS_VISIBLE or WS_SYSMENU or WS_MINIMIZEBOX)
 	list_optionsstats=ui_listbox_new(20,20,550,320,,window_optionsstats)
 	ui_listbox_addstring(list_optionsstats,"(Find plaintext and encoding direction) Randomization trials: "+str(stats_dirrndtrials))
 	ui_listbox_addstring(list_optionsstats,"(Find encoding randomization) Randomization trials: "+str(stats_encrndtrials))
 	ui_listbox_addstring(list_optionsstats,"(Symbol cycle patterns & types) Randomization trials: "+str(stats_symbolcyclepatternsrndtrials))
 	ui_listbox_addstring(list_optionsstats,"(N-symbol cycles) Weight: "+str(stats_nsymbolcyclesweight))
+	ui_listbox_addstring(list_optionsstats,"(Format, Convert ..., Into period map) step size: "+str(format_periodmapsteps))
 	'ui_listbox_addstring(list_optionsstats,"(Plaintext direction) Bigrams alphabet: "+str(stats_bigramsmod))
 	ui_listbox_setcursel(list_optionsstats,0)
 	editbox_optionsstats_a1=ui_editbox_new(20,350,550,25,"",,window_optionsstats)
@@ -1966,6 +2128,127 @@ sub create_window_units
 	ui_radiobutton_setcheck(radiobutton_units_period_utp,1)
 	
 	ui_seticon(window_units)
+	
+end sub
+
+sub create_window_rules
+	
+	pt_windowup=1
+	
+	dim as long x0,y0,x1,y1
+	ui_window_getposition(window_main,x0,y0,x1,y1)
+	
+	ui_destroywindow(window_rules)
+	window_rules=ui_window_new(x0,y0,500,750,"Periodic transposition",WS_VISIBLE or WS_SYSMENU or WS_MINIMIZEBOX)
+	
+	label=ui_label_new(20,20,400,25,"This solver performs no substitution and will solve regular ",,window_rules)
+	label=ui_label_new(20,40,400,25,"transposition ciphers if the cipher can be summarized as a ",,window_rules)
+	label=ui_label_new(20,60,400,25,"number of periodic rules.",,window_rules)
+	
+	label=ui_label_new(20,120,400,25,"Click Solve again to start solving with the following settings:",,window_rules)
+	
+	label=ui_label_new(20,180,250,25,"Periodic rules",,window_rules)
+	editbox_rules_rules=ui_editbox_new(300,180-3,170,25,str("4"),,window_rules)
+	label=ui_label_new(20,210,250,25,"Periodic stepping",,window_rules)
+	editbox_rules_steps=ui_editbox_new(300,210-3,170,25,str("1"),,window_rules)
+	label=ui_label_new(20,240,250,25,"Maximum period",,window_rules)
+	editbox_rules_maxperiod=ui_editbox_new(300,240-3,170,25,str("50"),,window_rules)
+	label=ui_label_new(20,270,250,25,"Non-period strength percentage",,window_rules)
+	editbox_rules_nonperiodstrength=ui_editbox_new(300,270-3,170,25,str("0"),,window_rules)
+	
+	label=ui_label_new(20,340,250,25,"Inner hill-climber iterations",,window_rules)
+	editbox_rules_its1=ui_editbox_new(300,340-3,170,25,str("40000"),,window_rules)
+	label=ui_label_new(20,370,250,25,"Inner hill-climber iterations factor",,window_rules)
+	editbox_rules_itsfactor1=ui_editbox_new(300,370-3,170,25,str("1.075"),,window_rules)
+	
+	label=ui_label_new(20,440,250,25,"Outer hill-climber iterations",,window_rules)
+	editbox_rules_its2=ui_editbox_new(300,440-3,170,25,str("4000"),,window_rules)
+	label=ui_label_new(20,470,250,25,"Outer hill-climber iterations factor",,window_rules)
+	editbox_rules_itsfactor2=ui_editbox_new(300,470-3,170,25,str("1.075"),,window_rules)
+	
+	label=ui_label_new(20,540,400,25,"Setting any manual period will disable the outer hill-climber:",,window_rules)
+	editbox_rules_manual=ui_editbox_new(20,540-3,450,25,str(""),,window_rules)
+	
+	ui_seticon(window_rules)
+	
+end sub
+
+sub create_window_permutations
+	
+	cl_windowup=1
+	
+	dim as long x0,y0,x1,y1
+	ui_window_getposition(window_main,x0,y0,x1,y1)
+	
+	ui_destroywindow(window_columnar)
+	window_columnar=ui_window_new(x0,y0,500,750,"Permutations",WS_VISIBLE or WS_SYSMENU or WS_MINIMIZEBOX)
+	
+	label=ui_label_new(20,20,300,25,"Columnar transposition",,window_columnar)
+	label=ui_label_new(20,40,300,25,"Columnar rearrangement",,window_columnar)
+	label=ui_label_new(20,60,300,25,"Row rearrangement",,window_columnar)
+	label=ui_label_new(20,80,300,25,"Grid rearrangement",,window_columnar)
+	
+	'label=ui_label_new(20,20,100,25,"Solver",,window_columnar)
+	'list_permutations_solver=ui_listbox_new(20,50,450,140,,window_columnar)
+	'ui_listbox_addstring(list_permutations_solver,"Columnar transposition")
+	'ui_listbox_addstring(list_permutations_solver,"Columnar rearrangement")
+	''ui_listbox_addstring(list_permutations_solver,"Nihilist transposition (Key 1 and 2)")
+	''ui_listbox_addstring(list_permutations_solver,"Double columnar transposition (Key 1 and 2)")
+	'ui_listbox_addstring(list_permutations_solver,"Grid rearrangement")
+	
+	label=ui_label_new(20,200,100,25,"Variation",,window_columnar)
+	list_permutations_mode=ui_listbox_new(20,230,450,140,,window_columnar)
+	ui_listbox_addstring(list_permutations_mode,"None")
+	ui_listbox_addstring(list_permutations_mode,"Columnar transposition: columns bottom-to-top")
+	ui_listbox_addstring(list_permutations_mode,"Grid rearrangement: 1-dim to 2-dim (default)")
+	ui_listbox_addstring(list_permutations_mode,"Grid rearrangement: 2-dim to 1-dim")
+	ui_listbox_addstring(list_permutations_mode,"Grid rearrangement: 2-dim to 2-dim")
+	'ui_listbox_addstring(list_permutations_mode,"Grid permutation: LRTB variations")
+	
+	'label=ui_label_new(20,380,150,25,"Custom arguments ",,window_columnar)
+	'editbox_permutations_custom=ui_editbox_new(170,380-3,300,25,str(""),,window_columnar)
+	label=ui_label_new(20,430,100,25,"Key 1:     From",,window_columnar)
+	editbox_permutations_key1from=ui_editbox_new(140,430-3,100,25,"2",,window_columnar)
+	label=ui_label_new(260,430,100,25,"To",,window_columnar)
+	select case ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))
+		case "Row rearrangement"
+			editbox_permutations_key1to=ui_editbox_new(300,430-3,100,25,str(info_y),,window_columnar)
+		case else
+			editbox_permutations_key1to=ui_editbox_new(300,430-3,100,25,str(info_x),,window_columnar)
+	end select
+	
+	'label=ui_label_new(20,470,100,25,"Key 2:     From",,window_columnar)
+	'editbox_permutations_key2from=ui_editbox_new(140,470-3,100,25,"2",,window_columnar)
+	'label=ui_label_new(260,470,100,25,"To",,window_columnar)
+	'editbox_permutations_key2to=ui_editbox_new(300,470-3,100,25,str(info_x),,window_columnar)
+	
+	checkbox_permutations_regular=ui_checkbox_new(20,510-6,500,25,"Only process regular rectangles",,window_columnar)
+	
+	'checkbox_permutations_override=ui_checkbox_new(20,410-6,300,25,"Override hill-climber settings",,window_columnar)
+	'label=ui_label_new(260,580,120,25,"Temperature",,window_columnar)
+	'editbox_permutations_temp=ui_editbox_new(380,580-3,90,25,str(""),,window_columnar)
+	'label=ui_label_new(260,610,120,25,"Search depth",,window_columnar)
+	'editbox_permutations_depth=ui_editbox_new(380,610-3,90,25,str(""),,window_columnar)
+	'label=ui_label_new(260,640,120,25,"Searches",,window_columnar)
+	'editbox_permutations_searches=ui_editbox_new(380,640-3,90,25,str(""),,window_columnar)
+	'label=ui_label_new(20,530,120,25,"Shift",,window_columnar)
+	'editbox_permutations_shift=ui_editbox_new(140,530-3,120,25,str("20"),,window_columnar)
+	
+	'label=ui_label_new(20,580,120,25,"N-gram power",,window_columnar)
+	'editbox_permutations_ngrampower=ui_editbox_new(140,580-3,90,25,str("1"),,window_columnar)
+	'label=ui_label_new(20,610,120,25,"N-gram factor",,window_columnar)
+	'editbox_permutations_ngramfactor=ui_editbox_new(140,610-3,90,25,"",,window_columnar)
+	label=ui_label_new(20,640,120,25,"Iterations",,window_columnar)
+	editbox_permutations_iterations=ui_editbox_new(140,640-3,90,25,str(solvesub_hciterations),,window_columnar)
+	label=ui_label_new(20,670,120,25,"Iterations factor",,window_columnar)
+	editbox_permutations_iterationsfactor=ui_editbox_new(140,670-3,90,25,str(solvesub_hciterationsfactor),,window_columnar)
+	
+	'ui_radiobutton_setcheck(radiobutton_permutations_ct,1)
+	'ui_radiobutton_setcheck(radiobutton_permutations_ncol,1)
+	ui_listbox_setcursel(list_permutations_solver,0)
+	ui_listbox_setcursel(list_permutations_mode,0)
+	
+	ui_seticon(window_columnar)
 	
 end sub
 
@@ -2249,6 +2532,9 @@ sub create_window_combine
 	
 	'n
 	ui_listbox_addstring(list_combine_measurements,"N-grams")
+	
+	'o
+	ui_listbox_addstring(list_combine_measurements,"Odd bigrams")
 
 	'p
 	ui_listbox_addstring(list_combine_measurements,"Periods")
@@ -2393,8 +2679,9 @@ sub create_window_transpositionsolver
 	'(Substitution + simple transposition) Use sequential homophones: 0
 	'(Substitution + simple transposition) PC-cycles, use untransposed texts: 1
 	
-	button_transpostionsolver_batchciphers=ui_button_new(385,590,340,30,"Batch ciphers",,window_transpositionsolver)
-	button_transpostionsolver_start=ui_button_new(385,670,340,30,"Start solver",,window_transpositionsolver)
+	button_transpostionsolver_batchciphers1=ui_button_new(385,590,340,30,"Batch ciphers (substitution)",,window_transpositionsolver)
+	button_transpostionsolver_batchciphers2=ui_button_new(385,630,340,30,"Batch ciphers (non-substitution)",,window_transpositionsolver)
+	'button_transpostionsolver_start=ui_button_new(385,670,340,30,"Start solver",,window_transpositionsolver)
 
 	ui_seticon(window_transpositionsolver)
 	
@@ -2439,6 +2726,7 @@ sub create_window_manipulation
 	ui_listbox_addstring(list_manipulation_operations,"Raise periodic")
 	ui_listbox_addstring(list_manipulation_operations,"Raise unique bigrams")
 	ui_listbox_addstring(list_manipulation_operations,"Randomize and bigrams")
+	ui_listbox_addstring(list_manipulation_operations,"Randomize and trigrams")
 	ui_listbox_addstring(list_manipulation_operations,"Randomize characters")
 	ui_listbox_addstring(list_manipulation_operations,"Randomize positions periodic")
 	ui_listbox_addstring(list_manipulation_operations,"Replace periodic with random filler")
@@ -2574,38 +2862,64 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 	
 	'change i to t
 	
-	dim as integer i,j,t
+	dim as integer i,j,t,skipcheck
 	dim as string errornosize="Error: solver does not work with current n-gram size"
 	dim as string errorno2="Error: solver only works with 8-grams"
+	dim as string errorno3="Error: no solver selected"
 	
 	select case toggle
+		
 		case 1 'start threads
 			solverexist=1	
 			for i=thread_from to thread_to 'threads
-				sleep twait
+				'sleep twait
 				select case ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main)) 'solver
+					case "Non-substitution"
+						select case ngram_size
+							case 2 to 8,10
+								thread_ptr(i)=threadcreate(@azdecrypt_nosub_234567810g,cptr(any ptr,i))
+							case else:ui_editbox_settext(output_text,errornosize):solverexist=0
+						end select
 					case "Substitution","Substitution + word cribs","Substitution + crib grid","Substitution + crib list"
 						select case ngram_size
 							case 2 to 7
 								thread_ptr(i)=threadcreate(@azdecrypt_234567810g,cptr(any ptr,i))
 							case 8,10
-								'thread_ptr(i)=threadcreate(@azdecrypt_810g,cptr(any ptr,i))
-								thread_ptr(i)=threadcreate(@azdecrypt_234567810g,cptr(any ptr,i))
+								thread_ptr(i)=threadcreate(@azdecrypt_810g,cptr(any ptr,i))
+								'thread_ptr(i)=threadcreate(@azdecrypt_234567810g,cptr(any ptr,i))
+							case else:ui_editbox_settext(output_text,errornosize):solverexist=0
 						end select
-					case "Substitution + simple transposition","Substitution + nulls and skips","Substitution + columnar rearrangement","Substitution + columnar transposition","Substitution + units","Substitution + rectangles"
+					case "Substitution + simple transposition","Substitution + nulls and skips","Substitution + columnar rearrangement","Substitution + columnar transposition","Substitution + units"
 						if solvesub_tpseqhom=0 then
 							select case ngram_size
-								case 2 to 7
+								case 2 to 7 ',10,12
 									thread_ptr(i)=threadcreate(@azdecrypt_234567810g,cptr(any ptr,i))
 									'thread_ptr(i)=threadcreate(@azdecrypt_poly_567810g,cptr(any ptr,i))
 								case 8,10
 									thread_ptr(i)=threadcreate(@azdecrypt_810g,cptr(any ptr,i))
 									'thread_ptr(i)=threadcreate(@azdecrypt_poly_567810g,cptr(any ptr,i))
 									'thread_ptr(i)=threadcreate(@azdecrypt_234567810g,cptr(any ptr,i))
+								case else:ui_editbox_settext(output_text,errorno2):solverexist=0
 							end select
 						else 'use sequential homophones
 							thread_ptr(i)=threadcreate(@azdecrypt_seqhom_234567810g,cptr(any ptr,i))
 						end if
+					case "Columnar transposition","Columnar rearrangement","Row rearrangement","Grid rearrangement" ',"Permutations"
+						thread_ptr(i)=threadcreate(@azdecrypt_permutations_23456781012g,cptr(any ptr,i)):skipcheck=0
+					case "Periodic transposition"
+						select case ngram_size
+							case 4 to 8
+								thread_ptr(i)=threadcreate(@azdecrypt_rules_45678g,cptr(any ptr,i)):skipcheck=0
+							case else:ui_editbox_settext(output_text,errornosize):solverexist=0
+						end select
+					case "Periodic transposition (automatic)"
+						select case ngram_size
+							case 4 to 8
+								thread_ptr(i)=threadcreate(@azdecrypt_rules_entropy_45678g,cptr(any ptr,i)):skipcheck=0
+							case else:ui_editbox_settext(output_text,errornosize):solverexist=0
+						end select
+					case "Simple transposition"
+						thread_ptr(i)=threadcreate(@azdecrypt_nosub_234567810g,cptr(any ptr,i))
 					case "Substitution + monoalphabetic groups"
 						select case ngram_size
 							case 8,10:thread_ptr(i)=threadcreate(@azdecrypt_groups_810g,cptr(any ptr,i))
@@ -2631,29 +2945,41 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 					case "Substitution + sparse polyalphabetism"
 						select case ngram_size
 							case 2 to 4:ui_editbox_settext(output_text,errornosize):solverexist=0
-							case 5 to 8,10:thread_ptr(i)=threadcreate(@azdecrypt_sparsepoly_567810g,cptr(any ptr,i))
+							case 5 to 8:thread_ptr(i)=threadcreate(@azdecrypt_sparsepoly_567810g,cptr(any ptr,i))
+							case else:ui_editbox_settext(output_text,errorno2):solverexist=0
 						end select			
 					case "Substitution + polyphones"
+						skipcheck=1
 						select case ngram_size
 							case 2 to 4:ui_editbox_settext(output_text,errornosize):solverexist=0
-							case 5 to 8,10
-								if ui_radiobutton_getcheck(radiobutton_polyphones_user)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_567810g,cptr(any ptr,i))
-								if ui_radiobutton_getcheck(radiobutton_polyphones_auto)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_567810g,cptr(any ptr,i))
-								if ui_radiobutton_getcheck(radiobutton_polyphones_hafer1)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_hafer_567810g,cptr(any ptr,i))
-								if ui_radiobutton_getcheck(radiobutton_polyphones_hafer2)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_hafer_567810g,cptr(any ptr,i))
-						end select			
+							case 5 to 8
+								if ui_radiobutton_getcheck(radiobutton_polyphones_user)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_567810g,cptr(any ptr,i)):skipcheck=0
+								if ui_radiobutton_getcheck(radiobutton_polyphones_auto)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_567810g,cptr(any ptr,i)):skipcheck=0
+								if ui_radiobutton_getcheck(radiobutton_polyphones_hafer1)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_hafer_567810g,cptr(any ptr,i)):skipcheck=0
+								if ui_radiobutton_getcheck(radiobutton_polyphones_hafer2)=1 then thread_ptr(i)=threadcreate(@azdecrypt_poly_hafer_567810g,cptr(any ptr,i)):skipcheck=0
+							case else:ui_editbox_settext(output_text,errorno2):solverexist=0
+						end select
 					case "Substitution + vigenère","Substitution + vigenère word list"
 						select case ngram_size
 							case 2:ui_editbox_settext(output_text,errornosize):solverexist=0
-							case 3 to 8,10:thread_ptr(i)=threadcreate(@azdecrypt_vigenere_34567810g,cptr(any ptr,i))
+							case 3 to 8:thread_ptr(i)=threadcreate(@azdecrypt_vigenere_34567810g,cptr(any ptr,i))
+							case else:ui_editbox_settext(output_text,errorno2):solverexist=0
 						end select	
 					case "Merge sequential homophones"
 						thread_ptr(i)=threadcreate(@azdecrypt_mergeseqhom,cptr(any ptr,i))
+					case else
+						ui_editbox_settext(output_text,errorno3):solverexist=0
 				end select
+				if solverexist=1 andalso skipcheck=0 then
+					do
+						sleep 0.001
+					loop until thread(i).thread_active=1
+				end if
 			next i
 			if solverexist=1 then erase csol
 			
 		case 2 'stop threads
+		
 			for i=thread_from to thread_to
 				thread(i).thread_stop=1
 				do
@@ -2661,8 +2987,9 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 				loop until thread(i).thread_active=0
 			next i
 			sleep twait
-		
+			
 		case 3 'start solving
+		
 			solver_status_processing=1
 			for i=thread_from to thread_to
 				thread(i).outputdir=outputdir
@@ -2686,9 +3013,9 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 				thread(i).update=0
 				sleep twait
 			next i
-		
+			
 		case 4 'stop solving
-				
+			
 			for i=thread_from to thread_to
 				thread(i).solver_stop=1
 				sleep twait
@@ -2703,7 +3030,7 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 			update_solver_status
 			
 	end select
-
+	
 end sub
 
 sub mainloop
@@ -2715,95 +3042,114 @@ sub mainloop
 	dim as integer mop3,prev_mop3
 	dim as double local_score
 	
+	basedir=curdir
+	mkdir(curdir+"\Ciphers\")
+	mkdir(curdir+"\Output\")
+	mkdir(curdir+"\Misc\")
+	mkdir(curdir+"\N-grams\")
+	
 	'internal plaintext for normalization and chi-square test purposes
-	
-	intext="SIRSIWOULDLIKETOEXPRESSMYCONSTANTCONSTERNATIONCONCERNINGYOURPOORTASTEANDLACKOFSYMPATHYFROMTHEPUBLICASEVIDENCEDBYYOURRUNNINGOFTHEADSFORTHEMOVI"
-	intext+="EBADLANDSFEATURINGTHEBLURBINNINETEENFIFTYNINEMOSTPEOPLEWEREKILLINGTIMEKITANDHOLLYWEREKILLINGPEOPLEINLIGHTOFRECENTEVENTSTHISKINDOFMURDERGLORIF"
-	intext+="ICATIONCANONLYBEDEPLORABLEATBESTNOTTHATTHEGLORIFICATIONOFVIOLENCEWASEVERJUSTIFIABLEWHYDONTYOUSHOWSOMECONCERNFORPUBLICSENSIBILITIESANDCUTTHEAD"
-	
-	intext+="OLIVARUTIGLIANOWRITESTHATCHARLESDICKENSDESPITEHAVINGLITTLEREGARDFORAUTHORITYORSOCIALELITESFELLINTOTHENARRATIVETRAPCOMMONINALLSORTSOFMEDIAFORD"
-	intext+="ECADESTHATTRANSFORMSFASCINATIONWITHPOLICEDETECTIVESANDUNDERCOVERCOPSINTOADMIRATIONRUTIGLIANOCALLSDICKENSSTRANGELYGIDDYACCOUNTOFAPOLICERIDEALO"
-	intext+="NGCALLEDONDUTYWITHINSPECTORFIELDSHOCKINGLYHYPOCRITICALBECAUSEBYHISOWNACCOUNTMOSTOFWHATHEWITNESSEDWASTHEINTIMIDATIONOFTHEPOORRUTIGLIANOISECHOI"
-	intext+="NGGEORGEORWELLWHOWROTETHATTHEONLYOFFICIALSWHOMDICKENSHANDLESWITHANYKINDOFFRIENDLINESSARESIGNIFICANTLYENOUGHPOLICEMENASRUTIGLIANOPUTSITDICKENS"
-	intext+="RUNSINTOWHATMAYBETHEBIGGESTRECURRINGHYPOCRISYINHISCAREERASWELLASTHEHISTORYOFPOPULARENTERTAINMENTTHEINSISTENCETHATPOLICEOFFICERSFIGHTINGCRIMEP"
-	intext+="ROVIDESEXCITINGCONTENTWHILEAVOIDINGTHATTHEVASTMAJORITYOFCRIMEFIGHTINGISULTIMATELYTHECONTINUEDOPPRESSIONANDCONVENIENTSCAPEGOATINGOFSOCIETYSMOS"
-	intext+="TVULNERABLEPEOPLERUTIGLIANOSHOWHOWTHEMULTILAYEREDFORMALLYCOMPLEXBOOKBLEAKHOUSEFINALLYALLOWSDICKENSTOEXCAVATEHISOWNMISPERCEPTIONSMANYOFTHENOVE"
-	intext+="LSDIZZYINGNUMBEROFPLOTLINESARETOUCHEDBYTHESAMEUNDERCOVERAGENTANDONLYBYGATHERINGTOGETHERTHETHREADSANDSEEINGTHEWORKOFTHEPOLICEACROSSMANYNARRATI"
-	intext+="VESCANONEBEGINTOGLIMPSETHEFAULTYMACHINATIONSOFJUSTICE"
-	
-	intext+="ONAPRILEIGHTEENEIGHTEENSEVENTYTWOAUSTINBIDWELLWALKEDINTOGREENANDSONTAILORSONLONDONSRENOWNEDSAVILEROWANDORDEREDEIGHTBESPOKESUITSTWOTOPCOATSAND"
-	intext+="ALUXURIOUSDRESSINGGOWNBIDWELLWASTWENTYSIXYEARSOLDSIXFOOTTALLANDHANDSOMELYGROOMEDWITHAWAXEDMUSTACHEANDBUSHYSIDEWHISKERSIFTHEACCENTDIDNTGIVEITA"
-	intext+="WAYHISEYECATCHINGWESTERNHATMARKEDHIMOUTASANAMERICANARICHAMERICANLONDONTRADESMENCALLEDAMERICANSWITHBULGESOFMONEYINTHEIRPOCKETSSILVERKINGSANDTH"
-	intext+="EYWEREMOSTWELCOMEINUPMARKETESTABLISHMENTSLIKEGREENANDSONWHICHCHARGEDASMUCHFORTHESTRENGTHOFTHEIRREPUTATIONSASFORTHEQUALITYOFTHEIRGOODS"
-	
-	intext+="MENTIONTHEMEDIEVALPERIODANDPEOPLEFREEASSOCIATETHEMSELVESRIGHTINTOVISIONSOFPLAGUEVIOLENCEANDSHITCOVEREDPEASANTSTHETERMRENAISSANCEONTHEOTHERHAN"
-	intext+="DCONJURESUPSTUFFLIKEHUMANISMSCIENCEANDPAINTINGSOFPEOPLETHATACTUALLYLOOKLIKEPEOPLEBUTLATEFOURTEENTHFIFTEENTHANDSIXTEENTHCENTURYITALYCONSISTEDO"
-	intext+="FMORETHANJUSTPAINTERSWITHNINJATURTLENAMESWANKINGTHEIRWAYFROMONETUSCANVILLATOANOTHERITWASALSOFULLOFINTRIGUEMURDERANDCOMPLEXINTERGENERATIONALFA"
-	intext+="MILYDRAMAIFTHEREWASONEFAMILYTHATFEATUREDHEAVILYINSOMEOFTHEMOSTVIOLENTANDLICENTIOUSSTORIESOFTHEPERIODITWASTHEBORGIASEVENTODAYTHEIRNAMEISABYWOR"
-	intext+="DFORDEPRAVITYANDATTHECENTEROFMANYOFTHEWILDESTBORGIASTORIESWASTHEBEAUTIFULWILYTHRICEWEDLUCREZIA"
-	
-	intext+="WHENWEFIRSTMOVEDINTOOURBUILDINGINOUREARLYTHIRTIESTHEREWASAMOTHERANDTWOBOYSONTHETHIRDFLOORONFRIDAYSTHEBOYSFATHERWOULDAPPEARANDTHEMOTHERWOULDBE"
-	intext+="FREEUNTILHEDROPPEDTHEMOFFAGAINONSUNDAYTHEBOYSMUSTNOWBETEENAGERSIHAVENOIDEAWHATSHEEVERDIDWITHHERALONETIMETHEREWASALSOAWORLDWEARYWRITERNAMEDTOM"
-	intext+="ACROSSTHEHALLWHOKEPTFITATTHENEARBYCITYRECCENTERANDWHOMWELIKEDQUITEALOTTOTALKTOBRIEFLYANDWHOLIKEDOURSONWHENHEWASJUSTLEARNINGTOWALKTOMWASENCOUR"
-	intext+="AGEDTOVACATEBYTHELANDLORDSOFFEROFABUYOUTANDWEDONTKNOWWHEREHESGONEBUTWEMISSTOMTHELONGTIMETENANTINTWELVEAWERETRISKAIDEKAPHOBICINOURBUILDINGWASK"
-	intext+="EEPINGHISRENTCONTROLLEDPLACEASASECONDHOMELIVINGTHERELESSTHANHALFTHEYEARWHICHTHEEVICTIONNOTICETAPEDFACEDOWNTOHISDOORSAIDWASAGAINSTTHELAWOVERTI"
-	intext+="METHELEGALNOTICEGREWWORNANDFOLDEDANDRAGGEDFROMALLUSCURIOUSNEIGHBORSNOWTHETENANTDOESNTLIVETHEREATALLATTHEMOMENTNOONEDOESTHEREWASJOHNAMILITARYV"
-	intext+="ETWEDONTKNOWWHATBRANCHHEWASOLDBUTWEDONTKNOWHOWOLDNOFAMILYTHATWECOULDTELLJOHNSEEMEDTOLIKEMECALLEDMEGUYFELLAORAWORDLIKETHATWHENWEMETATTHEFRONTD"
-	intext+="OORORMAILBOXES"
-	
-	intext+="THEINTERNSHIPWASPAIDANDPRESTIGIOUSANDITDIDNTINCLUDEGETTINGANYONECOFFEEMYCOPYWRITINGWASGOODANDMYBOSSWASKINDCONFIDENCEBEGANTOBLOOMINMYSTOMACHIT"
-	intext+="SPETALSDELICATEBUTCOLORFULHENRYRETURNEDTOCAMPUSFORAWEEKTOCELEBRATEHISTWENTYFIRSTBIRTHDAYWITHHISFRIENDSBEFOREHELEFTFORASIAANDIDROVEUPTOSEEHIMW"
-	intext+="ESATACROSSFROMEACHOTHERATWESLEYANSCAFEBOOKSTOREFLIRTINGWARILYANDUNABLETOSTOPSMILINGHEWASNERVOUSHISEYESSAUCERWIDEANDWETIPREENEDINMYPINKFAUXLEA"
-	intext+="THERJACKETANDBRAGGEDABOUTMYNEWJOBIWANTEDHIMTOBEIMPRESSEDTOREALIZEWHATAMISTAKEHEDMADEBUTMOSTLYIWANTEDTOTAKEHISHANDONTHETABLEANDSQUEEZEITMYFLED"
-	intext+="GINGLIFEINNEWYORKFADEDINTOIRRELEVANCELOOKINGATTHISBOYILOVEDIWASNTOVERHIMANDIDIDNTBOTHERTOPRETENDTOBEAFTERANHOURORSOOFPOLITESMALLTALKANDCAREFU"
-	intext+="LBANTERHENRYOFFEREDTOWALKMEBACKTOMYFRIENDRACHELSDORMWHEREIWASSTAYINGTHENIGHTHEWOULDBECRASHINGONOURFRIENDFELIXSCOUCHWEMENTIONEDTHESEDETAILSFUR"
-	intext+="TIVELYDURINGCONVERSATIONLITTLEMORSECODECLUESTOBETRANSLATEDONLYIFWESHAREDTHESAMEMOTIVESIHADNOEXPECTATIONSOFMYVISITOTHERTHANTOSEEHIMAGAINANDIWA"
-	intext+="SPETRIFIEDTOASSUMETOOMUCHANDLEAVEMYSELFEXPOSEDONCEAGAINTHEDESPERATEEXGIRLFRIENDONTHEGUESTROOMFLOOR"
-	
-	intext+="WHENIWASEIGHTINOTICEDANATLASONTHEBOOKSHELFINMYROOMIHADJUSTSTARTEDAMASSINGLARGEARTBOOKSFROMFAMILYMUSEUMTRIPSBUTTHISWASTHEFIRSTABNORMALLYSIZEDB"
-	intext+="OOKINMYPOSESSIONITWASSOODDLYSHAPEDITSPAGESSPILLEDOVERTHEEDGEOFTHESHELFONEDAYIUSEDALLMYSTRENGTHTOWIGGLEITDOWNOFFTHEBOOKCASEISPRAWLEDONMYBEDROO"
-	intext+="MFLOORANDBEGANSIFTINGTHROUGHTHELONGPAGESITMUSTHAVEBEENFROMTHEFIFTIESORSIXTIESITSMELLEDOLDBUTITWASCLEARLYABOOKTHATHADBEENCAREDFOROVERTHEYEARSI"
-	intext+="TSPAGESWEREAMIXOFPASTELSSODIZZYINGANDCOMPLEXINHOWPINKSSEPARATEDFROMLIGHTGREENANDTHESKINNIESTBLUERIVERSCUTACROSSTHEPAGESONCEIWASOLDENOUGHTOREA"
-	intext+="DMYGRANDPASTARTEDCEREMONIOUSLYGIFTINGMEBOOKSFROMHISSHELVES"
-	
-	intext+="HOWDOYOUTAMEAWITCHHISTORICALLYYOUDONTYOUKILLHERBURNHERHANGHERINTALESTHEWITCHISOFTENAHERASHEDEVILIFYOUWILLAWOMANWHOSLEEPSWITHLUCIFERWHOISSATAN"
-	intext+="SMISTRESSWHOBEARSADEMONICMARKREADTHEFIFTEENTHCENTURYWITCHHUNTERSMALLEUSMALEFICARUMITLLTELLYOUHERVERYEXISTENCEHERBODYITSELFISAPORTALFROMTHISWO"
-	intext+="RLDTOOTHERSANDSHEMUSTBEPUTDOWNLESTSHETEARSARIPINREALITYITSELFWICKEDWITCHESTHESTUFFOFHISTORICALLEGENDANDNIGHTMARISHFAIRYTALESINSPIREATERRORTHA"
-	intext+="TVERGESONTHESUBLIMETHATFEELINGEDMUNDBURKEARTICULATEDSOLONGAGOOFSTANDINGONTHEEDGEOFACLIFFWHEREYOUFEELTHESIMULTANEITYOFDANGERANDSPECTACULARAWEM"
-	intext+="OUNTAINSARESUBLIMEMILTONSSATANISSUBLIMESUBLIMITYONLYEXISTSINTHINGSTHATCOULDKILLYOUWHICHBRINGYOUTOTHEEDGEOFYOURSELFTHEUNTAMEDFEMININETHENSUREL"
-	intext+="YFALLSINTOTHISCATEGORYWITCHESEXISTONTHEMARGINSINTHESHADOWSEVERTHREATENINGTOINVADEANDDISRUPTTHESANCTITYOFTHESOCIALORDERTHESEDAYSDISNEYDOESNTKI"
-	intext+="LLWITCHESATLEASTNOTASOFTENASTHEYUSEDTOTHESEDAYSDISNEYISINTERESTEDINTHEULTIMATEREHABILITATIONPROJECTHOWDOYOUMAKETHESEARCHETYPALWONDERSTHISSUBL"
-	intext+="IMEFEMININITYLESSFRIGHTENINGLESSPOWERFULPARTICULARLYTOPEOPLEINVESTEDINWOMENANDQUEERSBEHAVINGINNORMATIVELYGENDEREDWAYSYOUMAKETHEWITCHAMOTHER"
-	
-	intext+="ITWASNINETEENEIGHTYONEINTHEOLDECITYSECTIONOFPHILADELPHIAIWASSIXMYPARENTSWEREARTISTSMYDADACELLISTCOMPOSERARRANGERANDMYMOMAPOTTERANDTEACHERANDO"
-	intext+="URTINYBATHROOMSHOWEDITONONEWHOLEWALLMYMOMHUNGAPOSTEROFTHESANFRANCISCOBATHSCIRCAEIGHTEENNINETYWITHLOTSOFGENTSINONEPIECESUITSANDLADIESINFRILLYB"
-	intext+="ATHINGBONNETSBYTHETOILETONCINDERBLOCKANDBOARDSHELVESWERESTACKSANDSTACKSOFMAGAZINESNEWYORKERSMOSTLYPOSTCARDSFRAMEDTHEMIRROROVERTHESINKFLESHYVI"
-	intext+="NTAGENUDIESWITHBOBBEDHAIRSTANDINGINCHORUSLINESBUTMORETHANTHENAKEDLADIESORTHEBORINGNEWYORKERCARTOONSIDSTAREATAFRAMEDPRINTBYOURFRIENDSTUARTHORN"
-	intext+="THEWORDSFINDYOURSELFWEREINBOLDTYPEATTHETOPITLOOKEDLIKEAFAKEHIGHSCHOOLYEARBOOKPAGEFIVEROWSOFHEADSHOTSWITHNAMESTYPEDUNDERTHEMJIMUNDERABLANKLOOK"
-	intext+="INGMANCAROLUNDERABLACKLADYWITHANAFROMYPARENTSTOLDMEITWASMAILARTBUTSTUARTDIDNTMAILITTOUSITWASACOLLAGEHEXEROXEDHEMADEAZILLIONCOPIESANDMAILEDTHE"
-	intext+="MTOAZILLIONOTHERMAILARTISTSWHOEVERTHEYWEREMAILARTISTSWERELITERALTHEYMAILEDEACHOTHERARTAWHOLENETWORKOFWEIRDOSSOMEPROFESSIONALARTISTSSOMEELEANO"
-	intext+="RRIGBYESQUELONELYPEOPLESOMEWHOJUSTLIKEDTHEPOSTALSERVICETHEYHADLISTSOFEACHOTHERSADDRESSESANDEVERYONEEXCHANGEDCOPIESTHEONLYEXPENSEWASXEROXINGAN"
-	intext+="DSTAMPSTRULYARTFORTHEPEOPLE"
-	
-	intext+="THEEQUITABLELIFEBUILDINGATONEHUNDREDMONTGOMERYSTREETSITSINTHEHEARTOFSANFRANCISCOSFINANCIALDISTRICTNAMEDAFTERANINSURANCECOMPANYITWASTHEFIRSTSK"
-	intext+="YSCRAPERBUILTINTHECITYAFTERTHEDEPRESSIONASYMBOLOFOPTIMISMRISINGTWENTYFIVESTORIESHIGHWITHMARBLEWALLSTHATSPARKLEDINTHESUNTODAYITISHOMETOALLSORT"
-	intext+="SOFBUZZYBAYAREACOMPANIESFROMSPRUCECAPITALPARTNERSINVESTORSANDTHOUGHTLEADERSINTHELIFESCIENCESINDUSTRYTOTHEOUTCASTAGENCYSTRATEGISTSANDCREATIVES"
-	intext+="WITHAHYPERGROWTHMINDSETTOGETAWAYFROMTHEHECTICPACEOFINVESTINGSTRATEGIZINGANDCREATINGTENANTSCANBURNOFFCALORIESINSIDETHEBUILDINGSPRIVATEGYMORTAK"
-	intext+="ETHEIRLUNCHBREAKATOPALUXURIOUSROOFTOPDECKTHEEQUITABLELIFEBUILDINGISALSOHOMETOTHESANFRANCISCOIMMIGRATIONCOURTTHOUGHITSEASYTOMISSONMYFIRSTVISIT"
-	intext+="LASTWINTERTHEONLYHINTTHATACOURTLAYWITHINWASTHESCORESOFFAMILIESINTHELOBBYCLUTCHINGSUMMONSESANDLOOKINGCONFUSEDTHECOURTISABOVEOCCUPYINGTHEFOURTH"
-	intext+="EIGHTHANDNINTHFLOORSUPHERETHEELEVATORSOPENEDINTOASLIGHTLYOFFKILTERDIMENSIONASECURITYLINESNAKEDINTOACRAMPEDWAITINGROOMWHICHLEDTOAWINDINGANDWIN"
-	intext+="DOWLESSHALLWAYFROMWHICHONEENTEREDIDENTICALWINDOWLESSCOURTROOMSITWASDEEPLYDISORIENTINGIOFTENENCOUNTEREDPEOPLEFUMBLINGAROUNDINTHEHALLWAYNOTSURE"
-	intext+="HOWTHEHELLTOGETOUTLASTDECEMBERONATHURSDAYAFTERNOONIMETFRANCISCOUGARTEWHOMANAGESTHEIMMIGRATIONDEFENSEUNITOFTHESANFRANCISCOPUBLICDEFENDERSOFFIC"
-	intext+="EUGARTEWHOISFORTYEIGHTWASDRESSEDINADARKGRAYSUITANDHADANEATLYTRIMMEDBEARDANDAYOUTHFULFACEUNLIKEMOSTPEOPLEIENCOUNTEREDHEAPPEAREDATEASEANDWELLRE"
-	intext+="STEDHISCLIENTANIRAQIMANNAMEDABBASSATNEARBYBOUNCINGHISRIGHTLEGANDRADIATINGANXIETY"
-	
-	intext+="FORALONGTIMEITHOUGHTIRANANDCOMPETEDINSPORTASAWAYTOUSETHEMETAPHOROFSPORTTOUNDERSTANDLIFELIFEISAMARATHONIWASOFTENTOLDIREMEMBERWATCHINGANDREWATC"
-	intext+="HINGCHARIOTSOFFIREPARTICULARLYTHATMOMENTINTHERAINWHENERICLIDDELLJUSTMINUTESAFTERWINNINGARACESTATESIWANTTOCOMPAREFAITHTORUNNINGINARACEITSHARDI"
-	intext+="TREQUIRESENERGYOFWILLILOVEDTHATMOMENTASACHILDESPECIALLYASSOMEONEWHOHADATONEPOINTADEEPAMOUNTOFFAITHBUTIALWAYSPAUSEDTHECLIPBEFOREHESTATEDWHATLA"
-	intext+="TERBECAMETOMEMOREOBVIOUSSOWHOAMITOSAYBELIEVEHAVEFAITHINTHEFACEOFLIFESREALITIESIHAVENOFORMULAFORWINNINGARACEEVERYONERUNSINTHEIROWNWAYITSTRUETH"
-	intext+="ATEVERYONERUNSINTHEIROWNWAYWHICHISAFACTIVECOMETOAPPRECIATEASIVEGROWNOLDERPATIENCEBOTHWITHMYOWNPECULIARMOVEMENTSTHROUGHLIFEANDWITHTHOSEOFOTHER"
-	intext+="SISASKILLIACTIVELYTRYTOCULTIVATEANDMAINTAINANDYETEVENLIDDELLSQUOTEHASTODOWITHWINNINGANDTHATTHEIDEAOFWINNINGORFINISHINGORACCOMPLISHINGHASBECOM"
-	intext+="EITSOWNUNIVERSALSIGNIFIERITSNOTABOUTWHATYOUDOITSABOUTWHATYOUHAVEDONE"
+	intext=""
+	dim as string norm=basedir+"\Misc\English normalization.txt"
+	if fileexists(norm)=-1 then 'exists
+		open norm for input as #2
+		do
+			line input #2,s
+			for i=0 to len(s)-1
+				if s[i]>31 then intext+=chr(s[i]) ':beep
+			next i
+		loop until eof(2)
+		close #2
+		s=""
+	else
+		'intext="SIRSIWOULDLIKETOEXPRESSMYCONSTANTCONSTERNATIONCONCERNINGYOURPOORTASTEANDLACKOFSYMPATHYFROMTHEPUBLICASEVIDENCEDBYYOURRUNNINGOFTHEADSFORTHEMOVI"
+		'intext+="EBADLANDSFEATURINGTHEBLURBINNINETEENFIFTYNINEMOSTPEOPLEWEREKILLINGTIMEKITANDHOLLYWEREKILLINGPEOPLEINLIGHTOFRECENTEVENTSTHISKINDOFMURDERGLORIF"
+		'intext+="ICATIONCANONLYBEDEPLORABLEATBESTNOTTHATTHEGLORIFICATIONOFVIOLENCEWASEVERJUSTIFIABLEWHYDONTYOUSHOWSOMECONCERNFORPUBLICSENSIBILITIESANDCUTTHEAD"
+		'
+		'intext+="OLIVARUTIGLIANOWRITESTHATCHARLESDICKENSDESPITEHAVINGLITTLEREGARDFORAUTHORITYORSOCIALELITESFELLINTOTHENARRATIVETRAPCOMMONINALLSORTSOFMEDIAFORD"
+		'intext+="ECADESTHATTRANSFORMSFASCINATIONWITHPOLICEDETECTIVESANDUNDERCOVERCOPSINTOADMIRATIONRUTIGLIANOCALLSDICKENSSTRANGELYGIDDYACCOUNTOFAPOLICERIDEALO"
+		'intext+="NGCALLEDONDUTYWITHINSPECTORFIELDSHOCKINGLYHYPOCRITICALBECAUSEBYHISOWNACCOUNTMOSTOFWHATHEWITNESSEDWASTHEINTIMIDATIONOFTHEPOORRUTIGLIANOISECHOI"
+		'intext+="NGGEORGEORWELLWHOWROTETHATTHEONLYOFFICIALSWHOMDICKENSHANDLESWITHANYKINDOFFRIENDLINESSARESIGNIFICANTLYENOUGHPOLICEMENASRUTIGLIANOPUTSITDICKENS"
+		'intext+="RUNSINTOWHATMAYBETHEBIGGESTRECURRINGHYPOCRISYINHISCAREERASWELLASTHEHISTORYOFPOPULARENTERTAINMENTTHEINSISTENCETHATPOLICEOFFICERSFIGHTINGCRIMEP"
+		'intext+="ROVIDESEXCITINGCONTENTWHILEAVOIDINGTHATTHEVASTMAJORITYOFCRIMEFIGHTINGISULTIMATELYTHECONTINUEDOPPRESSIONANDCONVENIENTSCAPEGOATINGOFSOCIETYSMOS"
+		'intext+="TVULNERABLEPEOPLERUTIGLIANOSHOWHOWTHEMULTILAYEREDFORMALLYCOMPLEXBOOKBLEAKHOUSEFINALLYALLOWSDICKENSTOEXCAVATEHISOWNMISPERCEPTIONSMANYOFTHENOVE"
+		'intext+="LSDIZZYINGNUMBEROFPLOTLINESARETOUCHEDBYTHESAMEUNDERCOVERAGENTANDONLYBYGATHERINGTOGETHERTHETHREADSANDSEEINGTHEWORKOFTHEPOLICEACROSSMANYNARRATI"
+		'intext+="VESCANONEBEGINTOGLIMPSETHEFAULTYMACHINATIONSOFJUSTICE"
+		'
+		'intext+="ONAPRILEIGHTEENEIGHTEENSEVENTYTWOAUSTINBIDWELLWALKEDINTOGREENANDSONTAILORSONLONDONSRENOWNEDSAVILEROWANDORDEREDEIGHTBESPOKESUITSTWOTOPCOATSAND"
+		'intext+="ALUXURIOUSDRESSINGGOWNBIDWELLWASTWENTYSIXYEARSOLDSIXFOOTTALLANDHANDSOMELYGROOMEDWITHAWAXEDMUSTACHEANDBUSHYSIDEWHISKERSIFTHEACCENTDIDNTGIVEITA"
+		'intext+="WAYHISEYECATCHINGWESTERNHATMARKEDHIMOUTASANAMERICANARICHAMERICANLONDONTRADESMENCALLEDAMERICANSWITHBULGESOFMONEYINTHEIRPOCKETSSILVERKINGSANDTH"
+		'intext+="EYWEREMOSTWELCOMEINUPMARKETESTABLISHMENTSLIKEGREENANDSONWHICHCHARGEDASMUCHFORTHESTRENGTHOFTHEIRREPUTATIONSASFORTHEQUALITYOFTHEIRGOODS"
+		'
+		'intext+="MENTIONTHEMEDIEVALPERIODANDPEOPLEFREEASSOCIATETHEMSELVESRIGHTINTOVISIONSOFPLAGUEVIOLENCEANDSHITCOVEREDPEASANTSTHETERMRENAISSANCEONTHEOTHERHAN"
+		'intext+="DCONJURESUPSTUFFLIKEHUMANISMSCIENCEANDPAINTINGSOFPEOPLETHATACTUALLYLOOKLIKEPEOPLEBUTLATEFOURTEENTHFIFTEENTHANDSIXTEENTHCENTURYITALYCONSISTEDO"
+		'intext+="FMORETHANJUSTPAINTERSWITHNINJATURTLENAMESWANKINGTHEIRWAYFROMONETUSCANVILLATOANOTHERITWASALSOFULLOFINTRIGUEMURDERANDCOMPLEXINTERGENERATIONALFA"
+		'intext+="MILYDRAMAIFTHEREWASONEFAMILYTHATFEATUREDHEAVILYINSOMEOFTHEMOSTVIOLENTANDLICENTIOUSSTORIESOFTHEPERIODITWASTHEBORGIASEVENTODAYTHEIRNAMEISABYWOR"
+		'intext+="DFORDEPRAVITYANDATTHECENTEROFMANYOFTHEWILDESTBORGIASTORIESWASTHEBEAUTIFULWILYTHRICEWEDLUCREZIA"
+		'
+		'intext+="WHENWEFIRSTMOVEDINTOOURBUILDINGINOUREARLYTHIRTIESTHEREWASAMOTHERANDTWOBOYSONTHETHIRDFLOORONFRIDAYSTHEBOYSFATHERWOULDAPPEARANDTHEMOTHERWOULDBE"
+		'intext+="FREEUNTILHEDROPPEDTHEMOFFAGAINONSUNDAYTHEBOYSMUSTNOWBETEENAGERSIHAVENOIDEAWHATSHEEVERDIDWITHHERALONETIMETHEREWASALSOAWORLDWEARYWRITERNAMEDTOM"
+		'intext+="ACROSSTHEHALLWHOKEPTFITATTHENEARBYCITYRECCENTERANDWHOMWELIKEDQUITEALOTTOTALKTOBRIEFLYANDWHOLIKEDOURSONWHENHEWASJUSTLEARNINGTOWALKTOMWASENCOUR"
+		'intext+="AGEDTOVACATEBYTHELANDLORDSOFFEROFABUYOUTANDWEDONTKNOWWHEREHESGONEBUTWEMISSTOMTHELONGTIMETENANTINTWELVEAWERETRISKAIDEKAPHOBICINOURBUILDINGWASK"
+		'intext+="EEPINGHISRENTCONTROLLEDPLACEASASECONDHOMELIVINGTHERELESSTHANHALFTHEYEARWHICHTHEEVICTIONNOTICETAPEDFACEDOWNTOHISDOORSAIDWASAGAINSTTHELAWOVERTI"
+		'intext+="METHELEGALNOTICEGREWWORNANDFOLDEDANDRAGGEDFROMALLUSCURIOUSNEIGHBORSNOWTHETENANTDOESNTLIVETHEREATALLATTHEMOMENTNOONEDOESTHEREWASJOHNAMILITARYV"
+		'intext+="ETWEDONTKNOWWHATBRANCHHEWASOLDBUTWEDONTKNOWHOWOLDNOFAMILYTHATWECOULDTELLJOHNSEEMEDTOLIKEMECALLEDMEGUYFELLAORAWORDLIKETHATWHENWEMETATTHEFRONTD"
+		'intext+="OORORMAILBOXES"
+		'
+		'intext+="THEINTERNSHIPWASPAIDANDPRESTIGIOUSANDITDIDNTINCLUDEGETTINGANYONECOFFEEMYCOPYWRITINGWASGOODANDMYBOSSWASKINDCONFIDENCEBEGANTOBLOOMINMYSTOMACHIT"
+		'intext+="SPETALSDELICATEBUTCOLORFULHENRYRETURNEDTOCAMPUSFORAWEEKTOCELEBRATEHISTWENTYFIRSTBIRTHDAYWITHHISFRIENDSBEFOREHELEFTFORASIAANDIDROVEUPTOSEEHIMW"
+		'intext+="ESATACROSSFROMEACHOTHERATWESLEYANSCAFEBOOKSTOREFLIRTINGWARILYANDUNABLETOSTOPSMILINGHEWASNERVOUSHISEYESSAUCERWIDEANDWETIPREENEDINMYPINKFAUXLEA"
+		'intext+="THERJACKETANDBRAGGEDABOUTMYNEWJOBIWANTEDHIMTOBEIMPRESSEDTOREALIZEWHATAMISTAKEHEDMADEBUTMOSTLYIWANTEDTOTAKEHISHANDONTHETABLEANDSQUEEZEITMYFLED"
+		'intext+="GINGLIFEINNEWYORKFADEDINTOIRRELEVANCELOOKINGATTHISBOYILOVEDIWASNTOVERHIMANDIDIDNTBOTHERTOPRETENDTOBEAFTERANHOURORSOOFPOLITESMALLTALKANDCAREFU"
+		'intext+="LBANTERHENRYOFFEREDTOWALKMEBACKTOMYFRIENDRACHELSDORMWHEREIWASSTAYINGTHENIGHTHEWOULDBECRASHINGONOURFRIENDFELIXSCOUCHWEMENTIONEDTHESEDETAILSFUR"
+		'intext+="TIVELYDURINGCONVERSATIONLITTLEMORSECODECLUESTOBETRANSLATEDONLYIFWESHAREDTHESAMEMOTIVESIHADNOEXPECTATIONSOFMYVISITOTHERTHANTOSEEHIMAGAINANDIWA"
+		'intext+="SPETRIFIEDTOASSUMETOOMUCHANDLEAVEMYSELFEXPOSEDONCEAGAINTHEDESPERATEEXGIRLFRIENDONTHEGUESTROOMFLOOR"
+		'
+		'intext+="WHENIWASEIGHTINOTICEDANATLASONTHEBOOKSHELFINMYROOMIHADJUSTSTARTEDAMASSINGLARGEARTBOOKSFROMFAMILYMUSEUMTRIPSBUTTHISWASTHEFIRSTABNORMALLYSIZEDB"
+		'intext+="OOKINMYPOSESSIONITWASSOODDLYSHAPEDITSPAGESSPILLEDOVERTHEEDGEOFTHESHELFONEDAYIUSEDALLMYSTRENGTHTOWIGGLEITDOWNOFFTHEBOOKCASEISPRAWLEDONMYBEDROO"
+		'intext+="MFLOORANDBEGANSIFTINGTHROUGHTHELONGPAGESITMUSTHAVEBEENFROMTHEFIFTIESORSIXTIESITSMELLEDOLDBUTITWASCLEARLYABOOKTHATHADBEENCAREDFOROVERTHEYEARSI"
+		'intext+="TSPAGESWEREAMIXOFPASTELSSODIZZYINGANDCOMPLEXINHOWPINKSSEPARATEDFROMLIGHTGREENANDTHESKINNIESTBLUERIVERSCUTACROSSTHEPAGESONCEIWASOLDENOUGHTOREA"
+		'intext+="DMYGRANDPASTARTEDCEREMONIOUSLYGIFTINGMEBOOKSFROMHISSHELVES"
+		'
+		'intext+="HOWDOYOUTAMEAWITCHHISTORICALLYYOUDONTYOUKILLHERBURNHERHANGHERINTALESTHEWITCHISOFTENAHERASHEDEVILIFYOUWILLAWOMANWHOSLEEPSWITHLUCIFERWHOISSATAN"
+		'intext+="SMISTRESSWHOBEARSADEMONICMARKREADTHEFIFTEENTHCENTURYWITCHHUNTERSMALLEUSMALEFICARUMITLLTELLYOUHERVERYEXISTENCEHERBODYITSELFISAPORTALFROMTHISWO"
+		'intext+="RLDTOOTHERSANDSHEMUSTBEPUTDOWNLESTSHETEARSARIPINREALITYITSELFWICKEDWITCHESTHESTUFFOFHISTORICALLEGENDANDNIGHTMARISHFAIRYTALESINSPIREATERRORTHA"
+		'intext+="TVERGESONTHESUBLIMETHATFEELINGEDMUNDBURKEARTICULATEDSOLONGAGOOFSTANDINGONTHEEDGEOFACLIFFWHEREYOUFEELTHESIMULTANEITYOFDANGERANDSPECTACULARAWEM"
+		'intext+="OUNTAINSARESUBLIMEMILTONSSATANISSUBLIMESUBLIMITYONLYEXISTSINTHINGSTHATCOULDKILLYOUWHICHBRINGYOUTOTHEEDGEOFYOURSELFTHEUNTAMEDFEMININETHENSUREL"
+		'intext+="YFALLSINTOTHISCATEGORYWITCHESEXISTONTHEMARGINSINTHESHADOWSEVERTHREATENINGTOINVADEANDDISRUPTTHESANCTITYOFTHESOCIALORDERTHESEDAYSDISNEYDOESNTKI"
+		'intext+="LLWITCHESATLEASTNOTASOFTENASTHEYUSEDTOTHESEDAYSDISNEYISINTERESTEDINTHEULTIMATEREHABILITATIONPROJECTHOWDOYOUMAKETHESEARCHETYPALWONDERSTHISSUBL"
+		'intext+="IMEFEMININITYLESSFRIGHTENINGLESSPOWERFULPARTICULARLYTOPEOPLEINVESTEDINWOMENANDQUEERSBEHAVINGINNORMATIVELYGENDEREDWAYSYOUMAKETHEWITCHAMOTHER"
+		'
+		'intext+="ITWASNINETEENEIGHTYONEINTHEOLDECITYSECTIONOFPHILADELPHIAIWASSIXMYPARENTSWEREARTISTSMYDADACELLISTCOMPOSERARRANGERANDMYMOMAPOTTERANDTEACHERANDO"
+		'intext+="URTINYBATHROOMSHOWEDITONONEWHOLEWALLMYMOMHUNGAPOSTEROFTHESANFRANCISCOBATHSCIRCAEIGHTEENNINETYWITHLOTSOFGENTSINONEPIECESUITSANDLADIESINFRILLYB"
+		'intext+="ATHINGBONNETSBYTHETOILETONCINDERBLOCKANDBOARDSHELVESWERESTACKSANDSTACKSOFMAGAZINESNEWYORKERSMOSTLYPOSTCARDSFRAMEDTHEMIRROROVERTHESINKFLESHYVI"
+		'intext+="NTAGENUDIESWITHBOBBEDHAIRSTANDINGINCHORUSLINESBUTMORETHANTHENAKEDLADIESORTHEBORINGNEWYORKERCARTOONSIDSTAREATAFRAMEDPRINTBYOURFRIENDSTUARTHORN"
+		'intext+="THEWORDSFINDYOURSELFWEREINBOLDTYPEATTHETOPITLOOKEDLIKEAFAKEHIGHSCHOOLYEARBOOKPAGEFIVEROWSOFHEADSHOTSWITHNAMESTYPEDUNDERTHEMJIMUNDERABLANKLOOK"
+		'intext+="INGMANCAROLUNDERABLACKLADYWITHANAFROMYPARENTSTOLDMEITWASMAILARTBUTSTUARTDIDNTMAILITTOUSITWASACOLLAGEHEXEROXEDHEMADEAZILLIONCOPIESANDMAILEDTHE"
+		'intext+="MTOAZILLIONOTHERMAILARTISTSWHOEVERTHEYWEREMAILARTISTSWERELITERALTHEYMAILEDEACHOTHERARTAWHOLENETWORKOFWEIRDOSSOMEPROFESSIONALARTISTSSOMEELEANO"
+		'intext+="RRIGBYESQUELONELYPEOPLESOMEWHOJUSTLIKEDTHEPOSTALSERVICETHEYHADLISTSOFEACHOTHERSADDRESSESANDEVERYONEEXCHANGEDCOPIESTHEONLYEXPENSEWASXEROXINGAN"
+		'intext+="DSTAMPSTRULYARTFORTHEPEOPLE"
+		'
+		'intext+="THEEQUITABLELIFEBUILDINGATONEHUNDREDMONTGOMERYSTREETSITSINTHEHEARTOFSANFRANCISCOSFINANCIALDISTRICTNAMEDAFTERANINSURANCECOMPANYITWASTHEFIRSTSK"
+		'intext+="YSCRAPERBUILTINTHECITYAFTERTHEDEPRESSIONASYMBOLOFOPTIMISMRISINGTWENTYFIVESTORIESHIGHWITHMARBLEWALLSTHATSPARKLEDINTHESUNTODAYITISHOMETOALLSORT"
+		'intext+="SOFBUZZYBAYAREACOMPANIESFROMSPRUCECAPITALPARTNERSINVESTORSANDTHOUGHTLEADERSINTHELIFESCIENCESINDUSTRYTOTHEOUTCASTAGENCYSTRATEGISTSANDCREATIVES"
+		'intext+="WITHAHYPERGROWTHMINDSETTOGETAWAYFROMTHEHECTICPACEOFINVESTINGSTRATEGIZINGANDCREATINGTENANTSCANBURNOFFCALORIESINSIDETHEBUILDINGSPRIVATEGYMORTAK"
+		'intext+="ETHEIRLUNCHBREAKATOPALUXURIOUSROOFTOPDECKTHEEQUITABLELIFEBUILDINGISALSOHOMETOTHESANFRANCISCOIMMIGRATIONCOURTTHOUGHITSEASYTOMISSONMYFIRSTVISIT"
+		'intext+="LASTWINTERTHEONLYHINTTHATACOURTLAYWITHINWASTHESCORESOFFAMILIESINTHELOBBYCLUTCHINGSUMMONSESANDLOOKINGCONFUSEDTHECOURTISABOVEOCCUPYINGTHEFOURTH"
+		'intext+="EIGHTHANDNINTHFLOORSUPHERETHEELEVATORSOPENEDINTOASLIGHTLYOFFKILTERDIMENSIONASECURITYLINESNAKEDINTOACRAMPEDWAITINGROOMWHICHLEDTOAWINDINGANDWIN"
+		'intext+="DOWLESSHALLWAYFROMWHICHONEENTEREDIDENTICALWINDOWLESSCOURTROOMSITWASDEEPLYDISORIENTINGIOFTENENCOUNTEREDPEOPLEFUMBLINGAROUNDINTHEHALLWAYNOTSURE"
+		'intext+="HOWTHEHELLTOGETOUTLASTDECEMBERONATHURSDAYAFTERNOONIMETFRANCISCOUGARTEWHOMANAGESTHEIMMIGRATIONDEFENSEUNITOFTHESANFRANCISCOPUBLICDEFENDERSOFFIC"
+		'intext+="EUGARTEWHOISFORTYEIGHTWASDRESSEDINADARKGRAYSUITANDHADANEATLYTRIMMEDBEARDANDAYOUTHFULFACEUNLIKEMOSTPEOPLEIENCOUNTEREDHEAPPEAREDATEASEANDWELLRE"
+		'intext+="STEDHISCLIENTANIRAQIMANNAMEDABBASSATNEARBYBOUNCINGHISRIGHTLEGANDRADIATINGANXIETY"
+		'
+		'intext+="FORALONGTIMEITHOUGHTIRANANDCOMPETEDINSPORTASAWAYTOUSETHEMETAPHOROFSPORTTOUNDERSTANDLIFELIFEISAMARATHONIWASOFTENTOLDIREMEMBERWATCHINGANDREWATC"
+		'intext+="HINGCHARIOTSOFFIREPARTICULARLYTHATMOMENTINTHERAINWHENERICLIDDELLJUSTMINUTESAFTERWINNINGARACESTATESIWANTTOCOMPAREFAITHTORUNNINGINARACEITSHARDI"
+		'intext+="TREQUIRESENERGYOFWILLILOVEDTHATMOMENTASACHILDESPECIALLYASSOMEONEWHOHADATONEPOINTADEEPAMOUNTOFFAITHBUTIALWAYSPAUSEDTHECLIPBEFOREHESTATEDWHATLA"
+		'intext+="TERBECAMETOMEMOREOBVIOUSSOWHOAMITOSAYBELIEVEHAVEFAITHINTHEFACEOFLIFESREALITIESIHAVENOFORMULAFORWINNINGARACEEVERYONERUNSINTHEIROWNWAYITSTRUETH"
+		'intext+="ATEVERYONERUNSINTHEIROWNWAYWHICHISAFACTIVECOMETOAPPRECIATEASIVEGROWNOLDERPATIENCEBOTHWITHMYOWNPECULIARMOVEMENTSTHROUGHLIFEANDWITHTHOSEOFOTHER"
+		'intext+="SISASKILLIACTIVELYTRYTOCULTIVATEANDMAINTAINANDYETEVENLIDDELLSQUOTEHASTODOWITHWINNINGANDTHATTHEIDEAOFWINNINGORFINISHINGORACCOMPLISHINGHASBECOM"
+		'intext+="EITSOWNUNIVERSALSIGNIFIERITSNOTABOUTWHATYOUDOITSABOUTWHATYOUHAVEDONE"
+	end if
 	
 	'initialization stuff
 	
@@ -2816,12 +3162,6 @@ sub mainloop
 		asc2num100000(i+48)=i*100000
 		asc2num1000000(i+48)=i*1000000
 	next i
-	
-	basedir=curdir
-	mkdir(curdir+"\Ciphers\")
-	mkdir(curdir+"\Output\")
-	mkdir(curdir+"\Misc\")
-	mkdir(curdir+"\N-grams\")
 	
 	filter="Text files (*.txt)"+chr(0)+"*.txt*"
 	file_load_settings
@@ -3017,10 +3357,6 @@ sub mainloop
 						ui_editbox_settext(editbox_symbols_a1,"character(s) or number(s)#")
 					case "Set symbol n-gram size"
 						ui_editbox_settext(editbox_symbols_a1,"size#")
-					'case "Set plaintext letters for selected symbol"
-					'	ui_editbox_settext(editbox_symbols_a1,"amount#")
-					'case "Set plaintext letters for all symbols"
-					'	ui_editbox_settext(editbox_symbols_a1,"amount#")
 				end select	
 			end if
 			
@@ -3179,11 +3515,11 @@ sub mainloop
 					case "Randomize","Noop","Randomize row order","Randomize column order"
 						ui_editbox_settext(editbox_combine_a1,"amount: from#")
 						ui_editbox_settext(editbox_combine_a2,"amount: to#")
-					case"Randomize and bigrams"
+					case "Randomize and bigrams","Randomize and trigrams"
 						ui_editbox_settext(editbox_combine_a1,"amount: from#")
 						ui_editbox_settext(editbox_combine_a2,"amount: to#")
 						ui_editbox_settext(editbox_combine_a3,"step# (optional)")
-						ui_editbox_settext(editbox_combine_a4,"bigrams: amount#")
+						ui_editbox_settext(editbox_combine_a4,"n-grams: amount#")
 					case "Plaintext"
 						ui_editbox_settext(editbox_combine_a1,"from: plaintext#")
 						ui_editbox_settext(editbox_combine_a2,"to: plaintext#")
@@ -3282,8 +3618,8 @@ sub mainloop
 						ui_editbox_settext(editbox_manipulation_a2,"to: position#")
 						ui_editbox_settext(editbox_manipulation_a3,"step# (optional)")
 					case "Raise unique bigrams"
-					case "Randomize and bigrams"
-						ui_editbox_settext(editbox_manipulation_a1,"bigrams: amount#")
+					case "Randomize and bigrams","Randomize and trigrams"
+						ui_editbox_settext(editbox_manipulation_a1,"n-grams: amount#")
 					case "Randomize characters","Add null characters"
 						ui_editbox_settext(editbox_manipulation_a1,"amount#")
 					case "Assign homophones"
@@ -3333,8 +3669,7 @@ sub mainloop
 								case 3  
 									file_save_as()
 								case 4
-									generate_substrings
-									'exit_prog=1
+									exit_prog=1
 								case 5 
 									create_window_dimension
 									soi=string_to_info(ui_editbox_gettext(input_text))
@@ -3532,7 +3867,7 @@ sub mainloop
 											thread_ptr(threadsmax+1)=threadcreate(@thread_batch_ngrams_substitution,0)
 										end if
 									else ui_editbox_settext(output_text,soi)
-									end if	
+									end if
 								case 23 'convert to lowercase
 									soi=string_to_info(ui_editbox_gettext(input_text))
 									if soi="Ok" then
@@ -3777,7 +4112,17 @@ sub mainloop
 								'		ui_editbox_settext(output_text,"N-gram bias applied")
 								'	else ui_editbox_settext(output_text,"Error: no n-grams loaded")
 								'	end if
-								case 38
+								case 38 'ascii distance
+									dim as string cv=ui_editbox_gettext(input_text)
+									soi=string_to_info(cv)
+									if soi="Ok" then
+										for i=1 to info_length-1
+											info(i)=info(i+1)-info(i)
+											'info(i)=abs(info(i+1)-info(i))
+										next i
+										ui_editbox_settext(input_text,info_to_string(info(),info_length-1,info_x,info_y,1,0,0))
+									else ui_editbox_settext(output_text,soi)
+									end if
 								case 39 'square with spaces
 									dim as string con=ui_editbox_gettext(input_text)
 									dim as string conout=""
@@ -3970,7 +4315,7 @@ sub mainloop
 										ui_editbox_settext(input_text,info_to_string(info(),info_length,info_x,info_y,1,0,0))
 									else ui_editbox_settext(output_text,soi)
 									end if
-								case 51 'convert to distances
+								case 51 'convert to intersymbol distances
 									dim as string cv=ui_editbox_gettext(input_text)
 									soi=string_to_info(cv)
 									if soi="Ok" then
@@ -4167,6 +4512,70 @@ sub mainloop
 										ui_editbox_settext(input_text,info_to_string(txt(),j,info_x,info_y,0,0,0))
 									else ui_editbox_settext(output_text,soi)
 									end if
+								case 61 'batch ciphers (non-substitution)
+									if task_active<>"none" then stop_current_task
+									sleep 10
+									if len(solver_file_name_ngrams)>0 then
+										if task_active="none" then
+											sleep 10
+											solvesub_nosub=1
+											thread_ptr(threadsmax+1)=threadcreate(@thread_batch_ciphers_substitution,0)
+										end if
+									else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+									end if
+								case 62 'period map
+									dim as string num,cv=ui_editbox_gettext(input_text)+" "
+									s="":j=0:info_x=0
+									dim as integer minus,steps=format_periodmapsteps
+									for i=0 to len(cv)-1
+										select case cv[i]
+											case 48 to 57
+												num+=chr(cv[i])
+											case 13
+												if info_x=0 then info_x=j
+												if num<>"" then
+													j+=1
+													if minus=0 then
+														info(j)=val(num)
+													else
+														info(j)=-val(num)
+														minus=0
+													end if
+													num=""
+												end if
+											case 32
+												if num<>"" then
+													j+=1
+													if minus=0 then
+														info(j)=val(num)
+													else
+														info(j)=-val(num)
+														minus=0
+													end if
+													num=""
+												end if
+											case 45
+												minus=1
+										end select
+									next i
+									if steps>j-steps then steps=j-steps
+									for i=1 to j-steps
+										info(i)=info(i+steps)-info(i)
+									next i
+									ui_editbox_settext(input_text,info_to_string(info(),j-steps,info_x,j,1,0,0))
+								case 63 'period map 2
+									soi=string_to_info(ui_editbox_gettext(input_text))
+									if info_numerical=1 andalso info_symbols=info_length then
+										dim as long map(info_length)
+										for i=1 to info_length
+											map(info(i))=i
+										next i
+										for i=1 to info_length-format_periodmapsteps 'step format_periodmapsteps
+											info(i)=map(i+format_periodmapsteps)-map(i)
+										next i
+										ui_editbox_settext(input_text,info_to_string(info(),info_length-format_periodmapsteps,info_x,info_y,1,0,0))
+									else ui_editbox_settext(output_text,"Error: input have to be unique numbers from 1 to "+str(info_length))
+									end if
 								case 100 to 300 'statsmenu
 									soi=string_to_info(ui_editbox_gettext(input_text))
 									if soi="Ok" then
@@ -4329,7 +4738,7 @@ sub mainloop
 					
 				'window_main
 				''------------------------------------------------------------
-					
+				
 				#include "window_logic_solvers.bi"
 				
 				case button_main_pauseresume
@@ -4341,7 +4750,7 @@ sub mainloop
 					if msg.message=wm_lbuttondown then
 						stop_current_task
 					end if
-							
+					
 				case button_main_openfile
 					if msg.message=wm_lbuttondown then file_load()
 					
@@ -4386,7 +4795,7 @@ sub mainloop
 				#include "window_controls_combine.bi"
 			
 			end select
-					
+			
 			if ui_window_event_close(window_dimension,msg) then ui_destroywindow(window_dimension)
 			if ui_window_event_close(window_creatematrix,msg) then ui_destroywindow(window_creatematrix):cm_windowup=0
 			if ui_window_event_close(window_transposition,msg) then ui_destroywindow(window_transposition)
@@ -4399,6 +4808,8 @@ sub mainloop
 			if ui_window_event_close(window_symbols,msg) then ui_destroywindow(window_symbols)
 			if ui_window_event_close(window_cribs,msg) then ui_destroywindow(window_cribs):wc_windowup=0
 			if ui_window_event_close(window_polyphones,msg) then ui_destroywindow(window_polyphones):pp_windowup=0
+			if ui_window_event_close(window_columnar,msg) then ui_destroywindow(window_columnar):cl_windowup=0
+			if ui_window_event_close(window_rules,msg) then ui_destroywindow(window_rules):pt_windowup=0
 			if ui_window_event_close(window_main,msg) then exit_prog=1		
 			
 			if exit_prog=1 then
@@ -4406,18 +4817,18 @@ sub mainloop
 				for i=1 to threads
 					thread(i).thread_stop=1
 					do
-						sleep 10
+						sleep 0.001
 					loop until thread(i).thread_active=0
 				next i
 				exit do
 			end if
-	
+			
 		#endif
 	
 	loop
 	
 	sleep 100
-
+	
 end sub
 
 sub clean_thread_information
@@ -4487,12 +4898,13 @@ sub clean_thread_information
 			thread(ti).ckey(tj)=0
 			thread(ti).graph(tj)=0
 			for tk=0 to 4
+				thread(ti).bkey(tk,tj)=0
 				thread(ti).gkey(tj,tk)=0
 			next tk
 		next tj
 		for tj=0 to 100
 			for tk=0 to 20
-				thread(ti).hkey(100,20)=0
+				thread(ti).hkey(tj,tk)=0
 			next tk
 		next tj
 	next ti
@@ -4509,25 +4921,25 @@ sub update_solver_status
 		case 0	
 			solver_status+="Task: "+task_active+lb
 			if len(solver_file_name_ngrams)>0 then
-				solver_status+=solver_file_name_ngrams+lb
+				solver_status+="N-grams: "+solver_file_name_ngrams+lb
 			else
-				solver_status+="No n-grams loaded"+lb
-			end if	
+				solver_status+="N-grams: none"+lb
+			end if
 			solver_status+="---------------------------------------------------------"
 		case 1
 			if pausetask=0 then
 				if threads>1 then
-					solver_status+="Task: "+task_active+" (using "+str(threads)+" CPU threads)"+lb
+					solver_status+="Task: "+task_active+" ("+str(threads)+" CPU threads)"+lb
 				else
-					solver_status+="Task: "+task_active+" (using "+str(threads)+" CPU thread)"+lb
+					solver_status+="Task: "+task_active+" ("+str(threads)+" CPU thread)"+lb
 				end if
 			else
 				solver_status+="Task: "+task_active+" [PAUSED]"+lb
 			end if
 			if len(solver_file_name_ngrams)>0 then
-				solver_status+=solver_file_name_ngrams+lb
+				solver_status+="N-grams: "+solver_file_name_ngrams+lb
 			else
-				solver_status+="No n-grams loaded"+lb
+				solver_status+="N-grams: none"+lb
 			end if
 			solvesub_avgscore=0
 			solvesub_avgioc=0
@@ -4542,12 +4954,15 @@ sub update_solver_status
 			if restarts=0 then restarts=1
 			dim as integer restartsips=restarts+solvesub_batchciphersbigramsskipped
 			solver_status+="---------------------------------------------------------"+lb
-			solver_status+="Items: "+str(restartsips-1)
-			solver_status+=" Items per second: "+rdc((restartsips-1)/(timer-ips_timer),2)
-			solver_status+=" MIPS: "+rdc(iterations/(timer-ips_timer)/1000000,2)+lb
-			solver_status+="AVG score: "+rdc(solvesub_avgscore/restarts,2)
-			solver_status+=" IOC: "+rdc(solvesub_avgioc/restarts,5)
-			if solvesub_advstats=1 then solver_status+=" PC-cycles: "+rdc(solvesub_avgpccycles/restarts,2)
+			solver_status+="Items: "+rdc2(restartsips-1,2)
+			solver_status+=" Items/s: "+rdc2((restartsips-1)/(timer-ips_timer),2)
+			solver_status+=" Keys/s: "+rdc2(iterations/(timer-ips_timer),2)+lb
+			'solver_status+="Using "+str(threads)+" CPU thread"
+			'if threads>1 then solver_status+="s"
+			'solver_status+=lb
+			solver_status+="Average score: "+rdc(solvesub_avgscore/restarts,2)
+			solver_status+=" Average IOC: "+rdc(solvesub_avgioc/restarts,5)
+			'if solvesub_advstats=1 andalso solvesub_avgpccycles>0 then solver_status+=" PC-cycles: "+rdc(solvesub_avgpccycles/restarts,2)
 	end select
 	ui_editbox_settext(solver_text,solver_status)
 	
@@ -4590,48 +5005,70 @@ sub normalize_ngramfactor
 		exit sub
 	end if
 	
-	if ngram_alphabet_size<>26 then
-		ui_editbox_settext(output_text,"Error: alphabet size must be 26")
-		exit sub
-	end if
+	'if ngram_alphabet_size<>26 then
+	'	ui_editbox_settext(output_text,"Error: alphabet size must be 26")
+	'	exit sub
+	'end if
 	
-	dim as byte nnerror
-	dim as integer i
+	dim as integer i,j,k,ulet,llet,nnerror
 	
 	for i=0 to ngram_alphabet_size-1 'check alphabet
 		select case alphabet(i)
-			case 65 to 90
-			'case 97 to 122
+			case 65 to 90:ulet+=1
+			case 97 to 122:llet+=1
 			case else:nnerror=1
 		end select
 	next i
 	
-	if nnerror=1 then
-		ui_editbox_settext(output_text,"Error: alphabet must be ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-		exit sub
-	end if
+	'if nnerror=1 then
+	'	ui_editbox_settext(output_text,"Error: alphabet must be ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	'	exit sub
+	'end if
 	
-	dim as integer z1,z2,j,ioc_int,chi_int,l,s=25
+	dim as integer z1,z2,ioc_int,chi_int ',l,s=25
 	dim as double ngram_score,score,entropy
 	dim as string o
-	dim as string text=intext
+	'dim as string text=intext
 	
-	l=len(text)
+	dim as integer l,s=ngram_alphabet_size-1
+	dim as byte cip(len(intext))
+	dim as integer frq(ngram_alphabet_size-1) 'frq(25)
+	j=0
 	
-	dim as byte cip(l)
-	dim as integer frq(25)
+	'process intext to ngram alphabet
+	for i=0 to len(intext)-1
+		if ulet>0 andalso llet>0 then
+			k=intext[i]
+		else
+			if ulet>0 then 'uppercase ngram alphabet
+				k=asc(ucase(chr(intext[i])))
+			else
+				if llet>0 then 'lowercase ngram alphabet
+					k=asc(lcase(chr(intext[i])))
+				end if
+			end if
+		end if
+		if alpharevp1(k)>0 then
+			j+=1
+			cip(j)=alpharev(k)
+			frq(cip(j))+=1
+		end if
+	next i
+	
+	l=j 'len(text)
 	
 	dim as double enttable(l) 'update with max frequency
+	
 	for i=1 to l
 		enttable(i)=abs(logbx(i/l,2)*(i/l))
 	next i
 	
-	for i=0 to l-1
-		cip(i+1)=text[i]-65
-		frq(text[i]-65)+=1
-	next i
+	'for i=0 to l-1
+	'	cip(i+1)=text[i]-65
+	'	frq(text[i]-65)+=1
+	'next i
 	
-	for i=0 to 25
+	for i=0 to s
 		entropy+=enttable(frq(i))
 	next i
 	
@@ -4644,7 +5081,8 @@ sub normalize_ngramfactor
 			case 6:ngram_score+=g6(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4),cip(i+5))
 			case 7:ngram_score+=g7(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4),cip(i+5),cip(i+6))
 			case 8:ngram_score+=bh8(bh4(cip(i),cip(i+1),cip(i+2),cip(i+3)),bh4(cip(i+4),cip(i+5),cip(i+6),cip(i+7)))
-			'case 10:ngram_score+=bh10(bh5(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4)),bh5(cip(i+5),cip(i+6),cip(i+7),cip(i+8),cip(i+9)))
+			case 10:ngram_score+=bh10(bh5(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4)),bh5(cip(i+5),cip(i+6),cip(i+7),cip(i+8),cip(i+9)))
+			case 12:ngram_score+=bh12(bh6(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4),cip(i+5)),bh6(cip(i+6),cip(i+7),cip(i+8),cip(i+9),cip(i+10),cip(i+11)))
 		end select
 	next i
 	
@@ -4823,7 +5261,7 @@ function cstate_operation(byval instate as integer,byval outstate as integer,byv
 			dim as short l=arg(1)
 			dim as short s=arg(2)
 			dim as long a1=arg(7) 'number of bigrams
-			if a1=0 or a1>l then return "Error: "+lcase(operation)+" (bigram repeats amount)"
+			'if a1=0 or a1>l-1 then return "Error: "+lcase(operation)+" (bigram repeats amount)"
 			dim as integer a,b,c,score
 			dim as integer state=rnd*2147483647 or 1
 			dim as long cip(l),sym(s)
@@ -4848,6 +5286,47 @@ function cstate_operation(byval instate as integer,byval outstate as integer,byv
 					b=cip(i+1)
 					if id(a,b)<c then
 						id(a,b)=c
+					else 
+						score+=1
+					end if
+				next i
+			loop until score=a1 'or stoptask=1
+			'stoptask=0
+			for i=1 to l
+				cstate(outstate,i)=sym(cip(i))
+			next i
+			return str(l)+","+str(s)
+		
+		case "Randomize and trigrams"
+			dim as short l=arg(1)
+			dim as short s=arg(2)
+			dim as long a1=arg(7) 'number of bigrams
+			'if a1=0 or a1>l-2 then return "Error: "+lcase(operation)+" (trigram repeats amount)"
+			dim as integer a,b,c,d,score
+			dim as integer state=rnd*2147483647 or 1
+			dim as long cip(l),sym(s)
+			dim as uinteger id(s,s,s)
+			s=cstate_nba(instate,2,l,s)
+			for i=1 to l
+				sym(cstate(2,i))=cstate(instate,i)
+				cip(i)=cstate(2,i)
+			next i
+			do
+				for i=1 to l
+					state=48271*state and 2147483647
+					a=1+l*state shr 31
+					state=48271*state and 2147483647
+					b=1+l*state shr 31
+					swap cip(a),cip(b)
+				next i
+				d+=1
+				score=0
+				for i=1 to l-1
+					a=cip(i)
+					b=cip(i+1)
+					c=cip(i+2)
+					if id(a,b,c)<d then
+						id(a,b,c)=d
 					else 
 						score+=1
 					end if
@@ -5704,7 +6183,7 @@ function cstate_operation(byval instate as integer,byval outstate as integer,byv
 				end if
 			next i
 			return str(l)+","+str(s) 'nba incorrect
-						
+			
 		case "Period"
 			dim as short l=arg(1)
 			dim as short untransposed=arg(5)
@@ -5813,7 +6292,7 @@ function cstate_operation(byval instate as integer,byval outstate as integer,byv
 					end if
 				next x
 			next y
-					
+			
 		case "Period column order" '<----------------------------- optimize
 			dim as short l=arg(1)
 			dim as short dx=arg(3)
@@ -8033,8 +8512,6 @@ sub thread_batch_ngrams_substitution(byval none as any ptr)
 		ciprnd(i)=nuba(i)
 	next i
 	
-	redim combine_score(solvesub_batchngramsrestarts*2)
-
 	open filename for binary as #1
 	do
 		line input #1,li
@@ -8043,13 +8520,15 @@ sub thread_batch_ngrams_substitution(byval none as any ptr)
 			close #1
 			task_active="none"
 			update_solver_status
-			redim combine(0)
+			'redim combine(0)
 			exit sub
 		end if
 		languages+=1
 		langfiles(languages)=li
 	loop until eof(1)
 	close #1
+	
+	redim combine_score(solvesub_batchngramsrestarts*2)
 	
 	loadngrams_showmsg=0
 	old_solvesub_outputdir=solvesub_outputdir
@@ -8317,15 +8796,17 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 	dim as short dy0=info_y
 	dim as integer cip0(constcip)
 	dim as integer nba0(constcip)
+	dim as integer inv0(constcip)
+	dim as long sym(l)
 	dim as integer ngram_score
 	dim as integer its,br1_curr,br1_restarts
 	dim as integer itsmax=solvesub_hciterations
-	dim as double tempstart=300/threads '10
+	dim as double tempstart=300/threads 'division ???
 	dim as double temp=tempstart
 	dim as double temp_min=tempstart/itsmax
 	dim as integer rc,r1,r2,r3,r4,ml,bs,restarts,improved
 	dim as double change_operation
-	dim as integer argmax=6
+	const argmax=6
 	dim as string op,re,item
 	dim as double arg(100)
 	dim as short ccs=21
@@ -8450,11 +8931,40 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 	for i=1 to l 'get cipher from input window
 		cip0(i)=info(i)
 		nba0(i)=nuba(i)
-		cstate(ccs,i)=nba0(i)
 		cstate(ccs3,i)=i
-		for j=0 to stacksize
-			cstate(ccs2+j,i)=nba0(i)
-		next j
+		if solvesub_nosub=1 then
+			if alpharevp1(info(i))=0 then
+				ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+				'task_active="none"
+				'update_solver_status
+				exit sub
+			end if
+			cstate(ccs,i)=alpharevp1(info(i))
+			'cstate(ccs,i)=i 'numeric for inversion
+			for j=0 to stacksize	
+				cstate(ccs2+j,i)=alpharevp1(info(i))
+				'cstate(ccs2+j,i)=i 'numeric for inversion
+			next j
+			'cip0(i)=alpharevp1(info(i)) '-1
+			'select case cip0(i)
+			'	case 32 'space
+			'		sym(nba0(i))=27
+			'	case 46 'point
+			'		sym(nba0(i))=28
+			'	case 65 to 90 'uppercase
+			'		sym(nba0(i))=cip0(i)-64
+			'	case 97 to 122 'lowercase
+			'		sym(nba0(i))=cip0(i)-96
+			'end select
+		else
+			cstate(ccs,i)=nba0(i)
+			'cstate(ccs,i)=i 'numeric for inversion
+			for j=0 to stacksize	
+				cstate(ccs2+j,i)=nba0(i)
+				'cstate(ccs2+j,i)=i 'numeric for inversion
+			next j
+		end if
+		
 	next i
 	
 	ips_timer=timer
@@ -8463,7 +8973,7 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 	stoptask=0
 	solver_status_processing=1
 	global_best_score=0
-	task_active="substitution + simple transposition"
+	if solvesub_nosub=0 then task_active="substitution + simple transposition" else task_active="simple transposition"
 	update_solver_status
 	
 	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then
@@ -8471,6 +8981,8 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 		open basedir+"\Output\batch_"+str(batchnr)+".txt" for output as #3
 		print #3,"output_sub_directory=batch_"+str(batchnr)
 	end if
+	
+	'if solvesub_nosub=1 then use_cribs=1
 	
 	'redim crc(2^32) '4 GB
 	
@@ -8571,8 +9083,8 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 						else
 							for i=1 to len(ln)
 								select case asc(ln,i)
-									case 32 'space
-										'error
+									'case 32 'space
+									'	'error
 									case else 'symbols
 										count+=1
 										if count<=lmax then
@@ -8593,7 +9105,9 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 						if l>lmax then l=lmax
 						s=0
 						erase ident
+						
 						for i=1 to l
+							
 							if ident(batchinfo(i))=0 then
 								s+=1
 								ident(batchinfo(i))=s
@@ -8601,6 +9115,29 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 							else
 								batchnba(i)=ident(batchinfo(i))
 							end if
+							
+							'if solvesub_nosub=1 then
+							'	
+							'	if alpharevp1(batchinfo(i))=0 then
+							'		ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+							'		task_active="none"
+							'		update_solver_status
+							'		exit sub
+							'	end if
+							'	
+							'	'select case batchinfo(i)
+							'	'	case 32 'space
+							'	'		sym(batchnba(i))=27
+							'	'	case 46 'point
+							'	'		sym(batchnba(i))=28
+							'	'	case 65 to 90 'uppercase
+							'	'		sym(batchnba(i))=batchinfo(i)-64
+							'	'	case 97 to 122 'lowercase
+							'	'		sym(batchnba(i))=batchinfo(i)-96
+							'	'end select
+							'	
+							'end if
+							
 						next i
 						
 						'process cipher and leave line input loop
@@ -8619,8 +9156,18 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 						'dim as integer cip0(l)
 						'dim as integer nba0(l)
 						for i=1 to l
+							if solvesub_nosub=1 then
+								if alpharevp1(batchinfo(i))=0 then 'or skip cipher and give warning ???
+									ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+									task_active="none"
+									update_solver_status
+									exit sub
+								end if
+								nba0(i)=alpharevp1(batchinfo(i))
+							else
+								nba0(i)=batchnba(i)
+							end if
 							cip0(i)=batchinfo(i)
-							nba0(i)=batchnba(i)
 							cstate(ccs,i)=nba0(i)
 							cstate(ccs3,i)=i
 							for j=0 to stacksize
@@ -9638,7 +10185,10 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 									x=x1:y=y1:i=0
 									do
 										gr2(x,y)=1
-										if gr0(x,y)>0 andalso gr1(x,y)=0 then i+=1:gr1(x,y)=i
+										if gr0(x,y)>0 andalso gr1(x,y)=0 then 
+											i+=1
+											gr1(x,y)=i
+										end if
 										select case d
 											case 1:x+=1
 												if x=dx or gr2(x+1,y)>0 then
@@ -9662,16 +10212,18 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 												end if
 										end select	
 									loop until i=l
-									if j=0 then i=0 else i=l 'else i=l
+									if j=0 then i=1 else i=l
 									for y=1 to dy
 										for x=1 to dx
-											if j=0 then i+=1 else i-=1
-											if utp=0 then
-												cstate(outstate,i)=cstate(instate,gr1(x,y))
-											else
-												cstate(outstate,gr1(x,y))=cstate(instate,i)
-											end if
-											if i=l or i=0 then exit for,for
+											'if gr1(x,y)>0 andalso cstate(instate,gr1(x,y))>0 then
+												if utp=0 then
+													cstate(outstate,i)=cstate(instate,gr1(x,y))
+												else
+													cstate(outstate,gr1(x,y))=cstate(instate,i)
+												end if
+												if j=0 then i+=1 else i-=1
+												if i=l+1 or i=0 then exit for,for
+											'end if
 										next x
 									next y
 								case 21 'period from-to
@@ -9761,9 +10313,16 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 								cb=1
 								erase id
 							end if
+							
+							'for i=1 to l 'for inversion
+							'	inv0(cstate(instate,i))=nba0(i)
+							'next i
+							
 							for i=1 to l-1
 								a=cstate(instate,i)
 								b=cstate(instate,i+1)
+								'a=inv0(i)
+								'b=inv0(i+1)
 								if id(a,b)<cb then
 									id(a,b)=cb
 								else
@@ -9804,7 +10363,7 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 				next i
 				
 			loop
-		
+			
 		loop until mv_best>0
 		
 		item=""
@@ -10624,16 +11183,16 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 									end if
 							end select
 						loop until i=l
-						if j=0 then i=0 else i=l
+						if j=0 then i=1 else i=l
 						for y=1 to dy
 							for x=1 to dx
-								if j=0 then i+=1 else i-=1
 								if utp=0 then
 									cstate(outstate,i)=cstate(instate,gr1(x,y))
 								else
 									cstate(outstate,gr1(x,y))=cstate(instate,i)
 								end if
-								if i=l or i=0 then exit for,for
+								if j=0 then i+=1 else i-=1
+								if i=l+1 or i=0 then exit for,for
 							next x
 						next y
 					case 21 'period from-to
@@ -10705,6 +11264,7 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 			if timer-soltimer>1 andalso improved=1 then
 				soltimer=timer
 				if solvesub_transpositionbatchciphers=1 then hc="Batch cipher: "+itemname+lb else hc=""
+				if solvesub_nosub=1 then iterations=1
 				hc+="Restart: "+str(restarts+1)+" Hill climber: "+str(its)+"/"+str(itsmax)+" @ "+str(int(iterations))+lb
 				ui_editbox_settext(output_text,hc+os)
 			end if
@@ -10835,13 +11395,21 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 				thread(t).advstats=solvesub_advstats
 				thread(t).ioc2=mv_best
 				
-				if solvesub_pcmode=1 then
+				'if solvesub_nosub=1 then 'crib
+				'	for i=1 to s
+				'		thread(t).ckey(i)=sym(i)
+				'	next i
+				'end if
+				
+				if solvesub_pcmode=1 andalso solvesub_nosub=0 then
 					for i=1 to l
 						thread(t).key(i)=cstate(ccs3+stacksize,i)
 					next i
 				end if
+				
 				for i=1 to l
 					thread(t).cip(i)=cstate(ccs+stacksize,i)
+					'thread(t).cip(cstate(ccs+stacksize,i))=nba0(i) 'inversion
 				next i
 				'crc(crc_32(@cstate(ccs+stacksize,1),l))=1
 				for i=0 to stacksize
@@ -10868,6 +11436,9 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 	loop until stoptask=1
 	stoptask=0
 	
+	use_cribs=0
+	solvesub_nosub=0
+	
 	dim as double stucktimer=timer
 	for i=1 to threads
 		thread(i).solver_stop=1
@@ -10875,6 +11446,9 @@ sub thread_solve_simpletransposition(byval none as any ptr)
 			sleep 10
 		loop until thread(i).solver_waiting=1 or timer-stucktimer>2
 	next i
+	
+	toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",4,1,threads) 'stop solver
+	toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",2,1,threads) 'stop thread
 	
 	close #1
 	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then close #3
@@ -10908,6 +11482,7 @@ sub thread_solve_substitution(byval none as any ptr)
 	
 	for i=1 to l
 		cip(i)=nuba(i)
+		cip2(i)=info(i)
 	next i
 	
 	ips_timer=timer
@@ -10924,15 +11499,6 @@ sub thread_solve_substitution(byval none as any ptr)
 		open basedir+"\Output\batch_"+str(batchnr)+".txt" for output as #3
 		print #3,"output_sub_directory=batch_"+str(batchnr)
 	end if
-	
-	'string_to_info(ui_editbox_gettext(output_text)) 'allow transposition matrix
-	'if info_length=l andalso info_symbols=l then
-	'	use_tm=1
-	'	for i=1 to l
-	'		key(i)=info(i)
-	'		cip2(info(i))=cip(i)
-	'	next i
-	'end if
 	
 	dim as integer restarts,avgits,cc,timertest=1 'solve time test
 	dim as double avgsolvetime,avgrestarts
@@ -10962,6 +11528,7 @@ sub thread_solve_substitution(byval none as any ptr)
 			
 			if thread(t).score>best_score then
 				
+				if solvesub_nosub=1 then stoptask=1 '<----------------
 				best_score=thread(t).score+0.00001
 				
 				os=""
@@ -11047,19 +11614,21 @@ sub thread_solve_substitution(byval none as any ptr)
 				thread(t).matchweight=solvesub_matchweight
 				thread(t).entweight=solvesub_entweight
 				thread(t).solver_stop=0
+				thread(t).pcmode=0
 				
-				'if use_tm=0 then
-					thread(t).pcmode=0
+				if solvesub_nosub=0 then
 					for j=1 to l
 						thread(t).cip(j)=cip(j)
 					next j
-				'else
-				'	thread(t).pcmode=solvesub_pcmode
-				'	for j=1 to l
-				'		thread(t).cip(j)=cip2(j)
-				'		thread(t).key(j)=key(j)
-				'	next j
-				'end if
+				else
+					for j=1 to l
+						if alpharevp1(cip2(j))=0 then
+							ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+							exit do
+						end if
+						thread(t).cip(j)=alpharevp1(cip2(j))
+					next j
+				end if
 				
 				thread(t).update=0
 				thread(t).solver_waiting=0 'engage thread
@@ -11077,6 +11646,8 @@ sub thread_solve_substitution(byval none as any ptr)
 	loop until stoptask=1
 	stoptask=0
 	
+	if solvesub_nosub=1 then solvesub_nosub=0
+	
 	dim as double stucktimer=timer
 	for t=1 to threads
 		thread(t).solver_stop=1
@@ -11091,7 +11662,256 @@ sub thread_solve_substitution(byval none as any ptr)
 	solver_status_processing=0
 	task_active="none"
 	update_solver_status
+	
+end sub
 
+sub thread_solve_nosub(byval none as any ptr)
+	
+	dim as integer g,h,i,j,k,a,p,t,its,r1,r2,e
+	dim as integer iterations=solvesub_iterations
+	dim as double best_score
+	dim as string os,os2,os3
+	dim as integer l=info_length
+	dim as integer s=info_symbols
+	dim as integer dx=info_x
+	dim as integer dy=info_y
+	dim as short cip(l)
+	dim as short cip2(l)
+	dim as short cip3(l)
+	dim as long cip4(l)
+	dim as double dbl(constcip)
+	dim as short key(l)
+	dim as long sol(l)
+	dim as integer ngram_score
+	'dim as byte use_tm
+	dim as integer restarts,stdits=1000
+	dim as double scores(stdits)
+	dim as double high,low=999999999999
+	dim as long state=1
+	dim as integer old_solvesub_outputdir=solvesub_outputdir
+	dim as integer old_num,error1
+	
+	for i=1 to l
+		cip(i)=nuba(i)
+		cip2(i)=info(i)
+		cip3(i)=info(i)
+		cip4(i)=info(i)
+	next i
+	
+	ips_timer=timer
+	dim as double statustimer=timer
+	stoptask=0
+	solver_status_processing=1
+	global_best_score=0
+	
+	task_active=lcase(ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main)))
+	update_solver_status
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then
+		batchnr+=1
+		open basedir+"\Output\batch_"+str(batchnr)+".txt" for output as #3
+		print #3,"output_sub_directory=batch_"+str(batchnr)
+	end if
+	
+	sectimer=timer
+	
+	do
+		
+		sleep twait
+		
+		for t=1 to threads
+			
+			if pausetask=1 then 'pause task
+				update_solver_status
+				do
+					sleep 10
+				loop until pausetask=0
+				update_solver_status
+			end if
+			
+			if thread(t).score>0 andalso thread(t).itemnumber=0 then
+				
+				best_score=thread(t).score+0.00001
+				os=""
+				#include "thread_solve_output.bi"
+				'os+=lb
+				os2=info_to_string(thread(t).sol(),thread(t).l,dx,dy,0,solvesub_addspaces,0)
+				'ui_editbox_settext(output_text,os)
+				
+			end if
+			
+			if thread(t).solver_waiting=1 then 'andalso best_score>=thread(t).score then
+				
+				if thread(t).score>0 andalso thread(t).itemnumber>0 then
+					restarts+=1
+					scores(restarts)=thread(t).score
+					if thread(t).score>high then high=thread(t).score
+					if thread(t).score<low then low=thread(t).score
+					if restarts=stdits then exit do
+				end if
+				
+				thread(t).outputdir=basedir+"\Output\"
+				if its>0 then solvesub_outputdir=0 'not working ???
+				thread(t).l=l
+				thread(t).s=s
+				thread(t).dim_x=dx
+				thread(t).dim_y=dy
+				thread(t).score=0	
+				thread(t).advstats=solvesub_advstats
+				thread(t).iterations=iterations
+				thread(t).temperature=solvesub_temperature
+				thread(t).restarts=solvesub_restarts
+				thread(t).subrestartlevels=solvesub_subrestartlevels
+				thread(t).ngramfactor=solvesub_ngramfactor
+				thread(t).multiplicityweight=solvesub_multiplicityweight
+				thread(t).matchweight=solvesub_matchweight
+				thread(t).entweight=solvesub_entweight
+				thread(t).solver_stop=0
+				thread(t).pcmode=0
+				
+				if its>0 then
+					for i=1 to l*5
+						state=48271*state and 2147483647
+						r1=1+l*state shr 31
+						state=48271*state and 2147483647
+						r2=1+l*state shr 31
+						swap cip2(r1),cip2(r2)
+					next i
+				end if
+				
+				for j=1 to l
+					if alpharevp1(cip2(j))=0 then
+						ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+						error1=1
+						exit do
+					end if
+					thread(t).cip(j)=alpharevp1(cip2(j))
+				next j
+				
+				thread(t).update=0
+				thread(t).itemnumber=its
+				thread(t).solver_waiting=0 'engage thread
+				
+				its+=1
+				
+				if timer-statustimer>1 then
+					statustimer=timer
+					update_solver_status
+				end if
+				
+			end if	
+			
+		next t
+		
+	loop until stoptask=1
+	
+	stoptask=0
+	solvesub_nosub=0
+	
+	dim as double stucktimer=timer
+	for t=1 to threads
+		thread(t).solver_stop=1
+		do
+			sleep 1
+		loop until thread(t).solver_waiting=1 or timer-stucktimer>2
+	next t
+	
+	solvesub_outputdir=old_solvesub_outputdir
+	
+	if error1=0 then
+		
+		dim as short nglist(l,ngram_size)
+		
+		os3="Details:"+lb
+		os3+="---------------------------------------------------------"+lb
+		os3+="Sigma of "+rdc(best_score,2)+": "+rdc(stdev(best_score,stdits,scores()),2)+" ("+str(stdits)+" shuffles)"+lb
+		'os3+="Shuffles: "+str(stdits)+lb
+		os3+="Lowest: "+rdc(low,2)+lb
+		os3+="Highest: "+rdc(high,2)+lb+lb
+		os3+="Outputted: "+str(ngram_size)+"-gram heat map 1.bmp"+lb
+		os3+="Outputted: "+str(ngram_size)+"-gram heat map 2.bmp"+lb+lb
+		
+		for i=1 to l
+			cip3(i)=alpharevp1(cip3(i))-1
+		next i
+		
+		for i=1 to l-(ngram_size-1)
+			select case ngram_size
+				case 2:nglist(i,0)=g2(cip3(i),cip3(i+1))
+				case 3:nglist(i,0)=g3(cip3(i),cip3(i+1),cip3(i+2))
+				case 4:nglist(i,0)=g4(cip3(i),cip3(i+1),cip3(i+2),cip3(i+3))
+				case 5:nglist(i,0)=g5(cip3(i),cip3(i+1),cip3(i+2),cip3(i+3),cip3(i+4))
+				case 6:nglist(i,0)=g6(cip3(i),cip3(i+1),cip3(i+2),cip3(i+3),cip3(i+4),cip3(i+5))
+				case 7:nglist(i,0)=g7(cip3(i),cip3(i+1),cip3(i+2),cip3(i+3),cip3(i+4),cip3(i+5),cip3(i+6))
+				case 8:nglist(i,0)=bh8(bh4(cip3(i),cip3(i+1),cip3(i+2),cip3(i+3)),bh4(cip3(i+4),cip3(i+5),cip3(i+6),cip3(i+7)))
+				case 10:nglist(i,0)=bh10(bh5(cip3(i),cip3(i+1),cip3(i+2),cip3(i+3),cip3(i+4)),bh5(cip3(i+5),cip3(i+6),cip3(i+7),cip3(i+8),cip3(i+9)))
+			end select
+			for j=0 to ngram_size-1
+				nglist(i,j+1)=cip4(i+j)
+				dbl(i+j)+=nglist(i,0)
+			next j
+		next i
+		
+		os3+="Positional n-gram score:"+lb
+		os3+="------------------------"+lb
+		for g=10 to 10
+			for i=1 to g 'ngram_size
+				k=0:h=0
+				for j=i to l-(ngram_size-0) step 10
+					h+=1
+					k+=nglist(j,0)
+				next j
+				os3+="Rail "+str(i)+": "+rdc(k/h,2)+lb
+			next i
+			os3+=lb
+		next g
+		
+		old_num=info_numerical
+		info_numerical=0
+		output_colormap(dbl(),cip4(),l,dx,dy,0,str(ngram_size)+"-gram heat map 1")
+		info_numerical=old_num
+		
+		erase dbl
+		for i=1 to l-(ngram_size-1)
+			dbl(i)=nglist(i,0)^2
+		next i
+		
+		old_num=info_numerical
+		info_numerical=0
+		output_colormap(dbl(),cip4(),l,dx,dy,0,str(ngram_size)+"-gram heat map 2")
+		info_numerical=old_num
+		
+		do
+			e=0
+			for i=1 to l-(ngram_size+1)
+				if nglist(i+1,0)>nglist(i,0) then
+					e=1
+					for j=0 to ngram_size
+						swap nglist(i+1,j),nglist(i,j)
+					next j
+				end if
+			next i
+		loop until e=0
+		for i=1 to l-ngram_size
+			for j=1 to ngram_size
+				os3+=chr(nglist(i,j))
+			next j
+			os3+=": "
+			os3+=str(nglist(i,0))
+			if i<>l-ngram_size then os3+=lb
+		next i
+		
+	end if
+	
+	ui_editbox_settext(output_text,os+lb+os2+lb+lb+os3)
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then close #3
+	
+	clean_thread_information
+	solver_status_processing=0
+	task_active="none"
+	update_solver_status
+	
 end sub
 
 sub thread_solve_units(byval none as any ptr)
@@ -12930,445 +13750,6 @@ sub thread_benchmark(byval none as any ptr)
 
 end sub
 
-sub thread_solve_rectangles(byval none as any ptr)
-	
-	'vertical rectangles
-	'variable period per rectangle
-	'2d period
-	
-	dim as integer i,j,k,t,r,e,a,x,y,x1,x2,y1,y2,sx1,xy,cl,p,utp,ki,ci
-	dim as integer iterations=solvesub_iterations
-	dim as double d,best_score,old_score,new_score
-	dim as string os
-	dim as integer l=info_length
-	dim as integer s=info_symbols
-	dim as integer dx=info_x
-	dim as integer dy=info_y
-	dim as long nba(l)
-	dim as long cip(l)
-	dim as long cip2(l)
-	dim as long cip3(l)
-	dim as long mat1(l)
-	dim as long mat2(l)
-	dim as long grid(dx,dy)
-	dim as long grid2(dx,dy)
-	dim as integer ngram_score
-	
-	for i=1 to l
-		nba(i)=nuba(i)
-	next i
-	
-	i=0
-	for y=1 to dy
-		for x=1 to dx
-			i+=1
-			grid(x,y)=nuba(i)
-			if i=l then exit for,for
-		next x
-	next y
-	
-	if dy=1 then
-		ui_editbox_settext(output_text,"Error: rows < 2")
-		return
-	end if
-	
-	ips_timer=timer
-	dim as double statustimer=timer
-	stoptask=0
-	solver_status_processing=1
-	global_best_score=0
-	
-	task_active="substitution + rectangles"
-	update_solver_status
-	
-	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then
-		batchnr+=1
-		open basedir+"\Output\batch_"+str(batchnr)+".txt" for output as #3
-		print #3,"output_sub_directory=batch_"+str(batchnr)
-	end if
-	
-	dim as integer bkey(l,2),key(l,2)
-	dim as integer kl=1 'divisions
-	dim as integer restarts,its
-	dim as double itsmax=solvesub_hciterations
-	dim as double temp_start=3000/threads
-	dim as double temp=temp_start
-	dim as double temp_min=temp_start/itsmax
-	
-	'op0=period
-	'op1=scytale
-	
-	'area0=characters
-	'area1=by rows
-	
-	dim as integer op=0 'operation
-	dim as integer area=0 'area mode
-	dim as integer varperiod=0 'variable period
-	
-	select case area
-		case 0 'horizontal (by characters)
-			for i=1 to kl 'new key
-				do
-					e=0
-					r=int(rnd*(l-1))+1
-					for j=1 to i-1
-						if bkey(j,2)=r then e=1
-					next j
-				loop until e=0
-				bkey(i,2)=r
-			next i
-		case 1 'horizontal (by rows)
-			for i=1 to kl 'new key
-				do
-					e=0
-					r=int(rnd*(dy-1))+1
-					for j=1 to i-1
-						if bkey(j,2)=r then e=1
-					next j
-				loop until e=0
-				bkey(i,2)=r
-			next i
-	end select
-	for i=0 to kl
-		if varperiod=0 then
-			bkey(i,1)=solvesub_pnperiod
-		else
-			bkey(i,1)=1
-		end if
-	next i
-	
-	sectimer=timer
-	
-	do
-		
-		sleep twait
-		
-		for t=1 to threads
-			
-			if pausetask=1 then 'pause task
-				update_solver_status
-				do
-					sleep 10
-				loop until pausetask=0
-				update_solver_status
-			end if
-			
-			if thread(t).solver_waiting=1 then
-				
-				if thread(t).score>new_score then
-					
-					new_score=thread(t).score
-					
-					if new_score>best_score+0.00001 then
-						
-						best_score=new_score
-						
-						os="Restart: "+str(restarts+1)+" Hill climber: "+str(its)+"/"+str(int(itsmax))+" @ "+str(int(iterations))+lb
-						
-						#include "thread_solve_output.bi"
-						
-						os+=lb
-						os+=thread(t).itemname+lb
-						os+=lb
-						for i=1 to thread(t).l
-							thread(t).sol(i)=thread(t).sol(i)
-						next i
-						os+=info_to_string(thread(t).sol(),thread(t).l,dx,dy,0,solvesub_addspaces,0)
-						ui_editbox_settext(output_text,os)
-					
-					end if
-					
-					for i=0 to kl
-						for j=0 to 2
-							bkey(i,j)=thread(t).gkey(i,j)
-						next j
-					next i
-					
-				else
-					
-					if thread(t).score>0 then new_score-=temp
-					
-				end if
-				
-				if thread(t).score>0 then
-				
-					its+=1
-					temp-=temp_min
-				
-				end if
-				
-				if its=int(itsmax) then
-					
-					kl+=1
-					if kl=dy-1 then kl=1
-					its=0
-					restarts+=1
-					best_score=0
-					global_best_score=0
-					itsmax*=solvesub_hciterationsfactor
-					iterations*=solvesub_iterationsfactor
-					temp=temp_start
-					temp_min=temp_start/itsmax
-					
-					for i=1 to threads
-				 		thread(i).solver_stop=1
-				 		do
-							sleep 0.001
-				 		loop until thread(i).solver_waiting=1
-				 		thread(i).score=0
-					next i
-					
-					select case area
-						case 0 'horizontal (by characters)
-							for i=1 to kl 'new key
-								do
-									e=0
-									r=int(rnd*(l-1))+1
-									for j=1 to i-1
-										if bkey(j,2)=r then e=1
-									next j
-								loop until e=0
-								bkey(i,2)=r
-							next i
-						case 1 'horizontal (by rows)
-							for i=1 to kl 'new key
-								do
-									e=0
-									r=int(rnd*(dy-1))+1
-									for j=1 to i-1
-										if bkey(j,2)=r then e=1
-									next j
-								loop until e=0
-								bkey(i,2)=r
-							next i
-					end select
-					for i=0 to kl
-						if varperiod=0 then
-							bkey(i,1)=solvesub_pnperiod
-						else
-							bkey(i,1)=1
-						end if
-					next i
-					
-				end if
-				
-				for i=0 to kl
-					for j=0 to 2
-						key(i,j)=bkey(i,j)
-					next j
-				next i
-				
-				if varperiod=1 then d=rnd else d=0
-				
-				if d<0.5 then
-					select case area 'random change key
-						case 0 'horizontal (by character)
-							a=int(rnd*kl)+1
-							do
-								e=0
-								r=int(rnd*(l-1))+1
-								for j=1 to kl
-									if key(j,2)=r then e=1
-								next j
-							loop until e=0
-							key(a,2)=r
-						case 1 'horizontal (by rows)
-							a=int(rnd*kl)+1
-							do
-								e=0
-								r=int(rnd*(dy-1))+1
-								for j=1 to kl
-									if key(j,2)=r then e=1
-								next j
-							loop until e=0
-							key(a,2)=r
-					end select
-				else
-					select case area
-						case 0
-							a=int(rnd*(kl+1))
-							'do		
-								select case a
-									case 0:p=(int(rnd*key(1,2))+1)/2
-									case is=kl:p=(int(rnd*(1+l-key(kl,2)))+1)/2
-									case else:p=(int(rnd*(1+key(a+1,2)-key(a,2)))+1)/2
-								end select
-								if p<1 then p=1
-							'loop until r<>key(a,1)
-							key(a,1)=p
-						case 1
-							'...
-							'....
-							'.....
-							'......
-							'.......
-					end select
-				end if
-				
-				do 'sort key
-					e=0
-					for i=1 to kl-1
-						if key(i,2)>key(i+1,2) then
-							e=1
-							for j=0 to 2
-								swap key(i,j),key(i+1,j)
-							next j
-						end if
-					next i
-				loop until e=0
-				
-				'p=solvesub_pnperiod 'get period from nulls & skips solver
-				
-				ci=0
-				for ki=0 to kl 'transpose
-					
-					select case area 'define boundaries
-						case 0 'horizontal (by character)
-							select case ki
-								case 0:x1=1:x2=key(ki+1,2)
-								case is=kl:x1=key(ki,2)+1:x2=l
-								case else:x1=key(ki,2)+1:x2=key(ki+1,2)
-							end select
-						case 1 'horizontal (by rows)
-							select case ki
-								case 0:x1=1:x2=dx:y1=1:y2=key(ki+1,2)
-								case is=kl:x1=1:x2=dx:y1=key(ki,2)+1:y2=dy
-								case else:x1=1:x2=dx:y1=key(ki,2)+1:y2=key(ki+1,2)
-							end select
-					end select
-					
-					select case op
-						
-						case 0,1 'period
-						
-							cl=0
-							select case area
-								case 0 'horizontal (by characters)
-									for x=x1 to x2
-										cl+=1
-										cip2(cl)=nba(x)
-									next x
-								case 1 'horizontal (by rows)
-									for y=y1 to y2
-										for x=x1 to x2
-											if grid(x,y)>0 then
-												cl+=1
-												cip2(cl)=grid(x,y)
-											end if
-										next x
-									next y
-							end select
-							
-							k=0
-							if op=0 then 
-								utp=1 'period
-							else 
-								utp=0 'scytale
-							end if
-							
-							p=key(ki,1)
-							
-							for i=1 to p 'period
-								for j=i to cl step p
-									k+=1
-									if utp=0 then 'transpose
-										cip3(j)=cip2(k)
-										mat1(j)=k
-									else 'untranspose
-										cip3(k)=cip2(j)
-										mat1(k)=j
-									end if
-								next j
-							next i
-							dim as long cij=ci
-							for i=1 to cl
-								ci+=1
-								cip(ci)=cip3(i)
-								mat2(ci)=mat1(i)+cij
-							next i
-						
-						case 1 'other
-						
-					end select
-					
-				next ki
-				
-				select case area
-					case 0:thread(t).itemname="By characters, key("
-					case 1:thread(t).itemname="By rows, key("
-				end select
-				
-				for i=1 to kl
-					thread(t).itemname+=str(key(i,2))
-					if i<>kl then thread(t).itemname+=","
-				next i
-				thread(t).itemname+=")"
-				
-				for i=0 to kl
-					for j=0 to 2
-						thread(t).gkey(i,j)=key(i,j)
-					next j
-				next i
-				
-				thread(t).outputdir=basedir+"\Output\"
-				thread(t).l=l
-				thread(t).s=s
-				thread(t).dim_x=dx
-				thread(t).dim_y=dy
-				thread(t).score=0
-				thread(t).pcmode=1 'solvesub_pcmode
-				thread(t).advstats=solvesub_advstats
-				thread(t).iterations=iterations
-				thread(t).temperature=solvesub_temperature
-				thread(t).restarts=solvesub_restarts
-				thread(t).subrestartlevels=solvesub_subrestartlevels
-				thread(t).ngramfactor=solvesub_ngramfactor
-				thread(t).multiplicityweight=solvesub_multiplicityweight
-				thread(t).matchweight=solvesub_matchweight
-				thread(t).entweight=solvesub_entweight
-				thread(t).solver_stop=0
-				
-				for i=1 to l
-					thread(t).cip(i)=cip(i)
-				next i
-				if solvesub_pcmode=1 then
-					for i=1 to l
-						thread(t).key(i)=mat2(i)
-					next i
-				end if
-				
-				thread(t).update=0
-				thread(t).solver_waiting=0 'engage thread
-				
-				if timer-statustimer>1 then
-					statustimer=timer
-					update_solver_status
-				end if
-				
-			end if
-			
-		next t
-		
-	loop until stoptask=1
-	stoptask=0
-	
-	dim as double stucktimer=timer
-	for i=1 to threads
-		thread(i).solver_stop=1
-		do
-			sleep 10
-		loop until thread(i).solver_waiting=1 or timer-stucktimer>2
-	next i
-	
-	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then close #3
-	
-	clean_thread_information
-	solver_status_processing=0
-	task_active="none"
-	update_solver_status
-
-end sub
-
 sub thread_solve_mergeseqhom(byval none as any ptr)
 	
 	dim as integer t,i,j
@@ -13594,7 +13975,7 @@ sub thread_solve_rowbound(byval none as any ptr)
 			solvesub_ngramloctemp=ngram_basedir+str(i)+right(oldname,len(oldname)-1)
 			if fileexists(solvesub_ngramloctemp)=0 then
 				solvesub_ngramloctemp=ngram_basedir+str(i)+right(oldname,len(oldname)-1)
-				if fileexists(solvesub_ngramloctemp)=0 then 
+				if fileexists(solvesub_ngramloctemp)=0 then
 					ui_editbox_settext(output_text,"Error: n-grams not part of a set")
 					exit sub
 				end if
@@ -15635,6 +16016,16 @@ sub thread_solve_vigenere(byval none as any ptr)
 					next j
 				end if
 				
+				'a=0:p=5 'period control
+				'for j=1 to p
+				'	for k=j to l step p
+				'		a+=1
+				'		'thread(t).cip(a)=cip2(k)
+				'		'thread(t).key(a)=key2(k) 'untranspose
+				'		thread(t).key(k)=key2(a) 'transpose
+				'	next k
+				'next j
+				
 				a=0:p=1 'period control
 				for j=1 to p
 					for k=j to l step p
@@ -15676,12 +16067,1805 @@ sub thread_solve_vigenere(byval none as any ptr)
 
 end sub
 
+sub thread_solve_permutations(byval none as any ptr)
+	
+	dim as integer solvermode,varmode,regmode
+	
+	'task_active=ui_listbox_gettext(list_permutations_solver,ui_listbox_getcursel(list_permutations_solver))
+	task_active=lcase(ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main)))
+	select case task_active
+		case "columnar transposition":solvermode=0
+		case "columnar rearrangement":solvermode=1
+		'case "Double columnar transposition":solvermode=2
+		'case "Nihilist transposition":solvermode=3
+		case "grid rearrangement":solvermode=4
+		case "row rearrangement":solvermode=5
+	end select
+	
+	select case ui_listbox_gettext(list_permutations_mode,ui_listbox_getcursel(list_permutations_mode))
+		case "None":varmode=0
+		case "Columnar transposition: columns bottom-to-top":if solvermode=0 then varmode=1
+		case "Grid rearrangement: 1-dim to 2-dim (default)":if solvermode=4 then varmode=0
+		case "Grid rearrangement: 2-dim to 1-dim":if solvermode=4 then varmode=1
+		case "Grid rearrangement: 2-dim to 2-dim":if solvermode=4 then varmode=2
+	end select
+	
+	if ui_radiobutton_getcheck(checkbox_permutations_regular)=1 then regmode=1
+	dim as integer key1from=val(ui_editbox_gettext(editbox_permutations_key1from))
+	dim as integer key1to=val(ui_editbox_gettext(editbox_permutations_key1to))
+	dim as integer key2from=val(ui_editbox_gettext(editbox_permutations_key2from))
+	dim as integer key2to=val(ui_editbox_gettext(editbox_permutations_key2to))
+	
+	dim as double temp_start,override_temp_start
+	dim as integer depth,override_depth
+	dim as integer searches,override_searches
+	if val(ui_editbox_gettext(editbox_permutations_temp))>0 then override_temp_start=val(ui_editbox_gettext(editbox_permutations_temp))
+	if val(ui_editbox_gettext(editbox_permutations_depth))>0 then override_depth=val(ui_editbox_gettext(editbox_permutations_depth))
+	if val(ui_editbox_gettext(editbox_permutations_searches))>0 then override_searches=val(ui_editbox_gettext(editbox_permutations_searches))
+	
+	dim as integer shift=val(ui_editbox_gettext(editbox_permutations_shift))
+	if shift=0 then shift=20
+	dim as double ngrampower=val(ui_editbox_gettext(editbox_permutations_ngrampower))
+	if ngrampower=0 then ngrampower=1
+	dim as double ngramfactor=val(ui_editbox_gettext(editbox_permutations_ngramfactor))
+	if ngramfactor=0 then ngramfactor=solvesub_ngramfactor
+	dim as integer itsmax=val(ui_editbox_gettext(editbox_permutations_iterations))
+	dim as double itsmaxfactor=val(ui_editbox_gettext(editbox_permutations_iterationsfactor))
+	'dim as integer override=ui_checkbox_getcheck(checkbox_permutations_override)
+	dim as integer srimax=2 'sub restarts
+	dim as integer original_itsmax=itsmax
+	dim as integer original_shift=shift
+	
+	dim as integer regsearches=1000
+	dim as integer irrsearches=500
+	dim as integer redsearches=1000
+	dim as integer regdepth=3
+	dim as integer irrdepth=3
+	dim as integer reddepth=1
+	dim as integer regtemp=100*threads
+	dim as integer irrtemp=100*threads
+	dim as integer redtemp=100*threads
+	dim as double latchfactor=1.1
+	dim as integer regtable
+	dim as integer redun
+	dim as integer gpx=1
+	dim as integer gpy=1
+	dim as integer smartskip
+	dim as integer latchon
+	'dim as integer regshift=20
+	'dim as integer irrshift=20
+	
+	dim as integer x,y,i,j,k,t,e,ac,stopsolver,r1,r2,r3,oldr1,oldr2
+	dim as integer tmpsearches,tmpdepth,tmpshift,latch
+	dim as double new_score,best_score,currbest,brun_score,bf_score,hcbest
+	dim as string os,hc,his,osplus,dirloc
+	dim as integer l=info_length
+	dim as integer s=info_symbols
+	dim as integer dx=info_x
+	dim as integer dy=info_y
+	dim as integer num=info_numerical
+	dim as long nba(l)
+	dim as long cip(l)
+	dim as integer itsmax2,olditsmax 'double
+	dim as integer citsmax
+	dim as double temp=temp_start '???
+	dim as double temp_min=temp/itsmax
+	dim as double sri,srj
+	dim as double oldmw
+	dim as uinteger nfb,rk,fresh
+	dim as integer solved,improved,randomkey
+	dim as integer its,cits,restarts
+	
+	if key1from<2 then key1from=2
+	if key1to<2 then key1to=2
+	if key2from<2 then key2from=2
+	if key2to<2 then key2to=2
+	if key1from>l then key1from=l
+	if key1to>l then key1to=l
+	if key2from>l then key2from=l
+	if key2to>l then key2to=l
+	dim as integer kl=key1from
+	'dim as integer key1tomax=key1to*2
+	
+	dim as integer bestkey,currkey,maxkey=key1to*2
+	
+	dim as integer ssnext,ssconfs=1
+	redim ssconf(maxkey)
+	redim sscheck(maxkey)
+	redim ssscore(maxkey)
+	redim sskey(1,maxkey,maxkey)
+	redim pbest(maxkey)
+	redim flat_score(maxkey)
+	redim latches(maxkey)
+	redim pkey(1,maxkey,maxkey)
+	redim keysize(maxkey)
+	
+	dim as short akey(1,maxkey)
+	dim as short skey(1,srimax,maxkey)
+	
+	'dim as short amel(key1to)
+	'dim as short bmel(key1to)
+	
+	dim as double statustimer=timer
+	dim as double soltimer=timer
+	dim as double updatetimer=timer
+	
+	for i=1 to l
+		nba(i)=nuba(i)
+		cip(i)=alpharevp1(info(i)) '-1
+		if alpharevp1(info(i))=0 then
+			ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+			task_active="none"
+			update_solver_status	
+			exit sub
+		end if
+		'if solvesub_nosub=1 then
+			'select case cip(i) 'test no-sub
+			'	case 32 'space
+			'		sym(nba(i))=26
+			'	case 46 'point
+			'		sym(nba(i))=27
+			'	case 65 to 90 'uppercase
+			'		sym(nba(i))=cip(i)-65
+			'	case 97 to 122 'lowercase
+			'		sym(nba(i))=cip(i)-97
+			'end select
+		'end if
+	next i
+
+	'development=1 '<<<<<<<<<<<<<------------------------------------------------------ switch
+	
+	'dim as integer ngramsize2=ngram_size
+	'dim as double ngramfactor2=solvesub_ngramfactor
+	'dim as double iocweight2=solvesub_entweight
+	'dim as integer fastent2=solvesub_fastent
+	'dim as double temp2=solvesub_temperature
+	'dim as string oldname=solver_file_name_ngrams
+	'dim as string old_file_name_ngrams=solvesub_ngramloc
+	'dim as integer dontkeep
+	'ngrams_clearprevious=0
+	'sleep 10
+	'if ngrams_inmem(ngram_size)=1 then 
+	'	solvesub_ngramentweight(ngram_size)=solvesub_entweight
+	'	solvesub_ngramfactor2(ngram_size)=solvesub_ngramfactor
+	'end if
+	'
+	'dim as string ngram_basedir=left(old_file_name_ngrams,instrrev(old_file_name_ngrams,"\"))
+	'
+	''if ngram_size=8 then
+	'	for i=2 to 2 'ngramsize2
+	'		if ngrams_inmem(i)=0 then
+	'			solvesub_ngramloctemp=ngram_basedir+str(i)+right(oldname,len(oldname)-1)
+	'			if fileexists(solvesub_ngramloctemp)=0 then
+	'				solvesub_ngramloctemp=ngram_basedir+str(i)+right(oldname,len(oldname)-1)
+	'				if fileexists(solvesub_ngramloctemp)=0 then
+	'					ui_editbox_settext(output_text,"Error: n-grams not part of a set")
+	'					exit sub
+	'				end if
+	'			end if
+	'			sleep 10
+	'			task_active="loading "+str(i)+"-grams"
+	'			update_solver_status
+	'			thread_ptr(threadsmax+3)=threadcreate(@thread_load_ngrams,0)
+	'			do
+	'				sleep 10
+	'			loop until task_active="none"
+	'			ngrams_inmem(i)=1
+	'			if i=ngramsize2 then dontkeep=1
+	'			solvesub_ngramentweight(i)=solvesub_entweight
+	'			solvesub_ngramfactor2(i)=solvesub_ngramfactor
+	'		end if
+	'	next i
+	'	solvesub_ngramloc=old_file_name_ngrams
+	'	ngrams_clearprevious=1
+	'	if dontkeep=0 then
+	'		solvesub_entweight=iocweight2
+	'		ngram_size=ngramsize2
+	'		solvesub_ngramfactor=ngramfactor2
+	'		solvesub_temperature=temp2
+	'		solvesub_fastent=fastent2
+	'		solver_file_name_ngrams=oldname
+	'	end if
+	''end if
+	
+	'redim g2k(dx,dx)
+	'if ngram_size=5 then redim g5k(dx,dx,dx,dx,dx) 'check if regular
+	'redim g5kb(dx,dx,dx,dx,dx)
+	
+	stoptask=0
+	global_best_score=0
+	solver_status_processing=1	
+	
+	dim as integer sr(10,10) 'double
+	
+	update_solver_status
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then
+		batchnr+=1
+		open basedir+"\Output\batch_"+str(batchnr)+".txt" for output as #3
+		print #3,"output_sub_directory=batch_"+str(batchnr)
+	end if
+	
+	sectimer=timer
+	dim as double avgsolvetime,solvetimer=timer
+	
+	if solvesub_nosub=1 then use_cribs=1
+	
+	for t=1 to threads
+		for i=1 to l
+			thread(t).cip(i)=cip(i)
+		next i
+	next t
+	
+	'redim g5k(key1to,key1to,key1to,key1to,key1to)
+	
+	kl-=1
+	cits=citsmax
+	sri=srimax
+	srj=srimax
+	sr(sri,0)=0
+	'srimax=0
+	
+	dim as integer new_restart=1
+	dim as integer cp_col,cp_period,cp_utp,cp_new=1
+	dim as string cp_string,cp_operation
+	
+	'dim as uinteger pr,nr
+	'redim pk1(key1to),nk1(key1to)
+	
+	ips_timer=timer
+	
+	do
+		
+		'sleep twait
+		sleep 0.001
+		
+		for t=1 to threads
+			
+			if pausetask=1 then 'pause task
+				update_solver_status
+				do
+					sleep 10
+				loop until pausetask=0
+				update_solver_status
+			end if
+			
+			if timer-soltimer>1 then
+				soltimer=timer
+			
+				'if development=1 then
+					select case solvermode
+						case 0,1,5 'columnar transposition, columnar rearrangement
+							hc="Current key length: "+str(kl)+" Hill climber: "+str(int(its/1))+"/"+str(int(itsmax/1))+"/"+str(restarts+1)+lb
+						case 4 'grid permutation
+							hc="Current key dimensions: "+str(gpx)+" by "+str(gpy)+" Hill climber: "+str(int(its/1))+"/"+str(int(itsmax/1))+"/"+str(restarts+1)+lb
+					end select
+					'hc+="Current operation: "+cp_string+lb
+					'hc+="Flat score: "+rdc(flat_score(kl),2)+lb
+					'hc+="Smart-skips: "+str(sscheck(0))+" Latch-ons: "+str(latches(0))+lb
+					if solvesub_pnoverskip=1 then hc+="Average solve time: "+rdc(avgsolvetime/solved,2)+" Over "+str(solvesub_pnover)+": "+str(solved)+" ("+rdc((solved/(restarts+0))*100,2)+"%)"+lb
+				'else
+				'	hc="Current key length: : "+str(kl)+" Hill climber: "+str(int(its/1))+"/"+str(int(itsmax/1))+"/"+str(restarts)+lb
+				'end if		
+				
+				ui_editbox_settext(output_text,hc+os+osplus) '+osplus
+				if stopsolver=1 then exit do
+				
+			end if
+			
+			if thread(t).solver_waiting=1 then
+				
+				if thread(t).score>new_score then
+					
+					new_score=thread(t).score
+					
+					if new_score>best_score then
+						
+						if new_score>brun_score then
+							
+							brun_score=new_score
+							os=""
+							#include "thread_solve_output.bi"
+							
+							bestkey=currkey
+							'os+=lb+cp_string+lb
+							os+=lb+thread(t).itemname+lb+lb
+							os+=info_to_string(thread(t).sol(),thread(t).l,thread(t).dim_x,thread(t).dim_y,0,solvesub_addspaces,0)
+							
+						end if
+						best_score=thread(t).score '+0.00001
+						
+					end if
+					
+					'for j=1 to kl 'save bestkey
+					'	'for k=0 to 1
+					'		akey(0,j)=thread(t).bkey(0,j)
+					'	'next k
+					'next j
+					memcpy(@akey(0,1),@thread(t).bkey(0,1),kl*2)
+					'memcpy(@bmel(1),@thread(t).bkey(4,1),kl*2)
+					
+				else
+					
+					if thread(t).score>0 then
+						new_score-=temp
+						if new_score<0 then new_score=0
+					end if
+					
+				end if
+				
+				if thread(t).score>0 then
+					its+=1
+					cits+=1
+					temp-=temp_min*(((its/itsmax)/4)+(1-((1/4)/2)))
+					shift=original_shift*(its/itsmax) 'gradual shift
+				end if
+				
+				if thread(t).score>currbest then 'for sub-restart
+					currbest=thread(t).score
+					'for i=1 to kl
+					'	'for j=0 to 1
+					'		skey(0,sri,i)=akey(0,i)
+					'	'next j
+					'next i
+					memcpy(@skey(0,sri,1),@akey(0,1),kl*2)
+				end if
+				
+				if thread(t).score>pbest(currkey) then
+					pbest(currkey)=thread(t).score
+					ssscore(currkey)=thread(t).score
+					ssconf(currkey)=0
+					ssnext=0
+					'for i=1 to kl
+					'	'for j=0 to 1
+					'		pkey(0,currkey,i)=akey(0,i)
+					'		sskey(0,currkey,i)=akey(0,i)
+					'	'next j
+					'next i
+					memcpy(@pkey(0,currkey,1),@akey(0,1),kl*2)
+					memcpy(@sskey(0,currkey,1),@akey(0,1),kl*2)
+				end if
+				
+				if randomkey=1 then 'flat score
+					if thread(t).score>flat_score(currkey) then
+						flat_score(currkey)=thread(t).score
+						pbest(currkey)=thread(t).score '???
+						ssscore(currkey)=thread(t).score
+						ssconf(currkey)=0
+						ssnext=0
+						'for i=1 to kl
+						'	pkey(0,currkey,i)=akey(0,i)
+						'	sskey(0,currkey,i)=akey(0,i)
+						'next i
+						memcpy(@pkey(0,currkey,1),@akey(0,1),kl*2)
+						memcpy(@sskey(0,currkey,1),@akey(0,1),kl*2)
+					end if
+				end if
+				
+				if solvesub_pnoverskip=1 then
+					if best_score>=solvesub_pnover then
+						solved+=1
+						brun_score=0
+						its=0
+						cits=citsmax
+						srj=srimax
+						sri=srimax
+						avgsolvetime+=timer-solvetimer
+						solvetimer=timer
+						itsmax=original_itsmax
+						kl=key1from-1
+						currkey=0
+						bestkey=0
+						for i=0 to maxkey
+							latches(i)=0
+							sscheck(i)=0
+							ssconf(i)=0
+							sskey(0,i,1)=0
+							pkey(0,i,1)=0
+							pbest(i)=0
+							flat_score(i)=0
+						next i
+					end if
+				end if
+				
+				if cits=citsmax then 'restart 'int(citsmax)
+					
+					for i=1 to threads
+				 		thread(i).solver_stop=1
+				 		do
+							sleep 0.001
+				 		loop until thread(i).solver_waiting=1
+				 		thread(i).score=0
+					next i
+					
+					srj+=1
+					if srj>sr(sri,0) then
+						
+						sri+=1
+						srj=1
+						'currbest=0
+						
+						if sri>srimax then
+							
+							if olditsmax>0 then
+								itsmax=olditsmax
+								olditsmax=0
+							end if
+							
+							if restarts>0 andalso ssnext=1 andalso smartskip=1 andalso randomkey=1 then 'smart-skip
+								e=1
+								for i=1 to kl
+									if skey(0,srimax,i)<>sskey(0,currkey,i) then
+										e=0
+										exit for
+									end if
+								next i
+								if e=1 then
+									ssconf(currkey)+=1
+									if ssconf(currkey)=ssconfs then 'confirmations
+										sscheck(currkey)=1
+										sscheck(0)+=1
+										latches(0)-=latches(currkey)
+										latches(currkey)=0
+									end if
+								end if
+							end if
+							ssnext=1
+							
+							dim as integer lcnt=0
+							dim as double lavg=0
+							if latchon=1 andalso latch<2 then 'latch-on
+								for i=1 to maxkey 'check similar keysizes
+									if sscheck(currkey)=0 andalso currkey<>i andalso abs(keysize(i)-kl)<2 then
+										if pbest(i)>0 andalso pbest(currkey)>0 then
+											lcnt+=1
+											lavg+=pbest(i)
+										end if
+									end if
+								next i
+								if lcnt>0 then
+									lavg/=lcnt
+									if pbest(currkey)/lavg>=latchfactor then
+										latches(currkey)+=1
+										latches(0)+=1
+									else
+										latches(0)-=latches(currkey)
+										latches(currkey)=0
+									end if
+								end if
+							end if
+							
+							select case solvermode
+								case 0,1,5 'columnar transposition, columnar rearrangement, row rearrangement
+									i=0
+									j=0
+									do
+										i+=1
+										latch+=1
+										if latch>latches(kl) then
+											if regmode=0 then 'regular/irregular
+												kl+=1
+												currkey+=1
+											else 'only regular
+												do
+													kl+=1
+													currkey+=1
+												loop until l mod kl=0 or kl>key1to
+											end if
+											latch=0
+											#include "permutations_redim.bi"
+										end if
+										if kl>key1to then
+											j+=1
+											kl=key1from
+											currkey=1
+											restarts+=1
+											new_restart=1
+											itsmax*=itsmaxfactor
+											'smart-skip include
+											'latch-on include
+										end if
+									loop until sscheck(currkey)=0 or j=2	
+									if j=2 then stopsolver=1
+									if solvesub_pnoverskip=0 andalso sscheck(bestkey)=1 then stopsolver=1
+									if rnd>0.5 then randomkey=1 else randomkey=0
+									if restarts=1 then randomkey=1
+									latchon=1
+									smartskip=1
+								case 4 'grid permutation
+									j=0
+									do
+										do
+											do
+												gpx+=1
+												if gpx>dx then
+													gpx=1
+													do
+														gpy+=1
+														if gpy>dy then
+															j+=1
+															currkey=0
+															restarts+=1
+															new_restart=1
+															'smart-skip include
+															'latch-on include
+															itsmax*=itsmaxfactor
+															gpy=1
+														end if
+													loop until dy mod gpy=0
+												end if
+											loop until dx mod gpx=0
+										loop until gpx+gpy>2 andalso gpx*gpy<=key1to
+										currkey+=1
+										#include "permutations_redim.bi"
+									loop until sscheck(currkey)=0 or j=2
+									if j=2 then stopsolver=1
+									if solvesub_pnoverskip=0 andalso sscheck(bestkey)=1 then stopsolver=1
+									kl=gpx*gpy
+									if rnd>0.5 then randomkey=1 else randomkey=0
+									if restarts=1 then randomkey=1
+									smartskip=1
+							end select
+							
+							keysize(currkey)=kl
+							
+							'select case solvermode
+							'	case 1,2,4
+									if override_temp_start>0 then 'temp
+										temp_start=override_temp_start
+									else
+										if l mod kl=0 then temp_start=regtemp*ngrampower else temp_start=irrtemp*ngrampower
+									end if
+									if override_depth>0 then 'depth
+										tmpdepth=override_depth
+									else
+										if l mod kl=0 then tmpdepth=regdepth else tmpdepth=irrdepth
+									end if
+									if override_searches>0 then 'searches
+										tmpsearches=override_searches
+									else
+										if l mod kl=0 then tmpsearches=regsearches else tmpsearches=irrsearches
+									end if
+							'end select
+							
+							if kl<21 andalso factorial(kl)<(tmpsearches*tmpdepth*itsmax) then
+								olditsmax=itsmax
+								itsmax=factorial(kl)/tmpsearches/tmpdepth
+								if itsmax<50 then itsmax=50
+								if itsmax<threads then itsmax=threads 'needed ???
+							end if
+							
+							best_score=0
+							global_best_score=0
+							
+							its=0
+							sri=1
+							srj=1
+							itsmax2=0
+							for i=1 to srimax
+								sr(i,0)=srimax-(i-1)
+							next i	
+							for i=1 to srimax
+								for j=1 to sr(i,0)
+									sr(i,j)=(itsmax/srimax)/sr(i,0)
+									itsmax2+=sr(i,j)
+								next j
+							next i
+							sr(srimax,1)+=itsmax-itsmax2
+							
+						end if
+						
+						currbest=0
+						
+					end if
+					
+					if sri=1 then
+						
+						'select case solvermode
+						'	case 0,1,4,5 'columnar transposition, columnar rearrangement, grid permutation
+								if pkey(0,currkey,1)=0 then 'random key
+									for i=1 to kl
+										akey(0,i)=i
+									next i
+									for i=1 to kl*5
+										swap akey(0,int(rnd*kl)+1),akey(0,int(rnd*kl)+1)
+									next i
+								else
+									if randomkey=1 then 'random key
+										for i=1 to kl
+											akey(0,i)=i
+										next i
+										for i=1 to kl*5
+											swap akey(0,int(rnd*kl)+1),akey(0,int(rnd*kl)+1)
+										next i
+									else 'previous best key
+										'for i=1 to kl
+										'	akey(0,i)=pkey(0,currkey,i)
+										'next i
+										memcpy(@akey(0,1),@pkey(0,currkey,1),kl*2)
+									end if
+								end if
+						'end select
+						
+					else
+						
+						'for i=1 to kl
+						'	'for j=0 to 1
+						'		akey(0,i)=skey(0,sri-1,i)
+						'	'next j
+						'next i
+						memcpy(@akey(0,1),@skey(0,sri-1,1),kl*2)
+						
+					end if
+					
+					cits=0
+					citsmax=sr(sri,srj)
+					temp=temp_start-((temp_start/srimax)*(sri-1))
+					temp_min=temp/citsmax
+					new_score=0
+					
+				end if
+				
+				'for i=1 to kl
+				'	'for j=0 to 1
+				'		thread(t).bkey(0,i)=akey(0,i) 'change bkey
+				'	'next j
+				'next i
+				memcpy(@thread(t).bkey(0,1),@akey(0,1),kl*2)
+				
+				select case solvermode
+					case 0,1:dirloc=basedir+"\Output\Columns "+str(kl)+"\"
+					case 4:dirloc=basedir+"\Output\Grid "+str(gpx)+" by "+str(gpy)+"\"
+					case 5:dirloc=basedir+"\Output\Rows "+str(kl)+"\"
+				end select
+				mkdir dirloc
+				thread(t).outputdir=dirloc
+				
+				select case solvermode
+					case 0,1,5:thread(t).itemname="Key length: "+str(kl) '+lb
+					case 4:thread(t).itemname="Key dimensions: "+str(gpx)+" by "+str(gpy)
+				end select
+				'select case solvermode
+				'	case 0:thread(t).itemname+=" Columnar transposition" 
+				'	case 1:thread(t).itemname+=" Columnar rearrangement" 
+				'	'case 2:thread(t).itemname+=" Nihilist transposition" 
+				'	'case 3:thread(t).itemname+=" Double columnar transposition"
+				'	case 4:thread(t).itemname+=" Grid permutation"
+				'end select
+				select case solvermode
+					'case 0 'columnar transposition
+					'	select case varmode
+					'		'case 0:thread(t).itemname+=": columns top-to-bottom"
+					'		case 1:thread(t).itemname+=": columns bottom-to-top"
+					'		'case 2:thread(t).itemname+=", Alternated 1"
+					'		'case 3:thread(t).itemname+=", Alternated 2"
+					'	end select
+					case 4 'grid permutation
+						select case varmode
+							case 0:thread(t).itemname+=", 1-dim to 2-dim"
+							case 1:thread(t).itemname+=", 2-dim to 1-dim"
+							case 2:thread(t).itemname+=", 2-dim to 2-dim"
+						end select
+				end select
+				thread(t).itemname+=lb+"Key: "
+				for i=1 to kl
+					thread(t).itemname+=str(thread(t).bkey(0,i))
+					if i<>kl then thread(t).itemname+=","
+				next i
+				
+				thread(t).l=l
+				thread(t).s=s
+				thread(t).dim_x=dx
+				thread(t).dim_y=dy
+				thread(t).score=0
+				'thread(t).pcmode=solvesub_pcmode
+				thread(t).advstats=solvesub_advstats
+				'thread(t).iterations=iterations
+				'thread(t).temperature=solvesub_temperature
+				'thread(t).restarts=solvesub_restarts
+				'thread(t).subrestartlevels=solvesub_subrestartlevels
+				thread(t).ngramfactor=solvesub_ngramfactor
+				thread(t).multiplicityweight=solvesub_multiplicityweight
+				thread(t).entweight=solvesub_entweight
+				thread(t).solver_stop=0
+				thread(t).update=0
+				
+				solvesub_permutations_columns=kl
+				solvesub_permutations_solvermode=solvermode
+				solvesub_permutations_varmode=varmode
+				solvesub_permutations_ngrampower=ngrampower
+				solvesub_permutations_ngramfactor=ngramfactor
+				solvesub_permutations_shift=shift
+				solvesub_permutations_regtable=regtable
+				solvesub_permutations_redun=redun
+				
+				select case solvermode
+					case 4
+						solvesub_permutations_gpx=gpx
+						solvesub_permutations_gpy=gpy
+						solvesub_permutations_dx=dx
+						solvesub_permutations_dy=dy
+				end select
+				
+				'select case solvermode
+				'	case 1,2,4
+						if override_depth>0 then 'depth
+							solvesub_permutations_depth=override_depth
+						else
+							if l mod kl=0 then
+								solvesub_permutations_depth=regdepth
+							else
+								solvesub_permutations_depth=irrdepth
+							end if
+						end if
+						if override_searches>0 then 'searches
+							solvesub_permutations_searches=override_searches
+						else
+							if l mod kl=0 then
+								solvesub_permutations_searches=regsearches
+							else 
+								solvesub_permutations_searches=irrsearches
+							end if
+						end if
+				'end select
+				
+				'for i=1 to l
+				'	thread(t).cip(i)=nba(i)
+				'next i
+				'if solvesub_nosub=1 then 'crib
+				'	for i=1 to s
+				'		thread(t).ckey(i)=sym(i)
+				'	next i
+				'end if
+				
+				'memcpy(@amel(1),@bmel(1),kl*2)
+				'i=int(rnd*kl)+1
+				'j=int(rnd*4)
+				'if j=0 then amel(i)=1 else amel(i)=0
+				'i=0
+				'for y=1 to kl
+				'	if amel(y)=0 then 'period 1
+				'		for x=1 to l/kl
+				'			i+=1
+				'			thread(t).cip(i)=cip(i)
+				'		next x
+				'	else
+				'		for x=1 to l/kl 'period -1 (optimize)
+				'			i+=1
+				'			j=y*(l/kl)-(x-1)
+				'			thread(t).cip(j)=cip(j)
+				'		next x
+				'	end if
+				'next y
+				'memcpy(@thread(t).bkey(4,1),@amel(1),kl*2)
+				
+				thread(t).solver_waiting=0 'engage thread
+				
+				if timer-statustimer>1 then
+					statustimer=timer
+					update_solver_status
+				end if
+				
+			end if
+			
+			if stoptask=1 then exit for
+			
+		next t
+		
+	loop until stoptask=1
+	stoptask=0
+	
+	dim as double stucktimer=timer
+	for i=1 to threads
+		thread(i).solver_stop=1
+		do
+			sleep 10
+		loop until thread(i).solver_waiting=1 or timer-stucktimer>2
+	next i
+	
+	toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",4,1,threads) 'stop solver
+	toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",2,1,threads) 'stop thread
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then close #3
+	
+	'redim g5k(0,0,0,0,0)
+	redim ssconf(0)
+	redim sscheck(0)
+	redim ssscore(0)
+	redim sskey(0,0,0)
+	redim pbest(0)
+	redim flat_score(0)
+	redim latches(0)
+	redim pkey(0,0,0)
+	'redim pk1(0)
+	'redim nk1(0)
+	redim rloop(0,0)
+	redim keysize(0)
+	
+	use_cribs=0
+	solvesub_nosub=0
+	
+	clean_thread_information
+	ext_hc=0
+	solver_status_processing=0
+	task_active="none"
+	update_solver_status
+	
+end sub
+
+sub thread_solve_rules_manual(byval none as any ptr) 'manual
+	
+	dim as integer i,j,k,a,p,t,r,r1,r2
+	dim as integer iterations=solvesub_iterations
+	dim as double best_score,high_score,sectime,rnd_score
+	dim as string os,os2,osfile
+	dim as integer l=info_length
+	dim as integer s=info_symbols
+	dim as integer dx=info_x
+	dim as integer dy=info_y
+	
+	dim as long nba(constcip)
+	dim as long cip(constcip)
+	dim as long sym(constcip)	
+	dim as long sol(constcip)
+	
+	dim as integer ngram_score
+	dim as byte use_tm
+	
+	dim as short bkey(2,constcip)
+	dim as short akey(2,constcip)
+	dim as short rkey(constcip)
+	dim as double dbl(constcip)
+	dim as double dbl2(constcip)
+	dim as long mty(constcip)
+	
+	dim as double its,itsmax=solvesub_hciterations
+	dim as integer temp_start=2
+	dim as integer temp_start2=1*threads
+	dim as double temp=temp_start
+	dim as double temp_min=temp/itsmax
+	'dim as double shift,original_shift=20 'unused?
+	dim as integer solved,restarts=1,itshc=1
+	dim as double restartsmax=10000 'solvesub_matchweight
+	dim as double temp2=temp_start2
+	dim as double temp_min2=temp2/restartsmax
+	dim as long state=1
+	dim as double ent,avgsolvetime
+	
+	stoptask=0
+	solver_status_processing=1
+	global_best_score=0
+	
+	if l>1000 then
+		ui_editbox_settext(output_text,"Error: cipher length > 1000")
+		exit sub
+	end if
+	
+	for i=1 to l
+		nba(i)=nuba(i)
+		cip(i)=alpharevp1(info(i))-1
+		if alpharevp1(info(i))=0 then
+			ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+			'task_active="none"
+			'update_solver_status	
+			exit sub
+		end if
+	next i
+	
+	ui_editbox_settext(output_text,"Creating look-up tables, it may take a while...")
+	task_active=lcase(ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main)))
+	update_solver_status
+	
+	for t=1 to threads
+		for i=1 to l
+			thread(t).cip(i)=cip(i) 'sym(nba(i))
+		next i
+	next t
+	
+	solvesub_rules_steps=val(ui_editbox_gettext(editbox_rules_steps))
+	if solvesub_rules_steps<1 then solvesub_rules_steps=1
+	if solvesub_rules_steps>l-1 then solvesub_rules_steps=1
+	
+	generate_rules_ngrampos(l,ngram_size)
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then
+		batchnr+=1
+		open basedir+"\Output\batch_"+str(batchnr)+".txt" for output as #3
+		print #3,"output_sub_directory=batch_"+str(batchnr)
+	end if
+	
+	sectimer=timer
+	
+	dim as integer kl=l
+	'solvesub_permutations_depth=1
+	solvesub_permutations_searches=100 'solvesub_matchweight '333 'max ushort
+	solvesub_permutations_columns=kl
+	'solvesub_permutations_regtable
+	solvesub_permutations_ngramfactor=solvesub_ngramfactor
+	
+	solvesub_permutations_itsmax=val(ui_editbox_gettext(editbox_rules_its1))
+	'if solvesub_permutations_itsmax<5000 then solvesub_permutations_itsmax=40000
+	solvesub_permutations_itsmax=40000
+	iterations=solvesub_permutations_itsmax
+	dim as integer start_iterations=solvesub_permutations_itsmax
+	dim as double itsfactor1=1 'val(ui_editbox_gettext(editbox_rules_itsfactor1))
+	'if itsfactor1<1 then itsfactor1=1.075
+	dim as double itsfactor1ori=itsfactor1,accel=1.002 'solvesub_seqweight
+	solvesub_rules_nonperiodstrength=val(ui_editbox_gettext(editbox_rules_nonperiodstrength))
+	if solvesub_rules_nonperiodstrength<-100 or solvesub_rules_nonperiodstrength>100 then solvesub_rules_nonperiodstrength=0
+	
+	dim as integer manpm,rules
+	dim as string mannum
+	dim as string manual=ui_editbox_gettext(editbox_rules_manual)+" "
+	for i=1 to len(manual)
+		select case chr(asc(manual,i))
+			case "+":manpm=0
+			case "-":manpm=1
+			case "0","1","2","3","4","5","6","7","8","9"
+				mannum+=chr(asc(manual,i))
+			case " ",","
+				if len(mannum)>0 then
+					rules+=1
+					akey(1,rules)=manpm
+					akey(2,rules)=val(mannum)
+					mannum=""
+					manpm=0
+				end if
+		end select
+	next i
+	solvesub_permutations_rules=rules
+	if rules=0 then 
+		rules=1
+		akey(1,rules)=0
+		akey(2,rules)=1
+	end if
+	
+	randomize timer
+	
+	for i=1 to l 'random key
+		rkey(i)=i
+	next i
+	for i=1 to l*10
+		state=48271*state and 2147483647
+		r1=1+l*state shr 31
+		state=48271*state and 2147483647
+		r2=1+l*state shr 31
+		swap rkey(r1),rkey(r2)
+	next i
+	memcpy(@akey(0,1),@rkey(1),l*2)
+	
+	redim enttab(l-1)
+	for i=1 to l-1
+		enttab(i)=abs(logbx(i/(l-1),2)*(i/(l-1)))
+		'if i>1 then enttab(i)=i*(i-1)
+	next i
+	
+	ips_timer=timer
+	dim as double solvetimer=timer
+	dim as double statustimer=timer
+	dim as integer avgsolve=0 'average solve time switch
+	
+	do
+		
+		sleep twait
+		
+		for t=1 to threads
+			
+			if pausetask=1 then 'pause task
+				update_solver_status
+				do
+					sleep 10
+				loop until pausetask=0
+				update_solver_status
+			end if
+			
+			if timer-statustimer>1 andalso best_score>0 then
+				
+				statustimer=timer
+				os=""
+				os+="Hill climber: "+rdc2(solvesub_permutations_itsmax,2)+"/"+rdc2(its,2)
+				if avgsolve=1 then os+=" AVG solve time: "+rdc(avgsolvetime/solved,2)+" ("+str(solved)+")"
+				os+=lb
+				os+="Score: "+rdc(best_score,2)+" IOC: "+rdc(thread(t).ioc,4)+" Multiplicity: "+rdc(thread(t).multiplicity,4)+stt(sectime)+lb
+				os+=os2
+				os+=lb
+				
+				if task_active="periodic transposition" then
+					os+="Period key: "
+					for i=1 to rules
+						if bkey(1,i)=0 then os+="+"+str(bkey(2,i))+" " else os+="-"+str(bkey(2,i))+" "
+					next i
+				else
+					os+="Periodic entropy: "+rdc(ent,5)
+				end if
+				
+				os+=lb
+				os+=lb+info_to_string(sol(),l,dx,dy,0,solvesub_addspaces,0)	
+				ui_editbox_settext(output_text,os)
+				update_solver_status
+				
+			end if
+			
+			if thread(t).solver_waiting=1 then 'andalso best_score>=thread(t).score
+				
+				'if thread(t).n1=1 andalso thread(t).score>rnd_score then
+				'	rnd_score=thread(t).score
+				'	best_score=rnd_score
+				'	memcpy(@bkey(0,1),@thread(t).bkey(0,1),l*2)
+				'	for i=1 to threads 'reset solver upon improvement
+				' 		thread(i).solver_stop=1
+				' 		do
+				'			sleep 0.001
+				' 		loop until thread(i).solver_waiting=1
+				' 		thread(i).score=0
+				'	next i
+				'end if
+				
+				if thread(t).score>best_score then
+					
+					best_score=thread(t).score+0.00001
+					sectime=thread(t).sectime
+					for i=1 to l
+						sol(i)=thread(t).sol(i)
+					next i
+					ent=thread(t).ent
+					
+					memcpy(@bkey(0,1),@thread(t).bkey(0,1),l*2)
+					
+					for i=1 to rules
+						for j=1 to 2
+							bkey(j,i)=thread(t).bkey(j,i)
+						next j
+					next i
+					
+					if solvesub_advstats=1 then os2=str(thread(t).repeats)+lb else os2=""
+					
+					if avgsolve=0 then
+						
+						for i=1 to l
+							'bkey(0,i)=thread(t).bkey(0,i)
+							dbl(i)=thread(t).bkey(0,i)
+							mty(i)=thread(t).bkey(0,i)
+						next i
+						
+						osfile="Periodic transposition map 1 (actual)"+lb+lb
+						osfile+=info_to_string(mty(),l,dx,dy,1,1,0)
+						
+						dim as integer old_num=info_numerical
+						info_numerical=1
+						output_colormap(dbl(),mty(),l,dx,dy,0,"Periodic transposition map 1 (actual)")
+						for i=1 to l
+							dbl2(dbl(i))=i
+							mty(dbl(i))=i
+						next i
+						output_colormap(dbl2(),mty(),l,dx,dy,0,"Periodic transposition map 2 (original)")
+						info_numerical=old_num
+						
+						osfile+=lb+lb+"Periodic transposition map 2 (original)"
+						osfile+=lb+lb+info_to_string(mty(),l,dx,dy,1,1,0) '+lb+lb
+						
+						open basedir+"/Output/matrices.txt" for binary as #4
+						print #4,osfile
+						close #4
+						
+					end if
+					
+					'for i=1 to threads
+				 	'	thread(i).solver_stop=1
+				 	'	do
+					'		sleep 0.001
+				 	'	loop until thread(i).solver_waiting=1
+				 	'	thread(i).score=0
+					'next i
+					
+					itsfactor1=itsfactor1ori
+					iterations*=itsfactor1
+					solvesub_permutations_itsmax=iterations
+					
+				end if
+				
+				if thread(t).score>0 then
+					
+					its+=1
+					if avgsolve=1 andalso thread(t).score>22000 then 'solvesub_scoreover
+						avgsolvetime+=timer-solvetimer
+						for i=1 to threads
+					 		thread(i).solver_stop=1
+					 		do
+								sleep 0.001
+					 		loop until thread(i).solver_waiting=1
+					 		thread(i).score=0
+						next i
+						best_score=0
+						solvetimer=timer
+						solved+=1
+						its=0
+						for i=1 to l
+							bkey(0,i)=0
+						next i
+						
+						itsfactor1=itsfactor1ori
+						iterations=start_iterations
+						solvesub_permutations_itsmax=iterations
+						
+					end if
+					
+				end if
+				
+				state=48271*state and 2147483647
+				r1=2*state shr 31
+				if r1>0 andalso bkey(0,1)>0 then 'reuse best key
+					memcpy(@thread(t).bkey(0,1),@bkey(0,1),l*2) 'memcpy(@akey(0,1),@bkey(0,1),l*2)
+					'for i=1 to l
+					'	akey(0,i)=bkey(0,i)
+					'next i
+				else 'random key
+					
+					for i=1 to l
+						akey(0,i)=i
+					next i
+					memcpy(@thread(t).bkey(0,1),@akey(0,1),l*2)
+					
+					'for i=1 to l
+					'	state=48271*state and 2147483647
+					'	r1=1+l*state shr 31
+					'	state=48271*state and 2147483647
+					'	r2=1+l*state shr 31
+					'	swap rkey(r1),rkey(r2)
+					'next i
+					'memcpy(@thread(t).bkey(0,1),@rkey(1),l*2) 'memcpy(@akey(0,1),@rkey(1),l*2)
+					
+				end if
+				thread(t).n1=r1
+				
+				thread(t).itemname="Period key: "
+				'for i=1 to l
+				'	thread(t).bkey(0,i)=akey(0,i)
+				'next i
+				for i=1 to rules
+					for j=1 to 2
+						thread(t).bkey(j,i)=akey(j,i)
+					next j
+					if akey(1,i)=0 then
+						thread(t).itemname+="+"+str(akey(2,i))+" "
+					else
+						thread(t).itemname+="-"+str(akey(2,i))+" "
+					end if
+				next i
+				
+				thread(t).outputdir=basedir+"\Output\"
+				thread(t).l=l
+				thread(t).s=s
+				thread(t).dim_x=dx
+				thread(t).dim_y=dy
+				thread(t).score=0
+				thread(t).advstats=solvesub_advstats
+				'thread(t).iterations=iterations
+				'thread(t).temperature=solvesub_temperature
+				'thread(t).restarts=solvesub_restarts
+				'thread(t).subrestartlevels=solvesub_subrestartlevels
+				thread(t).ngramfactor=solvesub_ngramfactor
+				thread(t).multiplicityweight=solvesub_multiplicityweight
+				thread(t).entweight=solvesub_entweight
+				thread(t).solver_stop=0
+				thread(t).update=0
+				thread(t).solver_waiting=0 'engage thread
+				
+				itsfactor1*=accel
+				solvesub_permutations_itsmax*=itsfactor1	
+				
+			end if
+			
+		next t
+		
+	loop until stoptask=1
+	stoptask=0
+	
+	solvesub_nosub=0
+	
+	dim as double stucktimer=timer
+	for t=1 to threads
+		thread(t).solver_stop=1
+		do
+			sleep 10
+		loop until thread(t).solver_waiting=1 or timer-stucktimer>2
+	next t
+	
+	redim ngp_offset_neg(0)
+	redim ngp_offset_pos(0)
+	redim ngp_offset2_neg(0)
+	redim ngp_offset2_pos(0)
+	redim ngp_move_lt(0,0)
+	redim ngp_move(0)
+	redim ngp_move2(0)
+	redim ngp_swap2(0)
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then close #3
+	
+	clean_thread_information
+	solver_status_processing=0
+	task_active="none"
+	update_solver_status
+	
+end sub
+
+sub thread_solve_rules(byval none as any ptr)
+	
+	dim as integer h,i,j,k,a,p,t,r,e,r1,r2
+	dim as integer iterations=solvesub_iterations
+	dim as double best_score,high_score,sectime
+	dim as string os,os2,osfile,osfile2
+	dim as integer l=info_length
+	dim as integer s=info_symbols
+	dim as integer dx=info_x
+	dim as integer dy=info_y
+	
+	dim as long nba(constcip)
+	dim as long cip(constcip)
+	dim as long sym(constcip)	
+	dim as long sol(constcip)
+	dim as double dbl(constcip)
+	dim as double dbl2(constcip)
+	dim as long mty(constcip)
+	dim as long mty2(constcip)
+	dim as short periods(-1000 to 1000)
+	dim as short plist(2000,1)
+	dim as integer his1(constcip)
+	dim as double his2(constcip)
+	'dim as integer hisd(l,l)
+	dim as double pscore(3,constcip)
+	
+	dim as short akey(2,constcip)
+	dim as short bkey(2,constcip)
+	dim as short bkey2(2,constcip)
+	dim as ulong fkey(constcip)
+	
+	dim as double its,itsmax=val(ui_editbox_gettext(editbox_rules_its2)) 'solvesub_hciterations
+	dim as double itsmax_original=itsmax
+	dim as integer temp_start=5*threads '5
+	dim as double temp=temp_start
+	dim as double temp_min=temp/itsmax
+	dim as integer solved,restarts=0
+	dim as double rndkeys_factor=0.05,prev_high_score
+	dim as integer rndkeys=itsmax*rndkeys_factor
+	dim as integer fkey_count,old_num,first1,best_score_improved
+	dim as long state=1
+	
+	stoptask=0
+	solver_status_processing=1
+	global_best_score=0
+	
+	if l>1000 then
+		ui_editbox_settext(output_text,"Error: cipher length > 1000")
+		exit sub
+	end if
+	
+	for i=1 to l
+		nba(i)=nuba(i)
+		cip(i)=alpharevp1(info(i))-1
+		if alpharevp1(info(i))=0 then
+			ui_editbox_settext(output_text,"Error: cipher and n-gram alphabets mismatch")
+			'task_active="none"
+			'update_solver_status	
+			exit sub
+		end if
+	next i
+	
+	ui_editbox_settext(output_text,"Creating look-up tables, it may take a while...")
+	task_active=lcase(ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main)))
+	update_solver_status
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then
+		batchnr+=1
+		open basedir+"\Output\batch_"+str(batchnr)+".txt" for output as #3
+		print #3,"output_sub_directory=batch_"+str(batchnr)
+	end if
+	
+	'dim as integer kl=l
+	'solvesub_permutations_columns=kl
+	
+	solvesub_rules_steps=val(ui_editbox_gettext(editbox_rules_steps))
+	if solvesub_rules_steps<1 then solvesub_rules_steps=1
+	if solvesub_rules_steps>l-1 then solvesub_rules_steps=1
+	
+	solvesub_permutations_searches=100
+	solvesub_permutations_ngrampower=1
+	solvesub_permutations_ngramfactor=solvesub_ngramfactor
+	'solvesub_permutations_itsmax=iterations/10
+	
+	solvesub_permutations_itsmax=val(ui_editbox_gettext(editbox_rules_its1))
+	if solvesub_permutations_itsmax<5000 then solvesub_permutations_itsmax=40000
+	dim as double pitsmax_original=solvesub_permutations_itsmax
+	dim as double itsfactor1=val(ui_editbox_gettext(editbox_rules_itsfactor1))
+	if itsfactor1<1 then itsfactor1=1.075
+	dim as double itsfactor2=val(ui_editbox_gettext(editbox_rules_itsfactor2))
+	if itsfactor2<1 then itsfactor2=1.075
+	dim as integer rules=val(ui_editbox_gettext(editbox_rules_rules))
+	if rules<1 then rules=4
+	if rules>l then rules=l
+	solvesub_permutations_rules=rules
+	dim as integer maxp=val(ui_editbox_gettext(editbox_rules_maxperiod))
+	if maxp<1 then maxp=50
+	if maxp>l-1 then maxp=l-1
+	if maxp<rules then maxp=rules
+	solvesub_rules_nonperiodstrength=val(ui_editbox_gettext(editbox_rules_nonperiodstrength))
+	if solvesub_rules_nonperiodstrength<-100 or solvesub_rules_nonperiodstrength>100 then solvesub_rules_nonperiodstrength=0
+	
+	dbl(0)=l
+	dbl2(0)=l
+	fkey_count=rules
+	for i=1 to rules
+		fkey(i)=1
+	next i
+	
+	temp_min=temp/(itsmax-rndkeys)
+	
+	randomize timer
+	
+	for i=1 to l 'random inner key
+		akey(0,i)=i
+	next i
+	for i=1 to l*5
+		state=48271*state and 2147483647
+		r1=1+l*state shr 31
+		state=48271*state and 2147483647
+		r2=1+l*state shr 31
+		swap akey(0,r1),akey(0,r2)
+	next i
+	
+	for i=1 to rules 'random outer key
+		state=48271*state and 2147483647
+		r1=2*state shr 31
+		state=48271*state and 2147483647
+		r2=1+maxp*state shr 31
+		akey(1,i)=r1
+		akey(2,i)=r2
+	next i
+	
+	for t=1 to threads
+		for i=1 to l
+			thread(t).cip(i)=cip(i)
+		next i
+	next t
+	
+	generate_rules_ngrampos(l,ngram_size)
+	
+	sectimer=timer
+	ips_timer=timer
+	dim as double statustimer=timer
+	
+	do
+		
+		sleep twait
+		
+		for t=1 to threads
+			
+			if pausetask=1 then 'pause task
+				update_solver_status
+				do
+					sleep 10
+				loop until pausetask=0
+				update_solver_status
+			end if
+			
+			if best_score>0 andalso timer-statustimer>1 then
+				
+				statustimer=timer
+				os=""
+				os+="Hill climber: "+rdc2(solvesub_permutations_itsmax,2)+"/"+rdc2(its,2)+"/"+rdc2(int(itsmax),2)+"/"+rdc2(restarts+1,2)+lb '+" Sr: "+rdc((solved/(restarts-0))*100,2)+"%"+lb
+				'#include "thread_solve_output.bi"
+				'os+="Sub restart level: "+str(sri)+"/"+str(srj)+lb
+				os+="Score: "+rdc(high_score,2)+" IOC: "+rdc(thread(t).ioc,4)+" Multiplicity: "+rdc(thread(t).multiplicity,4)+stt(sectime)+lb
+				os+=os2
+				ui_editbox_settext(output_text,os)
+				update_solver_status
+				
+			end if
+			
+			if thread(t).solver_waiting=1 then 'andalso best_score>=thread(t).score
+				
+				if thread(t).score>best_score then
+					
+					best_score_improved=1
+					
+					best_score=thread(t).score
+					for i=1 to rules 'record key position change
+						if its>rndkeys andalso bkey(1,i)<>thread(t).bkey(1,i) or bkey(2,i)<>thread(t).bkey(2,i) then
+							fkey(i)+=1
+							fkey_count+=1
+						end if
+					next i
+					
+					memcpy(@bkey(0,1),@thread(t).bkey(0,1),l*2)
+					
+					for i=1 to rules 'outer key
+						for j=1 to 2
+							'akey(j,i)=thread(t).bkey(j,i)
+							bkey(j,i)=thread(t).bkey(j,i)
+						next j
+					next i
+					
+					if best_score>high_score then
+						
+						high_score=best_score
+						sectime=thread(t).sectime
+						
+						memcpy(@sol(1),@thread(t).sol(1),l*4)
+						memcpy(@bkey2(0,1),@thread(t).bkey(0,1),l*2)
+						for i=1 to l
+							mty(i)=thread(t).bkey(0,i)
+							dbl(i)=thread(t).bkey(0,i)
+						next i
+						
+						for i=1 to rules
+							for j=1 to 2
+								bkey2(j,i)=thread(t).bkey(j,i)
+							next j
+						next i
+						if solvesub_advstats=1 then os2=str(thread(t).repeats)+lb else os2=""
+						os2+=lb+"Period key: "
+						for i=1 to rules
+							if bkey2(1,i)=0 then os2+="+"+str(bkey2(2,i))+" " else os2+="-"+str(bkey2(2,i))+" "
+						next i
+						os2+=lb
+						os2+=lb+info_to_string(sol(),l,dx,dy,0,solvesub_addspaces,0)
+						
+						osfile="Periodic transposition map 1 (actual)"+lb+lb
+						osfile+=info_to_string(mty(),l,dx,dy,1,1,0)
+						
+						''memset(@periods(-1000),0,2000)
+						'erase periods,plist
+						'for i=1 to l-solvesub_rules_steps
+						'	periods(mty(i+solvesub_rules_steps)-mty(i))+=1
+						'next i
+						'j=0
+						'for i=-1000 to 1000
+						'	if periods(i)>0 then
+						'		j+=1
+						'		plist(j,0)=i 'period
+						'		plist(j,1)=periods(i) 'count
+						'	end if
+						'next i
+						'do
+						'	e=0
+						'	for i=1 to j-1
+						'		if plist(i+1,1)>plist(i,1) then
+						'			e=1
+						'			for k=0 to 1
+						'				swap plist(i+1,k),plist(i,k)
+						'			next k
+						'		end if
+						'	next i
+						'loop until e=0
+						'osfile2="Periods:"+lb
+						'osfile2+="---------------------------------------------------------"+lb
+						'for i=1 to j
+						'	osfile2+=str(plist(i,0))+": "+str(plist(i,1))
+						'	if i<>j then osfile2+=lb
+						'next i
+						
+						old_num=info_numerical
+						info_numerical=1
+						output_colormap(dbl(),mty(),l,dx,dy,0,"Periodic transposition map 1 (actual)")
+						for i=1 to l
+							dbl2(dbl(i))=i
+							mty(dbl(i))=i
+						next i
+						output_colormap(dbl2(),mty(),l,dx,dy,0,"Periodic transposition map 2 (original)")
+						info_numerical=old_num
+						
+						osfile+=lb+lb+"Periodic transposition map 2 (original)"
+						osfile+=lb+lb+info_to_string(mty(),l,dx,dy,1,1,0) '+lb+lb
+						
+						open basedir+"/Output/matrices.txt" for binary as #4
+						print #4,osfile
+						close #4
+						
+					end if
+					
+				else
+					
+					if thread(t).score>temp andalso its>rndkeys then best_score-=temp
+					
+				end if
+				
+				'if thread(t).score>24000 then 'solvesub_scoreover
+				'	
+				'	its=itsmax
+				'	solved+=1
+				'	
+				'end if
+				
+				if its>=itsmax then
+					
+					for i=1 to threads
+				 		thread(i).solver_stop=1
+				 		do
+							sleep 0.001
+				 		loop until thread(i).solver_waiting=1
+				 		thread(i).score=0
+					next i
+					
+					restarts+=1
+					itsmax*=itsfactor2 'solvesub_hciterationsfactor
+					solvesub_permutations_itsmax*=itsfactor1 'solvesub_iterationsfactor
+					
+					'if high_score>prev_high_score then
+					'	prev_high_score=high_score
+					'	itsmax=itsmax_original
+					'	solvesub_permutations_itsmax=pitsmax_original
+					'end if
+					
+					fkey_count=rules
+					for i=1 to rules
+						fkey(i)=1
+					next i	
+					erase pscore
+					
+					its=0
+					best_score=0
+					
+					state=48271*state and 2147483647
+					r1=2*state shr 31
+					if r=0 then 'random restart
+						first1=0
+						rndkeys=itsmax*rndkeys_factor
+						for i=1 to l 'random inner key
+							akey(0,i)=i
+						next i
+						for i=1 to l*5
+							state=48271*state and 2147483647
+							r1=1+l*state shr 31
+							state=48271*state and 2147483647
+							r2=1+l*state shr 31
+							swap akey(0,r1),akey(0,r2)
+						next i
+						for i=1 to rules 'random outer key
+							state=48271*state and 2147483647
+							r1=2*state shr 31
+							state=48271*state and 2147483647
+							r2=1+maxp*state shr 31
+							akey(1,i)=r1
+							akey(2,i)=r2
+						next i
+					else 'use best
+						first1=1
+						rndkeys=0
+						memcpy(@akey(0,1),@bkey2(0,1),l*2)
+						memcpy(@bkey(0,1),@bkey2(0,1),l*2)
+						for i=1 to rules
+							for j=1 to 2
+								akey(j,i)=bkey2(j,i)
+								bkey(j,i)=bkey2(j,i)
+							next j
+						next i
+					end if
+					
+					temp=temp_start
+					temp_min=temp/(itsmax-rndkeys)
+					
+				else
+					
+					if thread(t).score>0 then
+						
+						its+=1
+						
+						if its>rndkeys then
+							
+							if first1=0 then
+								'---------------------------------------
+								for i=1 to threads
+							 		thread(i).solver_stop=1
+							 		do
+										sleep 1
+							 		loop until thread(i).solver_waiting=1
+							 		thread(i).score=0
+								next i
+								'---------------------------------------
+								first1=1
+								dim as double max0
+								dim as integer max0p
+								dim as integer max0pm
+								for i=1 to rules
+									max0=0
+									max0p=0
+									max0pm=0
+									for j=1 to maxp
+										if pscore(1,j)>0 andalso pscore(0,j)/pscore(1,j)>max0 then
+											max0=pscore(0,j)/pscore(1,j)
+											max0pm=0
+											max0p=j
+										end if
+										if pscore(3,j)>0 andalso pscore(2,j)/pscore(3,j)>max0 then
+											max0=pscore(2,j)/pscore(3,j)
+											max0pm=2
+											max0p=j
+										end if
+									next j
+									pscore(max0pm,max0p)=0
+									pscore(max0pm+1,max0p)=0
+									if max0p>0 then
+										if max0pm=0 then bkey(1,i)=0 else bkey(1,i)=1
+										bkey(2,i)=max0p
+									end if
+								next i
+							end if
+							
+							temp-=temp_min
+							for i=1 to rules 'use best outer key
+								for j=1 to 2
+									akey(j,i)=bkey(j,i)
+								next j
+							next i
+							
+						else
+							
+							for i=1 to rules
+								if thread(t).bkey(1,i)=0 then 'plus
+									pscore(0,thread(t).bkey(2,i))+=thread(t).score
+									pscore(1,thread(t).bkey(2,i))+=1
+								else 'minus
+									pscore(2,thread(t).bkey(2,i))+=thread(t).score
+									pscore(3,thread(t).bkey(2,i))+=1
+								end if
+							next i
+							
+						end if
+						
+					end if
+					
+					if its<rndkeys then
+						
+						for i=1 to l 'random inner key
+							akey(0,i)=i
+						next i
+						for i=1 to l*5
+							state=48271*state and 2147483647
+							r1=1+l*state shr 31
+							state=48271*state and 2147483647
+							r2=1+l*state shr 31
+							swap akey(0,r1),akey(0,r2)
+						next i
+						for i=1 to rules 'random outer key
+							state=48271*state and 2147483647
+							r1=2*state shr 31
+							state=48271*state and 2147483647
+							r2=1+maxp*state shr 31
+							akey(1,i)=r1
+							akey(2,i)=r2
+						next i
+						
+					else
+						
+						if best_score_improved=0 then
+							
+							state=48271*state and 2147483647
+							r1=3*state shr 31
+							if r1=0 then 'random inner key
+								for i=1 to l
+									akey(0,i)=i
+								next i
+								for i=1 to l*5
+									state=48271*state and 2147483647
+									r1=1+l*state shr 31
+									state=48271*state and 2147483647
+									r2=1+l*state shr 31
+									swap akey(0,r1),akey(0,r2)
+								next i
+							end if
+							
+							state=48271*state and 2147483647
+							r1=10*state shr 31
+							if r1>1 then 'try 14/100
+								k=0 'random outer key change
+								for i=1 to rules
+									j=fkey(i)^0.6
+									if j=0 then j=1
+									k+=j
+								next i
+								r=int(rnd*k)
+								j=0
+								for i=1 to rules
+									j+=fkey(i)^0.6
+									if j>r then
+										r=i
+										exit for
+									end if
+								next i
+								do
+									e=0
+									state=48271*state and 2147483647
+									r1=2*state shr 31
+									state=48271*state and 2147483647
+									r2=1+maxp*state shr 31
+									for i=1 to rules
+										if akey(1,i)=r1 andalso akey(2,i)=r2 then
+											e=1
+											exit for
+										end if
+									next i
+								loop until e=0
+								akey(1,r)=r1
+								akey(2,r)=r2
+							end if
+							
+						end if
+						
+					end if
+					
+					best_score_improved=0
+					
+				end if
+				
+				thread(t).itemname="Period key: "
+				memcpy(@thread(t).bkey(0,1),@akey(0,1),l*2)
+				for i=1 to rules
+					for j=1 to 2
+						thread(t).bkey(j,i)=akey(j,i)
+					next j
+					if akey(1,i)=0 then
+						thread(t).itemname+="+"+str(akey(2,i))+" "
+					else
+						thread(t).itemname+="-"+str(akey(2,i))+" "
+					end if
+				next i
+				
+				thread(t).outputdir=basedir+"\Output\"
+				thread(t).l=l
+				thread(t).s=s
+				thread(t).dim_x=dx
+				thread(t).dim_y=dy
+				thread(t).score=0
+				thread(t).advstats=solvesub_advstats
+				thread(t).ngramfactor=solvesub_ngramfactor
+				thread(t).multiplicityweight=solvesub_multiplicityweight
+				thread(t).entweight=solvesub_entweight
+				thread(t).solver_stop=0
+				thread(t).update=0
+				thread(t).solver_waiting=0 'engage thread
+				
+			end if
+			
+		next t
+		
+	loop until stoptask=1
+	stoptask=0
+	
+	dim as double stucktimer=timer
+	for t=1 to threads
+		thread(t).solver_stop=1
+		do
+			sleep 10
+		loop until thread(t).solver_waiting=1 or timer-stucktimer>2
+	next t
+	
+	redim ngp_offset_neg(0)
+	redim ngp_offset_pos(0)
+	redim ngp_offset2_neg(0)
+	redim ngp_offset2_pos(0)
+	redim ngp_move_lt(0,0)
+	redim ngp_move(0)
+	redim ngp_move2(0)
+	redim ngp_swap2(0)
+	
+	use_cribs=0
+	solvesub_nosub=0
+	
+	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then close #3
+	
+	clean_thread_information
+	solver_status_processing=0
+	task_active="none"
+	update_solver_status
+	
+end sub
+
 sub thread_solve_genhc(byval none as any ptr)
 	
 	dim as integer i,j,k,t,e,ac
 	dim as integer iterations=solvesub_iterations
-	dim as double new_score,best_score,currbest,brun_score
-	dim as string os,hc,his
+	dim as double newscore,bestscore,currbest,brunscore
+	dim as string os,his
 	dim as integer l=info_length
 	dim as integer s=info_symbols
 	dim as integer dx=info_x
@@ -15699,52 +17883,32 @@ sub thread_solve_genhc(byval none as any ptr)
 	dim as double sri,srj,srimax
 	dim as uinteger nfb
 	
-	dim as integer solved,improved
+	dim as integer solved
 	dim as integer its,cits,restarts,kl,kl_nulls
 	dim as integer extcip_a1,extcip_a2,extcip_a3
 	dim as integer extkey_a1,extkey_a2,extkey_a3,extkey_a4
 	dim as integer extinf_a1,extinf_a2,extinf_a3
 	dim as integer extpcm_a1,extpcm_a2,extpcm_a3
 	
-	dim as short akey(constcip,1)
-	dim as short tkey(constcip)
+	dim as short akey(2000,1)
+	dim as short tkey(2000)
 	
-	'randomize timer 'test
+	randomize timer 'test
 	
 	ips_timer=timer
 	dim as double statustimer=timer
-	dim as double soltimer=timer
 	dim as double updatetimer=timer
 	
 	dim as string str_nulls
 	dim as string str_skips
 	dim as string str_rest
 	
-	'------------------------------- test link poly solver -----------------------------------------------------
-	'dim as integer ok1,local_cpol(s)
-	'for i=1 to s
-	'	local_cpol(i)=cpol(i)
-	'	if local_cpol(i)>1 andalso freq(i)>1 then ok1=1
-	'next i
-	'i=0
-	'if ok1=0 then
-	'	do
-	'		i+=1 'int(rnd*s)+1
-	'		if i>s then
-	'			exit sub
-	'			solver_status_processing=0
-	'			task_active="none"
-	'			update_solver_status
-	'		end if
-	'	loop until freq(i)>1
-	'	local_cpol(i)=2
-	'end if
-	'------------------------------- test link poly solver -----------------------------------------------------
-	
 	'development=1 '<<<<<<<<<<<<<------------------------------------------------------ switch
 	
 	stoptask=0
 	global_best_score=0
+	solvesub_avgscore=0
+	solvesub_avgioc=0
 	
 	select case genhc_mode
 		case "columnar rearrangement"
@@ -15803,7 +17967,7 @@ sub thread_solve_genhc(byval none as any ptr)
 			temp_start=(solvesub_nshctemp/30)*threads
 			kl=solvesub_ctcolumns
 			task_active="substitution + columnar transposition"
-		case "nulls and skips"
+		case "nulls and skips"		
 			if solvesub_pnmannulls+solvesub_pnmanskips>0 then
 				solvesub_pnkl=solvesub_pnmannulls+solvesub_pnmanskips
 				kl=solvesub_pnmannulls+solvesub_pnmanskips
@@ -15814,11 +17978,11 @@ sub thread_solve_genhc(byval none as any ptr)
 				kl_nulls=solvesub_pnnulls
 			end if
 			if solvesub_pnperiod>l then
-				ui_editbox_settext(output_text,"Error: period > cipher length")
+				editbox_settext(output_text,"Error: period > cipher length")
 				exit sub
 			end if
 			if kl>l/2 then
-				ui_editbox_settext(output_text,"Error: nulls and skips > cipher length / 2")
+				editbox_settext(output_text,"Error: nulls and skips > cipher length / 2")
 				exit sub
 			end if
 			task_active="substitution + nulls and skips"
@@ -15844,11 +18008,11 @@ sub thread_solve_genhc(byval none as any ptr)
 	temp=temp_start
 	temp_min=temp/itsmax
 	
-	dim as short nulls(constcip)
-	dim as short skips(constcip)
+	dim as short nulls(2000)
+	dim as short skips(2000)
 	
 	dim as integer sr(10,10) 'double
-	dim as short bkey(10,constcip,1)
+	dim as short bkey(10,2000,1)
 	for i=1 to srimax
 		sr(i,0)=srimax-(i-1)
 	next i
@@ -15862,8 +18026,6 @@ sub thread_solve_genhc(byval none as any ptr)
 	next i
 	sr(srimax,1)+=itsmax-itsmax2
 	citsmax=sr(sri,srj)
-	temp=temp_start-((temp_start/srimax)*(sri-1))
-	temp_min=temp/citsmax
 	
 	dim as integer m1=extcip_a1*extcip_a2*extcip_a3*2
 	dim as integer m2=extkey_a1*extkey_a2*extkey_a3*extkey_a4*2
@@ -15876,7 +18038,7 @@ sub thread_solve_genhc(byval none as any ptr)
 		case 2,4,5,6
 			if solvesub_pcmode=1 then
 				if m1+m2+m3+m4>fre then
-					ui_editbox_settext(output_text,"Error: not enough free RAM to run solver")
+					editbox_settext(output_text,"Error: not enough free RAM to run solver")
 					exit sub
 				end if
 				redim extcip(extcip_a1,extcip_a2,extcip_a3)
@@ -15885,7 +18047,7 @@ sub thread_solve_genhc(byval none as any ptr)
 				redim extpcm(extpcm_a1,extpcm_a2,extpcm_a3)
 			else
 				if m1+m2+m3+m4>fre then
-					ui_editbox_settext(output_text,"Error: not enough free RAM to run solver")
+					editbox_settext(output_text,"Error: not enough free RAM to run solver")
 					exit sub
 				end if
 				redim extcip(extcip_a1,extcip_a2,extcip_a3)
@@ -15896,6 +18058,22 @@ sub thread_solve_genhc(byval none as any ptr)
 	end select
 	
 	update_solver_status
+	
+	'for i=1 to threads
+	'	thread(i).score=0
+	'	thread(i).itemname=""
+	'	thread(i).itemnumber=0
+	'	thread(i).iterations_completed=0
+	'	thread(i).restarts_completed=0
+	'	for j=0 to kl
+	'		for k=0 to 1
+	'			thread(i).gkey(j,k)=0
+	'		next k
+	'	next j
+	'	'for j=1 to l+1
+	'	'	thread(i).graph(j)=0
+	'	'next j
+	'next i
 	
 	if solvesub_outputbatch=1 andalso solvesub_outputdir=1 then
 		batchnr+=1
@@ -15947,7 +18125,9 @@ sub thread_solve_genhc(byval none as any ptr)
 	dim as integer itscount 'gradual shift
 	solvesub_nshcshift=0 'gradual shift
 	
-	sectimer=timer
+	dim as double soltimer=timer
+	dim as string hc
+	dim as integer improved
 	
 	do
 		
@@ -15967,7 +18147,7 @@ sub thread_solve_genhc(byval none as any ptr)
 				soltimer=timer
 				if development=1 then
 					hc="Restart: "+str(restarts+1)+"/"+str(solvesub_nshcrestartsmax)+" HC: "+str(int(its/1))+"/"+str(int(itsmax/1))+" Sub: "+str(int(iterations/1))+""+lb
-					hc+="Best score: "+rdc(brun_score,2)+" Over "+str(solvesub_pnover)+": "+str(solved)+" ("+rdc((solved/(restarts+1))*100,2)+"%)"+lb
+					hc+="Best score: "+rdc(brunscore,2)+" Over "+str(solvesub_pnover)+": "+str(solved)+" ("+rdc((solved/(restarts+1))*100,2)+"%)"+lb
 				else
 					hc="Restart: "+str(restarts+1)+" Hill climber: "+str(its)+"/"+str(itsmax)+" @ "+str(int(iterations))+lb
 				end if
@@ -15976,7 +18156,7 @@ sub thread_solve_genhc(byval none as any ptr)
 			
 			if thread(t).solver_waiting=1 then
 				
-				if thread(t).score>new_score then
+				if thread(t).score>newscore then
 					
 					if development=1 then
 						select case genhc_mode
@@ -15989,41 +18169,46 @@ sub thread_solve_genhc(byval none as any ptr)
 								for i=1 to 5-len(str(int(thread(t).score)))
 									his+="0"
 								next i
-								his+=str(int(thread(t).score))+" "+thread(t).itemname2+lb
+								his+=str(int(thread(t).score))+" "+thread(t).itemname2+chr(13)+chr(10)
 						end select
 					end if
 					
-					new_score=thread(t).score
+					newscore=thread(t).score
 					
-					if new_score>best_score then
+					if newscore>bestscore then
 						
 						improved=1
-						if new_score>brun_score then
-							brun_score=new_score
+						
+						if newscore>brunscore then
+							brunscore=newscore
 							os=""
 							#include "thread_solve_output.bi"
 							os+=lb+thread(t).itemname+lb+lb
 							os+=info_to_string(thread(t).sol(),thread(t).l,thread(t).dim_x,thread(t).dim_y,0,solvesub_addspaces,0)
-							'ui_editbox_settext(output_text,os)
 						end if
-						best_score=thread(t).score+0.00001
-						if best_score>=solvesub_pnover andalso ac=0 then
+						
+						bestscore=thread(t).score+0.00001
+						if bestscore>=solvesub_pnover andalso ac=0 then
 							ac=1
 							solved+=1
 						end if
 						
 						'if development=1 then
-						'	os="Restart: "+str(restarts+1)+"/"+str(solvesub_nshcrestartsmax)+" HC: "+str(int(its/1))+"/"+str(int(itsmax/1))+" Sub: "+str(int(iterations/1))+""+lb
-						'	os+="Best score: "+rdc(brunscore,2)+" Over "+str(solvesub_pnover)+": "+str(solved)+" ("+rdc((solved/(restarts+1))*100,2)+"%)"+lb
+						'	os="Restart: "+str(restarts+1)+"/"+str(solvesub_nshcrestartsmax)+" HC: "+str(int(its/1))+"/"+str(int(itsmax/1))+" Sub: "+str(int(iterations/1))+""+chr(13)+chr(10)
+						'	os+="Best score: "+rdc(brunscore,2)+" Over "+str(solvesub_pnover)+": "+str(solved)+" ("+rdc((solved/(restarts+1))*100,2)+"%)"+chr(13)+chr(10)
 						'else
-						'	os="Restart: "+str(restarts+1)+" Hill climber: "+str(its)+"/"+str(itsmax)+" @ "+str(int(iterations))+lb
+						'	os="Restart: "+str(restarts+1)+" Hill climber: "+str(its)+"/"+str(itsmax)+" @ "+str(int(iterations))+chr(13)+chr(10)
 						'end if
-						
-						'----------------- test link poly solver ---------------------
-						'os+=lb
-						'os+="Symbols: "+str(thread(t).effectivesymbols)+lb
-						'os+=lb
-						'----------------- test link poly solver ---------------------
+						'
+						'os+="Score: "+rdc(thread(t).score,2)+" IOC: "+rdc(thread(t).ioc,5)+" Multiplicity: "+rdc(thread(t).s/thread(t).l,5)+chr(13)+chr(10)
+						'if solvesub_advstats=1 then
+						'	os+="Repeats: "+str(thread(t).ngrams)+" PC-cycles: "+str(thread(t).pccycles)+chr(13)+chr(10)
+						'end if
+						'os+=chr(13)+chr(10)
+						'os+=thread(t).itemname+chr(13)+chr(10)
+						'os+=chr(13)+chr(10)
+						'os+=info_to_string(thread(t).sol(),thread(t).l,thread(t).dim_x,thread(t).dim_y,0)
+						'editbox_settext(output_text,os)
 						
 					end if
 					
@@ -16036,7 +18221,7 @@ sub thread_solve_genhc(byval none as any ptr)
 				else
 					
 					if thread(t).score>0 then 
-						new_score-=temp
+						newscore-=temp
 						if development=1 then
 							select case genhc_mode
 								case "nulls and skips"
@@ -16048,9 +18233,9 @@ sub thread_solve_genhc(byval none as any ptr)
 									for i=1 to 5-len(str(int(thread(t).score)))
 										his+="0"
 									next i
-									his+=str(int(thread(t).score))+" "+thread(t).itemname2+lb
+									his+=str(int(thread(t).score))+" "+thread(t).itemname2+chr(13)+chr(10)
 							end select
-						end if
+						end if		
 					end if
 					
 				end if
@@ -16063,8 +18248,8 @@ sub thread_solve_genhc(byval none as any ptr)
 				
 				solvesub_nshcshift=oldshift*(its/itsmax) 'gradual shift
 				
-				if new_score>currbest then
-					currbest=new_score
+				if newscore>currbest then
+					currbest=newscore
 					for i=1 to kl
 						for j=0 to 1
 							bkey(sri,i,j)=akey(i,j)
@@ -16073,7 +18258,7 @@ sub thread_solve_genhc(byval none as any ptr)
 				end if
 				
 				if solvesub_pnoverskip=1 then
-					if best_score>=solvesub_pnover then
+					if bestscore>=solvesub_pnover then
 						cits=citsmax
 						srj=srimax
 						sri=srimax
@@ -16104,7 +18289,7 @@ sub thread_solve_genhc(byval none as any ptr)
 									if development=1 then
 										mkdir basedir+"\Output\"+str_nulls+str_rest+str_skips+"\"
 										open basedir+"\Output\"+str_nulls+str_rest+str_skips+"\hc_restart_log_"+str(restarts+1)+".txt" for binary as #4
-										print #4,his;
+										print #4,his
 										close #4
 										his=""
 									end if
@@ -16126,7 +18311,7 @@ sub thread_solve_genhc(byval none as any ptr)
 							solvesub_nshcshift=0 'gradual shift
 							if development=1 andalso restarts=solvesub_nshcrestartsmax then exit do
 							global_best_score=0
-							'best_score=0
+							bestscore=0
 							itsmax2=0
 							for i=1 to srimax
 								for j=1 to sr(i,0)
@@ -16183,9 +18368,9 @@ sub thread_solve_genhc(byval none as any ptr)
 					
 					cits=0
 					citsmax=sr(sri,srj)
-					temp=temp_start-((temp_start/srimax)*(sri-1))
+					temp=temp_start-((temp_start/srimax)*(sri-1)) 'try individual values
 					temp_min=temp/citsmax
-					new_score=0
+					newscore=0
 					
 				end if
 				
@@ -16232,12 +18417,6 @@ sub thread_solve_genhc(byval none as any ptr)
 					thread(t).cip(i)=nba(i)
 				next i
 				
-				'----------------- test link poly solver ---------------------
-				'for i=1 to s
-				'	thread(t).key(i)=local_cpol(i)
-				'next i
-				'----------------- test link poly solver ---------------------
-				
 				thread(t).solver_waiting=0 'engage thread
 				
 				if timer-statustimer>1 then
@@ -16280,8 +18459,8 @@ sub thread_solve_genhc(byval none as any ptr)
 	redim extinf(0,0,0)
 	redim extpcm(0,0,0)
 	
-	clean_thread_information
 	ext_hc=0
+	clean_thread_information
 	solver_status_processing=0
 	task_active="none"
 	update_solver_status
@@ -16681,14 +18860,15 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 	dim as string char,ln,ot,bestresult
 	dim as string outputdir=basedir+"\Output\"
 	dim as string itemname
-	dim as integer batchinfo(constcip)
-	dim as integer batchsol(constcip)
-	dim as integer batchnba(constcip)
-	dim as integer ident(10000) 'max number size
+	dim as long batchinfo(constcip)
+	dim as long batchsol(constcip)
+	dim as long batchnba(constcip)
+	dim as short ident(10000) 'max number size
 	dim as integer count,count2
 	dim as integer batch_x
 	dim as integer batch_y
 	dim as uinteger items,items2,acctest,cb,bigrams,items_skipped
+	dim as integer errorngram,prev_errorngram
 	dim as integer acca(100)
 	dim as double iterations=solvesub_iterations
 	dim as double batchtimer,highscore,lowscore=999999999999999
@@ -16696,7 +18876,9 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 	dim as uinteger avgsymbols,avglength
 	dim as string outeditbox
 	if solvesub_batchciphersbigrams=0 then e=0 else e=1
-	dim as short bgid(constcip*e,constcip*e)
+	dim as uinteger bgid(constcip*e,constcip*e)
+	dim as double oldsolvesub_solutionreleasetimer=solvesub_solutionreleasetimer
+	solvesub_solutionreleasetimer=999999999999
 	
 	if batchciphers_showmsg=1 then task_active="batch ciphers (substitution)"
 	update_solver_status
@@ -16720,8 +18902,11 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 	ui_setwindowtext(window_main,program_name+" - "+right(filename,len(filename)-instrrev(filename,"\")))
 	
 	if batchciphers_showmsg=1 then
-		set_solverhighlight("substitution")
-		'ui_listbox_setcursel(list_main,0) 'set solver to Substitution
+		if solvesub_nosub=0 then
+			set_solverhighlight("Substitution") 'set solver to Substitution
+		else
+			set_solverhighlight("Non-substitution")
+		end if
 		toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",4,1,threads) 'stop solver
 		toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",2,1,threads) 'stop thread
 		toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",1,1,threads) 'start thread
@@ -16736,7 +18921,11 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 	solvesub_reversesolve=0
 	shared_string=""
 	solver_status_processing=1
-	task_active="batch ciphers (substitution)"
+	if solvesub_nosub=0 then
+		task_active="batch ciphers (substitution)"
+	else
+		task_active="batch ciphers (non-substitution)"
+	end if
 	update_solver_status
 	
 	'for i=0 to individual_accuracy
@@ -16815,7 +19004,8 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 					count=0
 					count2=0
 					for i=1 to len(ln) 'check if numeric
-						select case asc(ln,i)
+						'select case asc(ln,i)
+						select case ln[i-1]
 							case 32 'space
 								contain_spaces=1
 							case 48 to 57 'numbers
@@ -16832,7 +19022,8 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 				end if
 				if numeric=1 then
 					for i=1 to len(ln)
-						select case asc(ln,i)
+						'select case asc(ln,i)
+						select case ln[i-1]
 							case 32 'space
 								if num<>"" then
 									count+=1
@@ -16842,7 +19033,8 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 									num=""
 								end if
 							case 48 to 57 'numbers
-								num+=chr(asc(ln,i))
+								'num+=chr(asc(ln,i))
+								num+=chr(ln[i-1])
 							case else 'symbols
 								'error
 						end select
@@ -16856,26 +19048,30 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 					end if
 				else
 					for i=1 to len(ln)
-						select case asc(ln,i)
+						'select case asc(ln,i)
+						select case ln[i-1]
 							case 32 'space
 								'error
 							case else 'symbols
 								count+=1
 								if count<=lmax then
-									batchinfo(count)=asc(ln,i)
+									'batchinfo(count)=asc(ln,i)
+									batchinfo(count)=ln[i-1]
 								end if
 						end select
 					next i
 				end if
 			else 'plaintext
 				for i=1 to len(ln)
-					select case asc(ln,i)
+					'select case asc(ln,i)
+					select case ln[i-1]
 						case 32 'space
 							'error
 						case else 'symbols
 							count2+=1
 							if count2<=lmax then
-								batchsol(count2)=asc(ln,i)
+								'batchsol(count2)=asc(ln,i)
+								batchsol(count2)=ln[i-1]
 							end if
 					end select
 				next i
@@ -16891,7 +19087,7 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 				if l>lmax then l=lmax
 				s=0
 				
-				erase ident
+				memset(@ident(0),0,20002) 'erase ident
 				for i=1 to l
 					if ident(batchinfo(i))=0 then
 						s+=1
@@ -16901,6 +19097,18 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 						batchnba(i)=ident(batchinfo(i))
 					end if
 				next i
+				
+				if solvesub_nosub=1 then
+					for i=1 to l
+						if alpharevp1(batchinfo(i))=0 then
+							errorngram+=1
+							exit for
+						end if
+						batchnba(i)=alpharevp1(batchinfo(i))
+					next i
+			   end if
+				
+				
 				
 				if solvesub_batchciphersbigrams>0 then 'bigram filter
 					bigrams=0
@@ -16916,7 +19124,7 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 					next i
 				end if
 				
-				if solvesub_batchciphersbigrams=0 or bigrams>solvesub_batchciphersbigrams then
+				if errorngram=prev_errorngram andalso solvesub_batchciphersbigrams=0 or bigrams>solvesub_batchciphersbigrams then
 					
 					do
 						for i=1 to threads
@@ -17003,15 +19211,17 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 								thread(i).multiplicityweight=solvesub_multiplicityweight
 								thread(i).entweight=solvesub_entweight
 								thread(i).solver_stop=0
-								for j=1 to l
-									thread(i).cip(j)=batchnba(j)
-								next j
+								memcpy(@thread(i).cip(1),@batchnba(1),l*4) 'use memmove ???
+								'for j=1 to l
+								'	thread(i).cip(j)=batchnba(j)
+								'next j
 								if count2=l then
 									acctest=1
 									thread(i).solkey=1
-									for j=1 to l
-										thread(i).key(j)=batchsol(j)
-									next j
+									'for j=1 to l
+									'	thread(i).key(j)=batchsol(j)
+									'next j
+									memcpy(@thread(i).key(1),@batchsol(1),l*4) 'use memmove ???
 								end if
 								thread(i).update=0
 								thread(i).solver_waiting=0 'engage thread	
@@ -17022,8 +19232,13 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 					loop until stoptask=1
 				
 				else
-					items_skipped+=1
-					solvesub_batchciphersbigramsskipped+=1 'added to items in status window
+					
+					prev_errorngram=errorngram
+					'if errorngram=prev_errorngram then
+						items_skipped+=1
+						solvesub_batchciphersbigramsskipped+=1 'added to items in status window
+					'end if
+					
 				end if
 				
 			end if
@@ -17107,13 +19322,18 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 	update_solver_status
 	
 	if batchciphers_showmsg=1 then
-		ot="AZdecrypt batch ciphers (substitution) for: "+right(filename,len(filename)-instrrev(filename,"\"))+lb
+		if solvesub_nosub=0 then
+			ot="AZdecrypt batch ciphers (substitution) for: "+right(filename,len(filename)-instrrev(filename,"\"))+lb
+	   else
+			ot="AZdecrypt batch ciphers (non-substitution) for: "+right(filename,len(filename)-instrrev(filename,"\"))+lb
+		end if
 		if acctest=1 then ot+=solver_file_name_ngrams+lb
 		ot+="---------------------------------------------------------"+lb
 		ot+="Items processed: "+str(items2)+lb
 		if items_skipped>0 then ot+="Items skipped: "+str(items_skipped)+" ("+rdc(items_skipped/(items_skipped+items2)*100,2)+"%)"+lb
 		ot+="Iterations: "+str(solvesub_iterations)+" Restarts: "+str(solvesub_restarts)+lb
 		ot+="Entropy weight: "+str(solvesub_entweight)+" Temperature: "+str(solvesub_temperature)+lb
+		if lowscore=999999999999999 then lowscore=0
 		ot+="Average score: "+rdc(solvesub_avgscore/items2,2)+" Highest: "+rdc(highscore,2)+ " Lowest: "+rdc(lowscore,2)+lb
 		ot+="Average IOC: "+rdc(solvesub_avgioc/items2,5)+lb
 		ot+="Average PC-cycles: "+rdc(solvesub_avgpccycles/items2,2)+lb
@@ -17180,7 +19400,9 @@ sub thread_batch_ciphers_substitution(byval none as any ptr)
 	clean_thread_information
 	task_active="none"
 	if batchciphers_showmsg=1 then update_solver_status
+	solvesub_solutionreleasetimer=oldsolvesub_solutionreleasetimer
 	
+	solvesub_nosub=0
 	if stoptask=0 andalso solvesub_batchshutdown=1 then shell ("SHUTDOWN /s /t 10 ")
 	stoptask=0
 
@@ -17188,7 +19410,7 @@ end sub
 
 sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byval s as short,byval kl as short)
 	
-	dim as short i,j,x,y,bg,bbg,a,b,lpi,r1,r2
+	dim as short i,j,x,y,bg,bbg,a,b,c,lpi,r1,r2
 	dim as short rbw=solvesub_ctdepth
 	dim as short rbd=solvesub_ctdepth
 	dim as short bs(rbd,1)
@@ -17197,15 +19419,19 @@ sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byva
 	dim as short cl(kl)
 	dim as short bkey(kl)
 	dim as short ukey(kl)
+	dim as short okey(kl)
 	dim as short cip(l)
 	dim as short cip2(l)
-	dim as uinteger state=1+(rnd*1073741824)*2 '((int(rnd*1073741824)+1)*2)-1
+	
+	dim as uinteger state=1+int(rnd*1073741824)*2 '((int(rnd*1073741824)+1)*2)-1
+	
 	dim as short cdx=kl
 	dim as short cdy=l\kl
 	if cdy*kl<l then cdy+=1
 	dim as short grid(cdx,cdy)
 	dim as integer id(s,s)
 	dim as integer cb
+	dim as short changeop(rbd)
 	
 	dim as short pcmg(cdx,cdy)
 	dim as short pcm(l),pcm2(l)
@@ -17213,6 +19439,11 @@ sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byva
 	for i=1 to rbd
 		lp(i)=1
 		ch(i)=1
+		
+		'state=48271*state and 2147483647
+		'r1=1+100 shr 31
+		'if r1=100 then changeop(i)=1 else changeop(i)=0
+		
 	next i
 	for i=1 to kl
 		bkey(i)=thread(t).gkey(i,0)
@@ -17225,25 +19456,44 @@ sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byva
 	
 	bbg=0
 	do
+		
 		for i=1 to rbd
 			if ch(i)=1 then
-				'ms_state=(214013*ms_state+2531011)mod 2147483648
-				'r1=int(((ms_state shr 16)/32768)*kl)+1
-				state=48271*state and 2147483647
-				r1=1+kl*state shr 31
-				bs(i,0)=r1
-				'ms_state=(214013*ms_state+2531011)mod 2147483648
-				'r2=int(((ms_state shr 16)/32768)*kl)+1
-				state=48271*state and 2147483647
-				r2=1+kl*state shr 31
-				bs(i,1)=r2
+				'select case changeop(i)
+				'	case 0 'swap columns
+						state=48271*state and 2147483647 'column 1
+						r1=1+kl*state shr 31
+						bs(i,0)=r1
+						state=48271*state and 2147483647 'column 2
+						r2=1+kl*state shr 31
+						bs(i,1)=r2
+				'	case 1 'offset columns
+				'		state=48271*state and 2147483647 'offset
+				'		r1=1+(kl-1)*state shr 31
+				'		bs(i,0)=r1
+				'end select	
 			end if
 		next i
+		
 		for i=1 to kl
 			ukey(i)=bkey(i)
 		next i
+		
 		for i=1 to rbd
-			swap ukey(bs(i,0)),ukey(bs(i,1))
+			'select case changeop(i)
+			'	case 0 'swap columns
+					swap ukey(bs(i,0)),ukey(bs(i,1))
+			'	case 1 'offset columns
+			'		j=bs(i,0)
+			'		for i=1 to kl
+			'			j+=1
+			'			if j>kl then j=1
+			'			okey(i)=ukey(j)
+			'		next i
+			'		for i=1 to kl
+			'			ukey(i)=okey(i)
+			'		next i
+			'end select
 		next i
 		
 		j=0
@@ -17266,15 +19516,27 @@ sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byva
 		
 		cb+=1
 		bg=0
+		
 		for i=1 to l-1 'count bigrams
 			a=cip2(i)
 			b=cip2(i+1)
 			if id(a,b)<cb then
 				id(a,b)=cb
-			else 
+			else
 				bg+=1
 			end if
 		next i
+		
+		'for i=1 to l-2 'count trgrams
+		'	a=cip2(i)
+		'	b=cip2(i+1)
+		'	c=cip2(i+2)
+		'	if id(a,b,c)<cb then
+		'		id(a,b,c)=cb
+		'	else
+		'		bg+=1
+		'	end if
+		'next i
 		
 		if bg>bbg then
 			bbg=bg
@@ -17290,6 +19552,7 @@ sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byva
 			ch(i)=0
 		next i
 		lpi=rbd
+		
 		do
 			if lp(lpi)<rbw then
 				lp(lpi)+=1
@@ -17303,6 +19566,7 @@ sub ext_bigram_beam_columnartransposition(byval t as short,byval l as short,byva
 			lpi-=1
 		loop
 	loop
+	
 	thread(t).itemname="Column order("
 	for i=1 to kl
 		thread(t).itemname+=str(thread(t).gkey(i,0))
@@ -17435,6 +19699,7 @@ sub ext_bigram_beam_columnarrearrangement(byval t as short,byval l as short,byva
 			lpi-=1
 		loop
 	loop
+	
 	thread(t).itemname="Column order("
 	for i=1 to kl
 		thread(t).itemname+=str(thread(t).gkey(i,0))
@@ -17850,234 +20115,6 @@ sub ext_azd_beam_nullsandskips(byval t as short,byval l as short,byval s as shor
 							r2=int(state/2147483648*(l+1))+1
 							'state=48271*state and 2147483647
 							'r2=1+(l+1)*state shr 31
-							for j=1 to kl
-								if j<>r0 andalso r2=bkey(j,0) andalso bkey(j,1)=0 then
-									e=1
-									exit for
-								end if
-							next j
-						loop until e=0
-					end if
-					
-				end if
-				
-				bs(i,0)=r0 'key position
-				bs(i,1)=r1 'null/skip
-				bs(i,2)=r2 'cipher position
-			end if
-		next i
-		
-		for i=1 to kl 'change key according to beam
-			for j=0 to 1
-				ukey(i,j)=bkey(i,j)
-			next j
-		next i
-		for i=1 to rbd
-			ukey(bs(i,0),0)=bs(i,2)
-			ukey(bs(i,0),1)=bs(i,1)
-		next i
-		
-		p=0
-		r1=0 'apply key to cipher
-		for i=1 to l+1
-			r0=0
-			nll=0
-			skp=0
-			for j=1 to kl
-				if ukey(j,0)=i then
-					if ukey(j,1)=0 then 
-						nll=1 
-					else 
-						skp=1
-						r0+=1
-					end if
-				end if
-			next j
-			if skp=1 then
-				for j=1 to r0
-					p+=1
-					r1+=1
-					cip2(p)=s+r1
-				next j
-			end if
-			if nll=0 then
-				if cip(i)>0 then
-					p+=1
-					cip2(p)=cip(i)
-				end if
-			end if
-		next i
-		
-		j=0 'nba cipher
-		erase id
-		for i=1 to p
-			if id(cip2(i))=0 then
-				j+=1
-				cip3(i)=j
-				id(cip2(i))=j
-			else
-				cip3(i)=id(cip2(i))
-			end if
-		next i
-		
-		c+=1 'externalize to ext arrays
-		extinf(t,c,0)=p
-		extinf(t,c,1)=j
-		for i=1 to kl
-			for j=0 to 1
-				extkey(t,c,i,j)=ukey(i,j)
-			next j
-		next i
-		k=0
-		for i=1 to pp
-			for j=i to p step pp
-				k+=1
-				extcip(t,c,k)=cip3(j) 'utp
-				if solvesub_pcmode=1 then extpcm(t,c,k)=j
-			next j
-		next i
-		
-		lpi=rbd
-		do
-			if lp(lpi)<rbw then
-				lp(lpi)+=1
-				ch(lpi)=1
-				exit do
-			else
-				if lpi=1 then exit do,do
-				lp(lpi)=1
-				ch(lpi)=1
-			end if
-			lpi-=1
-		loop
-		
-	loop
-	extcip(t,1,0)=c
-	
-end sub
-
-sub ext_azd_beam_nullsandskips2(byval t as short,byval l as short,byval s as short,byval kl as short)
-	
-	dim as short i,j,k,x,y,e,p,a,b,lpi,r0,r1,r2,r3,r4,nll,skp
-	dim as short ce,shlen
-	dim as short rbw=solvesub_pndepth 'beam width
-	dim as short rbd=solvesub_pndepth 'beam depth
-	dim as short pp=solvesub_pnperiod
-	dim as short bias=solvesub_pnbias
-	dim as double shift=solvesub_nshcshift
-	dim as short bs(rbd,2)
-	dim as short lp(rbd)
-	dim as short ch(rbd)
-	dim as short bkey(kl,1)
-	dim as short ukey(kl,1)
-	dim as short cip(l+kl)
-	dim as short cip2(l+kl)
-	dim as short cip3(l+kl)
-	dim as short cdx=pp
-	dim as short cdy=l\pp
-	if cdy*pp<l then cdy+=1
-	dim as uinteger state=1+int(rnd*1073741824)*2
-	dim as integer c
-	dim as short id(constcip)
-	
-	for i=1 to rbd
-		lp(i)=1
-		ch(i)=1
-	next i
-	for i=1 to kl
-		for j=0 to 1
-			bkey(i,j)=thread(t).gkey(i,j)
-		next j
-	next i
-	for i=1 to l
-		cip(i)=thread(t).cip(i)
-	next i
-	
-	do
-		
-		for i=1 to rbd 'make changes to beam
-			if ch(i)=1 then
-				
-				do
-					e=0
-					state=48271*state and 2147483647
-					r0=1+kl*state shr 31 'random key position
-					for j=1 to i-1
-						if bs(j,0)=r0 then
-							e=1
-							exit for
-						end if
-					next j
-				loop until e=0
-				state=48271*state and 2147483647
-				r3=100*state shr 31 'normal or shift
-				
-				if r3<shift then 'shift
-					
-					ce=0
-					r1=bkey(r0,1) 'null/skip
-					r2=bkey(r0,0) 'position
-					shlen=solvesub_pnperiod/solvesub_nshcshiftdiv
-					
-					do
-						e=1
-						do
-							state=48271*state and 2147483647
-							r3=1+(shlen*2)*state shr 31
-							r3-=shlen
-						loop until r3<>0
-						if r1=0 then 'null
-							if r2+r3>0 andalso r2+r3<l+1 then
-								e=0
-								for j=1 to kl
-									if r2+r3=bkey(j,0) then
-										e=1
-										exit for
-									end if
-								next j
-							end if
-						else 'skip
-							if r2+r3>0 andalso r2+r3<l+2 then
-								e=0
-								for j=1 to kl
-									if r2+r3=bkey(j,0) andalso bkey(j,1)=0 then
-										e=1
-										exit for
-									end if
-								next j
-							end if
-						end if
-						if e=1 then
-							ce+=1
-							if ce>shlen*shlen then 'expand shift area
-								ce=0
-								shlen+=1
-							end if
-						end if
-					loop until e=0
-					r2+=r3
-					
-				else 'normal
-					
-					if bkey(r0,1)=0 then 'null
-						r1=0
-						do
-							e=0
-							state=48271*state and 2147483647
-							r2=1+l*state shr 31
-							for j=1 to kl
-								if j<>r0 andalso r2=bkey(j,0) then
-									e=1
-									exit for
-								end if
-							next j
-						loop until e=0
-					else 'skip
-						r1=1
-						do
-							e=0
-							state=48271*state and 2147483647
-							r2=1+(l+1)*state shr 31
 							for j=1 to kl
 								if j<>r0 andalso r2=bkey(j,0) andalso bkey(j,1)=0 then
 									e=1
@@ -20306,7 +22343,10 @@ sub thread_combine(byval none as any ptr)
 					
 				case "Adjacency"
 					combine_score(ok_count)=m_adjacency(cip(),l,dim_x,dim_y)
-				
+					
+				case "Odd bigrams"
+					combine_score(ok_count)=m_bigrams(cip(),l,s,4)
+					
 			end select
 		
 			combine_item(ok_count)=a
@@ -20770,7 +22810,7 @@ sub output_colormap(vls()as double,cip()as long,byval l as integer,byval dx as i
 		next x
 	next y
 	bsave basedir+"\Output\"+ns+".bmp",0
-
+	
 end sub
 
 sub output_graph(byval t as short,byval chs as short,byval hs as string,byval ns as string)
@@ -20984,8 +23024,21 @@ sub stats_unigrams
 		ui_editbox_settext(output_text,soi)
 		exit sub
 	end if
+	
+	dim as integer s 'for negative numbers
+	dim as integer ident(-identmax to identmax)
+	for i=1 to info_length
+		if infom(i)=1 then nuba(i)=-nuba(i)
+		if ident(nuba(i))=0 then
+			s+=1
+			ident(nuba(i))=s
+		end if
+		nuba(i)=ident(nuba(i))
+	next i
+	info_symbols=s
+	
 	dim as integer l=info_length
-	dim as integer s=info_symbols
+	'dim as integer s=info_symbols
 	dim as integer num=info_numerical
 	dim as integer dx=info_x
 	dim as integer dy=info_y
@@ -21031,14 +23084,14 @@ sub stats_unigrams
 	os+="Dimensions: "+str(dx)+" by "+str(dy)+lb
 	os+="Multiplicity: "+str(s/l)+lb
 	os+="Entropy: "+str(m_entropy(freq(),l,s))+lb
-	'os+="Normalized entropy: "+str(m_entropy(freq(),l,s)/m_entropymax(l,s))+lb
-	'os+="Smoothness: "+str(m_smoothness(freq(),l,s,1))+lb
+	os+="Normalized entropy: "+str(m_entropy(freq(),l,s)/m_entropymax(l))+lb
+	os+="Smoothness: "+str(m_smoothness(freq(),l,s,1))+lb
 	os+="Index of coincidence:"+lb
 	os+="- Raw: "+str(m_ioc(freq(),l,s,0))+lb
 	os+="- Normalized: "+str(m_ioc(freq(),l,s,1))+lb
 	os+="- Versus random: "+str(m_ioc(freq(),l,s,1)/(1/s))+lb
 	os+="- Flatness: "+str(m_ioc(freq(),l,s,2))+lb
-	os+="Alternative flatness: "+str(m_flatness(nuba(),info_length,info_symbols,1))+lb
+	os+="Alternative flatness: "+str(m_flatness(nuba(),l,s,1))+lb
 	os+="Unigram distance: "+str(m_unigramdistance(nuba(),l,s))+lb
 	
 	if num=0 then
@@ -21123,10 +23176,7 @@ sub stats_unigrams
 	'end if
 	
 	t=frequencies(info(),info_length,info_symbols,1,info_numerical,0) '1-gram frequencies
-	if t<>"" then
-		os+=lb
-		os+=t
-	end if
+	if t<>"" then os+=lb+t
 	
 	os+=lb+lb
 	os+="Grouped unigram repeats, offsets: "+lb
@@ -21377,11 +23427,12 @@ sub stats_hafershifts
 	dim as integer num=info_numerical
 	dim as integer dx=info_x
 	dim as integer dy=info_y
-	dim as long cip(l)
-	dim as double frq2(25)
+	dim as long cip(l),cip2(l),cip3(l)
+	dim as double frq2(25),frq3(25)
 	dim as short itacopy(len(intext))
 	dim as double itafrq(25)
 	dim as short f2
+	dim as integer li
 	
 	for i=1 to l
 		cip(i)=info(i)
@@ -21393,26 +23444,86 @@ sub stats_hafershifts
 				case 97 to 122 'lowercase
 					f2+=1
 					frq2(cip(i)-97)+=1
+					cip2(i)=cip(i)-97
 				case 65 to 90 'uppercase
 					f2+=1
 					frq2(cip(i)-65)+=1
+					cip2(i)=cip(i)-65
 			end select
 		next i
 	end if
 	
+	'dim as string nums(10)
+	
+	'Pi (make external)
+	'nums(1)="14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196"
+	'nums(1)+="44288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094"
+	'nums(1)+="33057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011949129833673362440656643086021394946395224737190702179860943702770539217176293176752384674818467669405132"
+	'nums(1)+="00056812714526356082778577134275778960917363717872146844090122495343014654958537105079227968925892354201995611212902196086403441815981362977477130996051870721134999999837297804995105973173281609631859"
+	'nums(1)+="50244594553469083026425223082533446850352619311881710100031378387528865875332083814206171776691473035982534904287554687311595628638823537875937519577818577805321712268066130019278766111959092164201989"
+	'nums(1)+="38095257201065485863278865936153381827968230301952035301852968995773622599413891249721775283479131515574857242454150695950829533116861727855889075098381754637464939319255060400927701671139009848824012"
+	'nums(1)+="85836160356370766010471018194295559619894676783744944825537977472684710404753464620804668425906949129331367702898915210475216205696602405803815019351125338243003558764024749647326391419927260426992279"
+	'nums(1)+="67823547816360093417216412199245863150302861829745557067498385054945885869269956909272107975093029553211653449872027559602364806654991198818347977535663698074265425278625518184175746728909777727938000"
+	'nums(1)+="81647060016145249192173217214772350141441973568548161361157352552133475741849468438523323907394143334547762416862518983569485562099219222184272550254256887671790494601653466804988627232791786085784383"
+	'nums(1)+="82796797668145410095388378636095068006422512520511739298489608412848862694560424196528502221066118630674427862203919494504712371378696095636437191728746776465757396241389086583264599581339047802759010"
+	
 	'To do: test versus randomly generated
 	
-	os+="AZdecrypt Hafer shifts stats for: "+file_name+lb
+	os+="AZdecrypt letter shifts stats for: "+file_name+lb
 	os+="---------------------------------------------------------"+lb+lb
 	if f2>0 then
-		os+="Chi^2 versus English: -N/+N"+lb
+		
+		'os+="Versus numbers"+lb
+		'os+="----------------------------------"+lb
+		'for i=1 to len(intext)
+		'	select case asc(intext,i)
+		'		case 65 to 90 'uppercase
+		'			li+=1
+		'			itacopy(li)=asc(intext,i)-65
+		'		case 97 to 122 'lowercase
+		'			li+=1
+		'			itacopy(li)=asc(intext,i)-97
+		'	end select
+		'next i
+		'for i=1 to li
+		'	itafrq(itacopy(i))+=1/li
+		'next i
+		'for j=1 to 1 'numbers
+		'	erase frq3
+		'	for i=1 to l
+		'		it=cip2(i)
+		'		it-=asc(nums(j),i)-48
+		'		if it<0 then it+=26
+		'		'cip3(i)=it
+		'		frq3(it)+=1
+		'	next i
+		'	os+="+Number "+str(j)+": "+rdc(m_chi2_english(itafrq(),frq3(),f2),2)+lb
+		'	erase frq3
+		'	for i=1 to l
+		'		it=cip2(i)
+		'		it+=asc(nums(j),i)-48
+		'		if it>25 then it-=26
+		'		'cip3(i)=it
+		'		frq3(it)+=1
+		'	next i
+		'	os+="-Number "+str(j)+": "+rdc(m_chi2_english(itafrq(),frq3(),f2),2)+lb
+		'next j
+		
+		os+=lb+"Chi^2 versus English: -N/+N"+lb
 		os+="----------------------------------"+lb
-		for i=1 to len(intext)
-			itacopy(i)=asc(intext,i)-65 'uppercase
-		next i
+		'for i=1 to len(intext)
+		'	select case asc(intext,i)
+		'		case 65 to 90 'uppercase
+		'			li+=1
+		'			itacopy(li)=asc(intext,i)-65
+		'		case 97 to 122 'lowercase
+		'			li+=1
+		'			itacopy(li)=asc(intext,i)-97
+		'	end select
+		'next i
 		for i=0 to 13 'shifts
 			erase itafrq
-			for j=1 to len(intext)
+			for j=1 to li 'len(intext)
 				it=itacopy(j)
 				if int(rnd*2)=0 then
 					it-=i
@@ -21421,23 +23532,32 @@ sub stats_hafershifts
 					it+=i
 					if it>25 then it-=26
 				end if
-				itafrq(it)+=1/len(intext)
+				itafrq(it)+=1/li '/len(intext)
 			next j
 			os+="-"+str(i)+"/+"+str(i)+": "+rdc(m_chi2_english(itafrq(),frq2(),f2),2)+lb
 		next i
 		os+=lb
 		os+="Chi^2 versus English: any 2 shifts"+lb
 		os+="----------------------------------"+lb
+		li=0
 		for i=1 to len(intext)
-			itacopy(i)=asc(intext,i)-65 'uppercase
+			select case asc(intext,i)
+				case 65 to 90 'uppercase
+					li+=1
+					itacopy(li)=asc(intext,i)-65
+				case 97 to 122 'lowercase
+					li+=1
+					itacopy(li)=asc(intext,i)-97
+			end select
+			'itacopy(i)=asc(intext,i)-65 'uppercase
 		next i
-		dim as double scheck(25,25,2),onelen=1/len(intext)
+		dim as double scheck(25,25,2),onelen=1/li '/len(intext)
 		for i=0 to 25 'shifts
 			for h=0 to 25 'shifts
 				for k=0 to 2 '--,++,-+
 					if scheck(i,h,k)=0 andalso scheck(h,i,k)=0 then 'no doubles
 						erase itafrq
-						for j=1 to len(intext)
+						for j=1 to li 'len(intext)
 							it=itacopy(j)
 							if int(rnd*2)=0 then
 								select case k
@@ -21568,7 +23688,7 @@ sub stats_ngrams
 	unispacing=oldunispacing
 	
 	for i=2 to info_length
-		t=frequencies(info(),l,s,i,num,1)
+		t=frequencies(info(),l,s,i,num,0)
 		if t<>"" then
 			os+=lb
 			os+=lb
@@ -21576,6 +23696,16 @@ sub stats_ngrams
 		else exit for
 		end if
 	next i
+	
+	if ngrams_inmem(2)=1 then
+		os+=lb+lb
+		os+="2-gram periodic scores:"+lb
+		os+="---------------------------------------------------------"
+		for i=2 to 2
+			os+=lb+"Uneven period "+str(i)+": "+rdc(periodngrams(info(),l,i,1),2)
+			os+=lb+"Even period "+str(i)+": "+rdc(periodngrams(info(),l,i,2),2)
+		next i
+	end if
 	
 	os+=lb+lb
 	os+="Bigrams exclusive to positions modulo x:"+lb
@@ -24305,6 +26435,547 @@ sub generate_nullsandskips
 	
 end sub
 
+sub generate_rules_ngrampos(byval l as integer,byval ngs as integer)
+	
+	dim as integer ii,jj,kk,cc,ee,ccmax,ngs_b
+	dim as integer a,b,c,d,e,f,g,h,i,j,k
+	dim as short pos1(constcip),pos2(constcip),pos3(constcip)
+	dim as integer ll=(l*(l-1))/2
+	dim as integer jmax1,jmax2,maxl=const_rulesmaxd
+	dim as integer ngs1=ngs-1
+	dim as integer ngs2=ngs*2
+	
+	for i=1 to l
+		pos1(i)=i
+	next i
+	
+	if maxl>l then maxl=l-1
+	dim as integer mmax=(ngs*3)-2
+	dim as integer mmax2=mmax*2
+	dim as integer mmax3=mmax2*maxl
+	
+	'offsets
+	redim ngp_offset_neg(ngs*2*(const_rulesmaxd+1))
+	redim ngp_offset_pos(ngs*2*(const_rulesmaxd+1))
+	redim ngp_offset2_neg(2*2*(const_rulesmaxd+1))
+	redim ngp_offset2_pos(2*2*(const_rulesmaxd+1))
+	for i=1 to maxl
+		k=i
+		for j=1 to l
+			k+=1
+			if k>l then k-=l
+			pos2(k)=pos1(j)
+		next j
+		'------------------------------------------------
+		j=compare_ngrampos(pos1(),pos2(),l,ngs)/2
+		ngp_offset_neg(0+0+(i*ngs2))=j
+		for k=1 to j
+			ngp_offset_neg(k+0+(i*ngs2))=info_out(k) 'plus
+			ngp_offset_neg(k+ngs+(i*ngs2))=info_out(k+j) 'minus
+		next k
+		'------------------------------------------------
+		j=compare_ngrampos(pos1(),pos2(),l,2)/2
+		ngp_offset2_neg(0+0+(i*4))=j
+		for k=1 to j
+			ngp_offset2_neg(k+0+(i*4))=info_out(k) 'plus
+			ngp_offset2_neg(k+2+(i*4))=info_out(k+j) 'minus
+		next k
+		'------------------------------------------------
+		k=l-i
+		for j=1 to l
+			k+=1
+			if k>l then k-=l
+			pos2(k)=pos1(j)
+		next j
+		'------------------------------------------------
+		j=compare_ngrampos(pos1(),pos2(),l,ngs)/2
+		ngp_offset_pos(0+0+(i*ngs2))=j
+		for k=1 to j
+			ngp_offset_pos(k+0+(i*ngs2))=info_out(k) 'plus
+			ngp_offset_pos(k+ngs+(i*ngs2))=info_out(k+j) 'minus
+		next k
+		'------------------------------------------------
+		j=compare_ngrampos(pos1(),pos2(),l,2)/2
+		ngp_offset2_pos(0+0+(i*4))=j
+		for k=1 to j
+			ngp_offset2_pos(k+0+(i*4))=info_out(k) 'plus
+			ngp_offset2_pos(k+2+(i*4))=info_out(k+j) 'minus
+		next k
+		'------------------------------------------------
+	next i
+	
+	'5=12
+	'6=15
+	'7=18
+	'8=21
+	
+	'moves and swaps
+	'if l<=constrmt then
+		redim ngp_move_lt(l,l)
+		redim ngp_move(mmax*2*const_rulesmaxd*(1+ll))
+		redim ngp_move2(((6*solvesub_rules_steps)+1)*2*const_rulesmaxd*(1+(l*l)))
+		redim ngp_swap2(((10*solvesub_rules_steps)+1)*2*const_rulesmaxd*(1+(l*l)))
+		'------------------------------------------------
+		for i=1 to threads
+			thread(i).arg1=1
+			sleep 1
+			thread_ptr3(i)=threadcreate(@thread_generate_rules_move,cptr(any ptr,i))
+		next i
+		for i=1 to threads
+			do
+				sleep 1
+			loop until thread(i).arg1=0
+		next i
+		'------------------------------------------------
+		for i=1 to threads
+			thread(i).arg1=1
+			sleep 1
+			thread_ptr3(i)=threadcreate(@thread_generate_rules_move2,cptr(any ptr,i))
+		next i
+		for i=1 to threads
+			do
+				sleep 1
+			loop until thread(i).arg1=0
+		next i
+		'------------------------------------------------
+		for i=1 to threads
+			thread(i).arg1=1
+			sleep 1
+			thread_ptr3(i)=threadcreate(@thread_generate_rules_swap2,cptr(any ptr,i))
+		next i
+		for i=1 to threads
+			do
+				sleep 1
+			loop until thread(i).arg1=0
+		next i
+	'end if
+	
+end sub
+
+sub thread_generate_rules_move(byval tn_ptr as any ptr)
+	
+	dim as integer tn=cint(tn_ptr) 'thread number
+	dim as integer a,b,c,d,e,f,g,h,i,j,k,t=tn
+	dim as integer l=info_length
+	dim as integer ngs=ngram_size
+	dim as short pos1(constcip)
+	dim as short pos2(constcip)
+	dim as short pos3(constcip)
+	dim as short pout(constcip)
+	dim as integer ii,jj,kk,cc,ee,ccmax,ngs_b
+	dim as integer ll=(l*(l-1))/2
+	dim as integer jmax1,jmax2,maxl=const_rulesmaxd
+	dim as integer ngs1=ngs-1
+	dim as integer ngs2=ngs*2
+	if maxl>l then maxl=l-1
+	dim as integer mmax=(ngs*3)-2
+	dim as integer mmax2=mmax*2
+	dim as integer mmax3=mmax2*maxl
+	
+	for i=1 to l
+		pos1(i)=i
+	next i
+	
+	for a=1 to l 'moves
+		for b=a+1 to l
+			c+=1
+			if t=c then
+				t+=threads
+				ngp_move_lt(a,b)=c
+				for d=0 to maxl-1 'move size
+					'-----------------------------------------------
+					memcpy(@pos2(1),@pos1(1),l*2)
+					memset(@pos3(1),0,l*2)
+					g=a 'from
+					h=b 'to
+					for i=0 to d
+						if g>l then g-=l
+						if h>l then h-=l
+						pos3(h)=pos2(g)
+						pos2(g)=0
+						g+=1
+						h+=1
+					next i
+					j=0
+					for i=1 to l
+						if pos3(i)=0 then
+							do
+								j+=1
+							loop until pos2(j)>0
+							pos3(i)=pos2(j)
+						end if
+					next i
+					'-----------------------------------------------
+					ngs_b=ngs
+					cc=0
+					for ii=1 to l-(ngs_b-1)
+						for jj=1 to l-(ngs_b-1)
+							ee=1
+							for kk=0 to ngs_b-1
+								if pos3(jj+kk)<>pos1(ii+kk) then
+									ee=0
+									exit for
+								end if
+							next kk
+							if ee=1 then exit for
+						next jj
+						if ee=0 then
+							cc+=1
+							pout(cc)=ii
+						end if
+						if cc=mmax then exit for
+					next ii
+					ccmax=cc*2
+					for ii=1 to l-(ngs_b-1)
+						for jj=1 to l-(ngs_b-1)
+							ee=1
+							for kk=0 to ngs_b-1
+								if pos1(jj+kk)<>pos3(ii+kk) then
+									ee=0
+									exit for
+								end if
+							next kk
+							if ee=1 then exit for
+						next jj
+						if ee=0 then
+							cc+=1
+							pout(cc)=ii
+						end if
+						if cc=ccmax then exit for
+					next ii
+					'-----------------------------------------------
+					j=cc/2
+					'if j>jmax1 then jmax1=j
+					
+					do 'sort
+						e=0
+						for i=j+1 to cc-2 step 2
+							if pout(i)>pout(i+2) then
+								e=1
+								swap pout(i),pout(i+2)
+								swap pout(i+1),pout(i+3)
+							end if
+						next i
+					loop until e=0
+					
+					ngp_move(0+0+(d*mmax2)+(c*mmax3))=j
+					for i=1 to j
+						ngp_move(i+0+(d*mmax2)+(c*mmax3))=pout(i) 'plus
+						ngp_move(i+mmax+(d*mmax2)+(c*mmax3))=pout(i+j) 'minus
+					next i
+				next d
+			end if
+		next b
+	next a
+	'ui_editbox_settext(input_text,str(jmax1)+", "+str(jmax2))
+	thread(tn).arg1=0
+	
+end sub
+
+sub thread_generate_rules_move2(byval tn_ptr as any ptr)
+	
+	dim as integer tn=cint(tn_ptr) 'thread number
+	dim as integer a,b,c,d,e,f,g,h,i,j,k,t=tn
+	dim as integer l=info_length
+	dim as integer ngs=ngram_size
+	dim as short pos1(constcip)
+	dim as short pos2(constcip)
+	dim as short pos3(constcip)
+	'dim as short posc(constcip)
+	dim as short pout(constcip)
+	dim as integer ii,jj,kk,cc,ee,ccmax,ngs_b
+	dim as integer ll=(l*(l-1))/2
+	dim as integer jmax1,jmax2,maxl=const_rulesmaxd
+	dim as integer ngs1=ngs-1
+	dim as integer ngs2=ngs*2
+	if maxl>l then maxl=l-1
+	dim as integer mmax=(ngs*3)-2
+	dim as integer mmax2=mmax*2
+	dim as integer mmax3=mmax2*maxl
+	
+	dim as integer maxc=6*solvesub_rules_steps
+	dim as integer maxc1=maxc+1
+	dim as integer maxc12=maxc1*2
+	dim as integer maxc123=maxc12*const_rulesmaxd
+	
+	for i=1 to l
+		pos1(i)=i
+	next i
+	
+	'for i=1 to solvesub_rules_steps
+	'	for j=i to l step solvesub_rules_steps
+	'		k+=1
+	'		if solvesub_rules_stepsinvert=0 then
+	'			posc(j)=pos1(k)
+	'		else
+	'			posc(k)=pos1(j)
+	'		end if
+	'	next j
+	'next i
+	
+	for a=1 to l
+		for b=1 to l
+			c+=1
+			if t=c then	
+				t+=threads
+				if a<>b then
+					for d=0 to maxl-1 'move size
+						'-----------------------------
+						memcpy(@pos2(1),@pos1(1),l*2)
+						memset(@pos3(1),0,l*2)
+						g=a 'from
+						h=b 'to
+						for i=0 to d
+							if g>l then g-=l
+							if h>l then h-=l
+							pos3(h)=pos2(g)
+							pos2(g)=0
+							g+=1
+							h+=1
+						next i
+						j=0
+						for i=1 to l
+							if pos3(i)=0 then
+								do
+									j+=1
+								loop until pos2(j)>0
+								pos3(i)=pos2(j)
+							end if
+						next i
+						'-----------------------------------------------
+						cc=0
+						for ii=1 to l-solvesub_rules_steps '(2-1)
+							for jj=1 to l-solvesub_rules_steps '(2-1)
+								ee=1
+								for kk=0 to solvesub_rules_steps step solvesub_rules_steps '2-1
+									if pos3(jj+kk)<>pos1(ii+kk) then
+										ee=0
+										exit for
+									end if
+								next kk
+								if ee=1 then exit for
+							next jj
+							if ee=0 then
+								pout(cc+1)=ii
+								pout(cc+2)=ii+solvesub_rules_steps
+								cc+=2
+							end if
+							if cc=maxc then exit for
+						next ii
+						ccmax=cc*2
+						for ii=1 to l-solvesub_rules_steps '(2-1)
+							for jj=1 to l-solvesub_rules_steps '(2-1)
+								ee=1
+								for kk=0 to solvesub_rules_steps step solvesub_rules_steps '2-1
+									if pos1(jj+kk)<>pos3(ii+kk) then
+										ee=0
+										exit for
+									end if
+								next kk
+								if ee=1 then exit for
+							next jj
+							if ee=0 then
+								pout(cc+1)=pos3(ii)
+								pout(cc+2)=pos3(ii+solvesub_rules_steps)
+								cc+=2
+							end if
+							if cc=ccmax then exit for
+						next ii
+						'for ii=1 to l-1
+						'	for jj=1 to l-1
+						'		ee=1
+						'		for kk=0 to 1
+						'			if pos3(posc(jj+kk))<>pos1(posc(ii+kk)) then
+						'				ee=0
+						'				exit for
+						'			end if
+						'		next kk
+						'		if ee=1 then exit for
+						'	next jj
+						'	if ee=0 then
+						'		pout(cc+1)=posc(ii)
+						'		pout(cc+2)=posc(ii+1)
+						'		cc+=2
+						'	end if
+						'	if cc=maxc then exit for
+						'next ii
+						'ccmax=cc*2
+						'for ii=1 to l-1
+						'	for jj=1 to l-1
+						'		ee=1
+						'		for kk=0 to 1
+						'			if pos1(posc(jj+kk)))<>pos3(posc(ii+kk)) then
+						'				ee=0
+						'				exit for
+						'			end if
+						'		next kk
+						'		if ee=1 then exit for
+						'	next jj
+						'	if ee=0 then
+						'		pout(cc+1)=pos3(posc(ii))
+						'		pout(cc+2)=pos3(posc(ii+1))
+						'		cc+=2
+						'	end if
+						'	if cc=ccmax then exit for
+						'next ii
+						'-----------------------------------------------
+						j=cc/2
+						'if j>jmax1 then jmax1=j
+						'if j>jmax2 andalso a+d<=l andalso b+d<=l then jmax2=j
+						
+						do 'sort
+							e=0
+							for i=1 to j-2 step 2
+								if pout(i)>pout(i+2) then
+									e=1
+									swap pout(i),pout(i+2)
+									swap pout(i+1),pout(i+3)
+								end if
+							next i
+						loop until e=0
+						
+						ngp_move2(0+0+(d*maxc12)+(c*maxc123))=j/2
+						for i=1 to j
+							ngp_move2(i+0+(d*maxc12)+(c*maxc123))=pout(i+j) 'plus
+							ngp_move2(i+maxc1+(d*maxc12)+(c*maxc123))=pout(i) 'minus
+						next i
+					next d
+				end if
+			end if
+		next b
+	next a
+	'ui_editbox_settext(input_text,str(jmax1)+", "+str(jmax2))
+	thread(tn).arg1=0
+	
+end sub
+
+sub thread_generate_rules_swap2(byval tn_ptr as any ptr)
+	
+	dim as integer tn=cint(tn_ptr) 'thread number
+	dim as integer a,b,c,d,e,f,g,h,i,j,k,t=tn
+	dim as integer l=info_length
+	dim as integer ngs=ngram_size
+	dim as short pos1(constcip)
+	dim as short pos2(constcip)
+	'dim as short posc(constcip)
+	dim as short pout(constcip)
+	dim as integer ii,jj,kk,cc,ee,ccmax,ngs_b
+	dim as integer ll=(l*(l-1))/2
+	dim as integer jmax1,jmax2,maxl=const_rulesmaxd
+	dim as integer ngs1=ngs-1
+	dim as integer ngs2=ngs*2
+	if maxl>l then maxl=l-1
+	dim as integer mmax=(ngs*3)-2
+	dim as integer mmax2=mmax*2
+	dim as integer mmax3=mmax2*maxl
+	
+	dim as integer maxc=10*solvesub_rules_steps
+	dim as integer maxc1=maxc+1
+	dim as integer maxc12=maxc1*2
+	dim as integer maxc123=maxc12*const_rulesmaxd
+	
+	for i=1 to l
+		pos1(i)=i
+	next i
+	
+	'for i=1 to solvesub_rules_steps
+	'	for j=i to l step solvesub_rules_steps
+	'		k+=1
+	'		if solvesub_rules_stepsinvert=0 then
+	'			posc(j)=pos1(k)
+	'		else
+	'			posc(k)=pos1(j)
+	'		end if
+	'	next j
+	'next i
+	
+	for a=1 to l
+		for b=1 to l
+			c+=1
+			if t=c then	
+				t+=threads
+				if a<>b then
+					for d=0 to maxl-1 'swap size
+						'-----------------------------------------------
+						memcpy(@pos2(1),@pos1(1),l*2)
+						g=a
+						h=b
+						for f=0 to d
+							if g>l then g-=l
+							if h>l then h-=l
+							swap pos2(g),pos2(h)
+							g+=1
+							h+=1
+						next f
+						'-----------------------------------------------
+						cc=0
+						for ii=1 to l-solvesub_rules_steps '(2-1)
+							for jj=1 to l-solvesub_rules_steps '(2-1)
+								ee=1
+								for kk=0 to solvesub_rules_steps step solvesub_rules_steps '2-1
+									if pos2(jj+kk)<>pos1(ii+kk) then
+										ee=0
+										exit for
+									end if
+								next kk
+								if ee=1 then exit for
+							next jj
+							if ee=0 then
+								pout(cc+1)=ii
+								pout(cc+2)=ii+solvesub_rules_steps
+								cc+=2
+							end if
+							if cc=maxc then exit for
+						next ii
+						ccmax=cc*2
+						for ii=1 to l-solvesub_rules_steps '(2-1)
+							for jj=1 to l-solvesub_rules_steps '(2-1)
+								ee=1
+								for kk=0 to solvesub_rules_steps step solvesub_rules_steps '2-1
+									if pos1(jj+kk)<>pos2(ii+kk) then
+										ee=0
+										exit for
+									end if
+								next kk
+								if ee=1 then exit for
+							next jj
+							if ee=0 then
+								pout(cc+1)=pos2(ii)
+								pout(cc+2)=pos2(ii+solvesub_rules_steps)
+								cc+=2
+							end if
+							if cc=ccmax then exit for
+						next ii
+						'-----------------------------------------------
+						j=cc/2
+						'if j>jmax2 then jmax2=j
+						
+						do 'sort
+							e=0
+							for i=1 to j-2 step 2
+								if pout(i)>pout(i+2) then
+									e=1
+									swap pout(i),pout(i+2)
+									swap pout(i+1),pout(i+3)
+								end if
+							next i
+						loop until e=0
+						
+						ngp_swap2(0+0+(d*maxc12)+(c*maxc123))=j/2
+						for i=1 to j
+							ngp_swap2(i+0+(d*maxc12)+(c*maxc123))=pout(i+j) 'plus
+							ngp_swap2(i+maxc1+(d*maxc12)+(c*maxc123))=pout(i) 'minus
+						next i
+					next d
+				end if
+			end if
+		next b
+	next a
+	'ui_editbox_settext(input_text,str(jmax1)+", "+str(jmax2))
+	thread(tn).arg1=0
+	
+end sub
+
 sub generate_substrings
 	
 	dim as string cips=string_to_info(ui_editbox_gettext(input_text))
@@ -24467,8 +27138,8 @@ sub stats_encoding
 	'output_colormap(cmap(),info(),l,dx,dy,1,file_name+"_norm1")
 	'erase cmap
 	
-	'-------------------------------------------
-	
+	''-------------------------------------------
+	'
 	'dim as string li,o2
 	''dim as short plain(200)
 	'dim as double arg(100)
@@ -25080,17 +27751,20 @@ sub stats_direction(byval tn_ptr as any ptr)
 			higher=0
 			namedir="Encoding direction: vertical symbol leaning"
 			os=es1+en1+"vertical symbol leaning."+lb+dl1
+		case 37
+			namedir="Encoding direction: ASCII distance bigrams"
+			os=es1+en1+"ASCII distance bigrams."+lb+dl1
 	end select
 	
 	for i=1 to l
 		select case m
-			case 14,15:cstate(11,i)=info(i)
+			case 14,15,37:cstate(11,i)=info(i)
 			case else:cstate(11,i)=nuba(i)
 		end select
 	next i
 	
 	select case m 'nba
-		case 14,15:nba=0
+		case 14,15,37:nba=0
 		case else:nba=1
 	end select		
 	
@@ -25175,6 +27849,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 				case 34:sda(i)=m_2cyclespectrum(cipout(),l,s)*10000
 				case 35:sda(i)=m_lean(cipout(),l,s,dx,dy,0)
 				case 36:sda(i)=m_lean(cipout(),l,s,dx,dy,1)
+				case 37:sda(i)=m_ascdistance(cipout(),l,s)
 			end select
 		next i
 		for i=1 to items
@@ -25247,6 +27922,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 		end select	
 		arg(5)=1 'untransposition
 		cso=cstate_operation(11,12,operation,arg())
@@ -25299,6 +27975,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores1(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores1(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores1(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores1(i)=m_ascdistance(cipout(),l,s)
 		end select
 		avg0+=scores0(i)
 		avg1+=scores1(i)
@@ -25414,6 +28091,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 		end select	
 		avg0+=scores0(i)
 		if higher=0 then
@@ -25519,6 +28197,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 		end select		
 		avg0+=scores0(i)
 		if higher=0 then
@@ -25622,6 +28301,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 		end select	
 		arg(5)=1 'untransposition
 		cso=cstate_operation(11,12,operation,arg())
@@ -25674,6 +28354,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores1(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores1(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores1(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores1(i)=m_ascdistance(cipout(),l,s)
 		end select
 		avg0+=scores0(i)
 		avg1+=scores1(i)
@@ -25782,6 +28463,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 		end select
 		arg(5)=1 'untransposition
 		cso=cstate_operation(11,12,operation,arg())
@@ -25834,6 +28516,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores1(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores1(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores1(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores1(i)=m_ascdistance(cipout(),l,s)
 		end select
 		avg0+=scores0(i)
 		avg1+=scores1(i)
@@ -25942,6 +28625,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 		end select	
 		arg(5)=1 'untransposition	
 		cso=cstate_operation(11,12,operation,arg())
@@ -25994,6 +28678,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores1(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores1(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores1(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores1(i)=m_ascdistance(cipout(),l,s)
 		end select
 		avg0+=scores0(i)
 		avg1+=scores1(i)
@@ -26107,6 +28792,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 				case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 				case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 				case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+				case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 			end select	
 			arg(5)=1 'untransposition	
 			cso=cstate_operation(11,12,operation,arg())
@@ -26159,6 +28845,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 				case 34:scores1(i)=m_2cyclespectrum(cipout(),l,s)*10000
 				case 35:scores1(i)=m_lean(cipout(),l,s,dx,dy,0)
 				case 36:scores1(i)=m_lean(cipout(),l,s,dx,dy,1)
+				case 37:scores1(i)=m_ascdistance(cipout(),l,s)
 			end select
 			avg0+=scores0(i)
 			avg1+=scores1(i)
@@ -26270,6 +28957,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores0(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores0(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores0(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores0(i)=m_ascdistance(cipout(),l,s)
 		end select
 		operation="Randomize row order"
 		cso=cstate_operation(11,12,operation,arg())
@@ -26322,6 +29010,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores1(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores1(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores1(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores1(i)=m_ascdistance(cipout(),l,s)
 		end select
 		operation="Randomize column order"
 		cso=cstate_operation(11,12,operation,arg())
@@ -26368,6 +29057,7 @@ sub stats_direction(byval tn_ptr as any ptr)
 			case 34:scores2(i)=m_2cyclespectrum(cipout(),l,s)*10000
 			case 35:scores2(i)=m_lean(cipout(),l,s,dx,dy,0)
 			case 36:scores2(i)=m_lean(cipout(),l,s,dx,dy,1)
+			case 37:scores2(i)=m_ascdistance(cipout(),l,s)
 		end select
 		avg0+=scores0(i)
 		avg1+=scores1(i)
@@ -27532,7 +30222,7 @@ function string_to_info(byval s as string)as string
 	if len(s)=0 then return "Error: no input"
 	
 	dim as string t
-	dim as integer i,l,e,c,row,rl,lmax
+	dim as integer i,l,e,c,row,rl,lmax,minus
 	dim as integer ident(identmax)
 	dim as integer spaces,numbers,linebreaks,others,tabs
 	
@@ -27541,7 +30231,7 @@ function string_to_info(byval s as string)as string
 	'info_x=0
 	'info_length=0
 	
-	erase info,nuba,freq,rlen
+	erase infom,info,nuba,freq,rlen
 	
 	'detect numerical/ascii
 	for i=1 to len(s)
@@ -27550,6 +30240,7 @@ function string_to_info(byval s as string)as string
 				linebreaks+=1
 			case 32
 				spaces=1
+			case 45 'minus sign
 			case 48 to 57
 				numbers+=1
 			case 9
@@ -27568,7 +30259,7 @@ function string_to_info(byval s as string)as string
 	if info_numerical=0 then
 		for i=1 to len(s)
 			select case asc(s,i)
-				case 10,13
+				case 9,10,13 'remove tabs and line breaks
 					if asc(s,i)=13 and asc(s,i+1)=10 then
 						row+=1
 						rlen(row)=rl
@@ -27587,9 +30278,11 @@ function string_to_info(byval s as string)as string
 			rlen(row)=rl
 			rl=0
 		end if
-	else
+	else 'numeric
 		for i=1 to len(s)
 			select case asc(s,i)
+				case 45
+					minus=1
 				case 48 to 57 'ascii numbers
 					t+=str(asc(s,i)-48)
 					if val(t)>identmax then return "Error: numbers cannot be greater than "+str(identmax)
@@ -27598,6 +30291,13 @@ function string_to_info(byval s as string)as string
 						l+=1
 						rl+=1
 						if l>lmax then return "Error: maximum "+str(lmax)+" characters"
+						if minus=1 then
+							infom(l)=1
+							minus=0
+							'info(l)=-val(t)
+						else
+							'info(l)=val(t)
+						end if
 						info(l)=val(t)
 						t=""
 					end if
@@ -27614,6 +30314,13 @@ function string_to_info(byval s as string)as string
 		if t<>"" then
 			l+=1
 			rl+=1
+			if minus=1 then
+				infom(l)=1
+				minus=0
+				'info(l)=-val(t)
+			else
+				'info(l)=val(t)
+			end if
 			info(l)=val(t)
 		end if
 		if rl>0 then
@@ -27679,7 +30386,7 @@ function info_to_string(array()as long,byval l as integer,byval dx as integer,by
 	
 	dim as integer spacegram_size=5
 	
-	if numerical=0 andalso addspaces+ngram_standardalphabet>1 andalso l>=spacegram_size then
+	if addspaces_ngrams_notloaded=0 andalso numerical=0 andalso addspaces+ngram_standardalphabet>1 andalso l>=spacegram_size then
 		
 		dim as ubyte als(255)
 		dim as ubyte tmp((spacegram_size-1)+l*2) 'l*2
@@ -27688,7 +30395,7 @@ function info_to_string(array()as long,byval l as integer,byval dx as integer,by
 		dim as integer nl,nl2,new_ngram_score,old_ngram_score,r1,r2,old_frq,ll
 		dim as uinteger state=12345 'seed
 		dim as double score,old_score,bestscore,spaces,temp,temp_min,entropy
-		dim as double log2=log(2),spacegramfactor=50
+		dim as double log2a=log(2),spacegramfactor=50
 		for i=65 to 90
 			als(j)=i
 			j+=1
@@ -27734,7 +30441,7 @@ function info_to_string(array()as long,byval l as integer,byval dx as integer,by
 		next i
 		bestscore=new_ngram_score/(nl-4)*spacegramfactor 'ngram factor
 		for j=0 to 26
-			if frq(j)>0 then entropy+=log(frq(j)/nl)/log2*(frq(j)/nl)
+			if frq(j)>0 then entropy+=log(frq(j)/nl)/log2a*(frq(j)/nl)
 		next j
 		score*=abs(entropy)
 		
@@ -27826,7 +30533,7 @@ function info_to_string(array()as long,byval l as integer,byval dx as integer,by
 			score=new_ngram_score/(k-4)*spacegramfactor '57=ngram factor
 			entropy=0
 			for j=0 to 26
-				if frq(j)>0 then entropy+=log(frq(j)/k)/log2*(frq(j)/k)
+				if frq(j)>0 then entropy+=log(frq(j)/k)/log2a*(frq(j)/k)
 			next j
 			score*=abs(entropy)
 			if score>bestscore then 'keep change
@@ -27852,11 +30559,221 @@ function info_to_string(array()as long,byval l as integer,byval dx as integer,by
 				j=0
 			end if
 		next i
+		
+		'word n-gram score
+		'-----------------------------------------------------------	
+		's2=""
+		'for i=1 to nl2
+		'	s2+=chr(als(sol(i)))
+		'next i
+		's2+=" "
+		'dim as ulong words=0,word_array(nl2),word_score
+		'j=0
+		'for i=1 to len(s2)-1 'first char is never a space, start at 1
+		'	if s2[i]=32 then
+		'		words+=1
+		'		word_array(words)=wlptr(crc_32(@s2[j],i-j))
+		'		j=i+1
+		'	end if
+		'next i
+		'for i=1 to words-1
+		'	word_score+=wl2(word_array(i),word_array(i+1))
+		'next i
+		'word_score+=wl(word_array(i),word_array(1)) 'wrap around
+		's+=" "+rdc(word_score/(words-0),2)
+		'
+		''for i=1 to words-2
+		''	word_score+=wl3(word_array(i),word_array(i+1),word_array(i+2))
+		''next i
+		''s+=" "+rdc(word_score/(words-2),2)
+		''-----------------------------------------------------------
+		'
+		''word gram score addon:
+		''----------------------
+		''s+=str(g6w(asc("B")-65,asc("E")-65,asc("C")-65,asc("A")-65,asc("U")-65,asc("S")-65))+","
+		''s+=str(g6w(asc("K")-65,asc("I")-65,asc("L")-65,asc("L")-65,asc("I")-65,asc("N")-65))
+		'
+	'	s+=lb+"----------------------------------------"+lb
+	'	dim as ushort wor(l),nwor(l)
+	'	dim as integer nwlen=0,wngs=7
+	'	words=0
+	'	
+	'	for i=1 to l
+	'		sol(i)=alpharev(array(i))
+	'	next i
+	'	words=0
+	'	for i=l+1 to l+(wngs-1) 'wrap around cipher to catch last word(s)
+	'		sol(i)=sol(i-l)
+	'	next i
+	'	for i=1 to l 'convert sol array to words
+	'		'j=g6w(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5))
+	'		j=g7w(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5),sol(i+6))
+	'		if j>0 then
+	'			if nwlen>0 then
+	'				'k=0
+	'				'select case nwlen
+	'				'	case 1:k=g6w2(nwor(1),26,26,26,26,26):if k>0 then words+=1:wor(words)=k
+	'				'	case 2:k=g6w2(nwor(1),nwor(2),26,26,26,26):if k>0 then words+=1:wor(words)=k
+	'				'	case 3:k=g6w2(nwor(1),nwor(2),nwor(3),26,26,26):if k>0 then words+=1:wor(words)=k
+	'				'	case 4:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),26,26):if k>0 then words+=1:wor(words)=k
+	'				'	case 5:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),26):if k>0 then words+=1:wor(words)=k
+	'				'	case 6:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),nwor(6)):if k>0 then words+=1:wor(words)=k
+	'				'end select
+	'				'if k=0 then
+	'					s+="(" 'write word string
+	'					for k=1 to nwlen
+	'						s+=chr(nwor(k)+65)
+	'					next k
+	'					s+=") ":h+=nwlen+1
+	'					if h>40 then
+	'						h=0
+	'						if i<l then s+=lb
+	'					end if
+	'					'---------------------------------------------
+	'					nwlen=0
+	'					words+=1
+	'					wor(words)=0
+	'				'else
+	'				'	s+="[" 'write word string
+	'				'	for k=1 to nwlen
+	'				'		s+=chr(nwor(k)+65)
+	'				'	next k
+	'				'	s+="] ":h+=nwlen+1
+	'				'	if h>40 then
+	'				'		h=0
+	'				'		if i<>l then s+=lb
+	'				'	end if
+	'				'	'---------------------------------------------
+	'				'	nwlen=0
+	'				'end if
+	'			end if
+	'			if wl(j,0)>wngs then 'if word length >6 then check word vs wordlist entry
+	'				e=1
+	'				'if wl(j,0)>=l-(i-1) then
+	'					for k=0 to wl(j,0)-1
+	'						if wl(j,k+1)<>sol(i+k)+65 then
+	'							e=0
+	'							exit for
+	'						end if
+	'					next k
+	'				'end if
+	'				if e=1 then
+	'					words+=1
+	'					wor(words)=j
+	'					i+=wl(j,0)-1 'skip other letters of the found word
+	'					'---------------------------------------------
+	'					for k=1 to wl(wor(words),0) 'write word string
+	'						s+=chr(wl(wor(words),k))
+	'					next k
+	'					s+=" ":h+=wl(wor(words),0)+1
+	'					if h>40 then
+	'						h=0
+	'						if i<l then s+=lb
+	'					end if
+	'				else
+	'					'nwlen+=1
+	'					'nwor(nwlen)=sol(i)
+	'					s+="*" 'write word string
+	'					for k=0 to wl(j,0)-1
+	'						s+=chr(sol(i+k)+65)
+	'					next k
+	'					s+="* ":h+=wl(j,0)+1
+	'					if h>40 then
+	'						h=0
+	'						s+=lb
+	'					end if
+	'					'---------------------------------------------
+	'					words+=1
+	'					wor(words)=0
+	'					i+=wl(j,0)-1 'skip other letters of the found word
+	'				end if
+	'			else
+	'				words+=1
+	'				if wl(j,0)>=l-(i-1) then 
+	'					wor(words)=0
+	'					i+=wl(j,0)-1 'skip other letters of the found word
+	'					'---------------------------------------------
+	'					s+="(" 'write word string
+	'					for k=1 to wl(wor(words),0)
+	'						s+=chr(wl(wor(words),k))
+	'					next k
+	'					s+=") ":h+=wl(wor(words),0)+1
+	'				else 
+	'					wor(words)=j
+	'					i+=wl(j,0)-1 'skip other letters of the found word
+	'					'---------------------------------------------
+	'					for k=1 to wl(wor(words),0) 'write word string
+	'						s+=chr(wl(wor(words),k))
+	'					next k
+	'					s+=" ":h+=wl(wor(words),0)+1
+	'				end if
+	'				if h>40 then
+	'					h=0
+	'					if i<l then s+=lb
+	'				end if
+	'			end if
+	'		else
+	'			nwlen+=1
+	'			nwor(nwlen)=sol(i)
+	'		end if
+	'	next i
+	'	if nwlen>0 then
+	'		'k=0
+	'		'select case nwlen
+	'		'	case 1:k=g6w2(nwor(1),26,26,26,26,26):if k>0 then words+=1:wor(words)=k
+	'		'	case 2:k=g6w2(nwor(1),nwor(2),26,26,26,26):if k>0 then words+=1:wor(words)=k
+	'		'	case 3:k=g6w2(nwor(1),nwor(2),nwor(3),26,26,26):if k>0 then words+=1:wor(words)=k
+	'		'	case 4:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),26,26):if k>0 then words+=1:wor(words)=k
+	'		'	case 5:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),26):if k>0 then words+=1:wor(words)=k
+	'		'	case 6:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),nwor(6)):if k>0 then words+=1:wor(words)=k
+	'		'end select
+	'		'if k=0 then
+	'			s+="(" 'write word string
+	'			for k=1 to nwlen
+	'				s+=chr(nwor(k)+65)
+	'			next k
+	'			s+=") ":h+=nwlen+1
+	'			if h>40 then
+	'				h=0
+	'				'if i<>l then s+=lb
+	'			end if
+	'			'---------------------------------------------
+	'			nwlen=0
+	'			words+=1
+	'			wor(words)=0
+	'		'else
+	'		'	s+="[" 'write word string
+	'		'	for k=1 to nwlen
+	'		'		s+=chr(nwor(k)+65)
+	'		'	next k
+	'		'	s+="] ":h+=nwlen+1
+	'		'	if h>40 then
+	'		'		h=0
+	'		'		'if i<>l then s+=lb
+	'		'	end if
+	'		'	'---------------------------------------------
+	'		'	nwlen=0
+	'		'end if
+	'	end if
+	'	
+	'	if words>1 then
+	'		dim as double wscore=0
+	'		for i=1 to words-1 'score words with word 2-grams
+	'			wscore+=wl2(wor(i),wor(i+1))
+	'		next i
+	'		wscore+=wl(wor(i),wor(1)) 'wrap around
+	'		if wscore>0 then
+	'			wscore/=words '-1
+	'			s+=rdc(wscore,2)
+	'		end if
+	'	end if
+	'	
 		return s
+		
 	end if
 	
 	for i=1 to l
-		if array(i)>0 then
+		'if array(i)>0 then
 			if numerical=0 then
 				'if addspaces>1 andalso ngram_standardalphabet=1 then
 				'else
@@ -27883,7 +30800,7 @@ function info_to_string(array()as long,byval l as integer,byval dx as integer,by
 					end if
 				end if
 			end if
-		end if
+		'end if
 	next i
 	return s
 	
@@ -27947,7 +30864,11 @@ function frequencies(array()as long,byval l as integer,byval s as integer,byval 
 	dim as integer frq(l,ngs)
 	
 	for i=1 to l
-		cip(i,0)=array(i)
+		if num=0 or infom(i)=0 then
+			cip(i,0)=array(i)
+		else
+			cip(i,0)=-array(i)
+		end if
 	next i
 	
 	for i=1 to l-(ngs-1)		
@@ -27980,6 +30901,10 @@ function frequencies(array()as long,byval l as integer,byval s as integer,byval 
 		end if		
 	next i
 	
+	dim as ushort nv(ngram_size)
+	dim as integer nvv,nvc
+	dim as double nvavg
+	
 	if counted=1 or ngs=1 then
 		rs+=str(ngs)+"-gram frequencies > "+str(mf)+":"+lb
 		rs+="---------------------------------------------------------"
@@ -27997,11 +30922,18 @@ function frequencies(array()as long,byval l as integer,byval s as integer,byval 
 		for i=1 to f
 			if frq(i,0)>mf then
 				rs+=lb
+				if ngs=ngram_size then nv(0)=0 else nv(0)=1
+				nvc+=1
 				if num=0 then
 					for j=1 to ngs
 						rs+=chr(frq(i,j))
+						if ngs=ngram_size andalso nv(0)=0 then 'add ngram log value if possible
+							if alpharevp1(frq(i,j))=0 then nv(0)=1
+							nv(j)=alpharevp1(frq(i,j))-1
+						end if
 					next j
 				else
+					nv(0)=1
 					for j=1 to ngs
 						if j<>ngs then
 							rs+=str(frq(i,j))+" "
@@ -28011,12 +30943,46 @@ function frequencies(array()as long,byval l as integer,byval s as integer,byval 
 					next j	
 				end if
 				rs+=": "+str(frq(i,0))
-				'if i<>f then rs+=lb
+				if nv(0)=0 then 'add ngram log value if possible
+					select case ngram_size
+						case 2:nvv=g2(nv(1),nv(2))
+						case 3:nvv=g3(nv(1),nv(2),nv(3))
+						case 4:nvv=g4(nv(1),nv(2),nv(3),nv(4))
+						case 5:nvv=g5(nv(1),nv(2),nv(3),nv(4),nv(5))
+						case 6:nvv=g6(nv(1),nv(2),nv(3),nv(4),nv(5),nv(6))
+						case 7:nvv=g7(nv(1),nv(2),nv(3),nv(4),nv(5),nv(6),nv(7))
+						case 8:nvv=bh8(bh4(nv(1),nv(2),nv(3),nv(4)),bh4(nv(5),nv(6),nv(7),nv(8)))
+						case 10:nvv=bh10(bh5(nv(1),nv(2),nv(3),nv(4),nv(5)),bh5(nv(6),nv(7),nv(8),nv(9),nv(10)))
+					end select
+					rs+=" ("+str(nvv)+")"
+					nvavg+=nvv
+				end if
 			end if
 		next i
+		if nvavg>0 then rs+=" AVG: ("+rdc(nvavg/nvc,2)+")"
 		return rs
 	end if
 
+end function
+
+function periodngrams(cip()as long,byval l as integer,byval p as integer,byval r as integer)as double
+	
+	dim as integer i,j
+	dim as double score
+	'dim as double map(l)
+	
+	for i=r to l-p step 2
+		if i+2>l then exit for
+		if alpharevp1(cip(i))>0 andalso alpharevp1(cip(i+p))>0 then
+			j+=1
+			score+=g2(alpharevp1(cip(i))-1,alpharevp1(cip(i+p))-1)^2
+			'map(i)+=g2(alpharevp1(cip(i))-1,alpharevp1(cip(i+p))-1)^2
+			'map(i+p)+=g2(alpharevp1(cip(i))-1,alpharevp1(cip(i+p))-1)^2
+		end if
+	next i
+	'output_colormap(map(),cip(),l,info_x,info_y,0,"map_"+str(p))
+	return score/j
+	
 end function
 
 sub thread_load_ngrams(byval none as any ptr)
@@ -28095,7 +31061,7 @@ sub thread_load_ngrams(byval none as any ptr)
 	
 	select case ngram_size
 		case 2,3,4,5,6,7
-		case 8 ',10
+		case 8,10,12
 			fileformat=1
 			ngram_format="binary"
 			table_file=left(file_name_ngrams,instr(file_name_ngrams,".txt")-1)+"_table.txt"
@@ -28194,7 +31160,9 @@ sub thread_load_ngrams(byval none as any ptr)
 	end if
 	if right(s,len(s)-a)="ABCDEFGHIJKLMNOPQRSTUVWXYZ" then ngram_standardalphabet=1 else ngram_standardalphabet=0
 	ngram_alphabet_size=0
-	dim as ubyte alpharevp1(255)
+	'dim as ubyte alpharevp1(255)
+	erase alphabet,alpharev,alpharevp1
+	j=0
 	for i=a+1 to len(s)
 		ngram_alphabet_size+=1
 		alphabet(j)=asc(s,i)
@@ -28232,7 +31200,7 @@ sub thread_load_ngrams(byval none as any ptr)
 		solvesub_temperature=val(right(s,len(s)-a))
 		newtemp=solvesub_temperature
 	end if
-	if solvesub_temperature<=0 then solvesub_temperature=700
+	if solvesub_temperature<=0 then solvesub_temperature=800
 	s=ui_listbox_gettext(list_optionssolver,17)
 	s=left(s,instr(s,":")-1)
 	ui_listbox_replacestring(list_optionssolver,17,s+": "+str(solvesub_temperature))
@@ -28247,7 +31215,7 @@ sub thread_load_ngrams(byval none as any ptr)
 	
 	if ngrams_clearprevious=1 then 'clear all
 		'------------------------------------------------------------------------
-		for i=2 to 8
+		for i=2 to 12
 			ngrams_inmem(i)=0
 		next i
 		'------------------------------------------------------------------------
@@ -28259,7 +31227,8 @@ sub thread_load_ngrams(byval none as any ptr)
 		redim g7(0,0,0,0,0,0,0),g7b(0,0,0,0,0,0,0)
 		'------------------------------------------------------------------------
 		redim bh8(0,0),bh4(0,0,0,0) 'beijinghouse
-		'redim bh10(0,0),bh5(0,0,0,0,0)
+		redim bh10(0,0),bh5(0,0,0,0,0)
+		redim bh12(0,0),bh6(0,0,0,0,0,0)
 		redim cachebh80(0,0,0,0)
 		redim cachebh81(0,0,0,0)
 		redim cachebh82(0,0,0,0)
@@ -28279,13 +31248,14 @@ sub thread_load_ngrams(byval none as any ptr)
 			else
 				total_items=filelen(file_name_ngrams)
 			end if
-		case 8,10 'beijnghouse
+		case 8,10,12 'beijnghouse
 			if memcheck=1 then
-				i=fre-(1073741824*2) '2 GB RAM
-				j=fre*0.8 'for low memory systems
+				k=(ngram_alphabet_size^(ngram_size/2))*4
+				i=fre-((1073741824*2)+k) '2 GB RAM
+				j=(fre*0.8)-k 'for low memory systems
 				max_allowed_table_index=sqr(iif(i>j,i,j))
 			else
-				max_allowed_table_index=sqr(26^ngram_size)
+				max_allowed_table_index=sqr(ngram_alphabet_size^ngram_size)
 			end if
 			if (max_allowed_table_index*max_allowed_table_index)>(1073741824*solvesub_bhmaxgb) then max_allowed_table_index=sqr(1073741824*solvesub_bhmaxgb)
 	end select
@@ -28367,9 +31337,141 @@ sub thread_load_ngrams(byval none as any ptr)
 			next i
 			gzclose(gzf)
 			addspaces_ngrams=1
+		else
+			addspaces_ngrams_notloaded=1
 		end if
-		firststart=0
+		firststart=0 '<---------------------------------------------------- COMMENTED FOR WORD 2-GRAM TEST !!!! -----------------------------------------
 	end if
+	
+	'word n-grams 
+	'----------------------------------------------------------------------------------
+	'if firststart=1 then
+	'	
+	'	dim as integer wmax=65535
+	'	redim wl(wmax,50)
+	'	redim wlptr(2^32)
+	'	
+	'	open basedir+"\N-grams\Words\1-word_grams_english_jarlve_reddit_64k.txt" for binary as #1
+	'	i=0
+	'	do
+	'		line input #1,s
+	'		s=ucase(s) 'convert to uppercase
+	'		if s<>"" then
+	'			i+=1
+	'			num=""
+	'			for j=0 to len(s)-1
+	'				select case s[j]
+	'					case 65 to 90 'uppercase letter
+	'						wl(i,j+1)=s[j]
+	'					case 48 to 57 'number
+	'						num+=str(s[j])
+	'					case 32 'space
+	'						wl(i,0)=j 'word length
+	'						wlptr(crc_32(@s[0],j))=i
+	'						exit for
+	'				end select
+	'			next j
+	'			wl(i,50)=log(val(num))*10
+	'		end if
+	'	loop until eof(1) or i=wmax
+	'	close #1
+	'	
+	'	'redim g6w2(26,26,26,26,26,26)
+	'	'for i=1 to 65535 'top XXXXX words
+	'	'	select case wl(i,0)
+	'	'		case 1:g6w2(wl(i,1)-65,26,26,26,26,26)=i
+	'	'		case 2:g6w2(wl(i,1)-65,wl(i,2)-65,26,26,26,26)=i
+	'	'		case 3:g6w2(wl(i,1)-65,wl(i,2)-65,wl(i,3)-65,26,26,26)=i
+	'	'		case 4:g6w2(wl(i,1)-65,wl(i,2)-65,wl(i,3)-65,wl(i,4)-65,26,26)=i
+	'	'		case 5:g6w2(wl(i,1)-65,wl(i,2)-65,wl(i,3)-65,wl(i,4)-65,wl(i,5)-65,26)=i
+	'	'		case 6:g6w2(wl(i,1)-65,wl(i,2)-65,wl(i,3)-65,wl(i,4)-65,wl(i,5)-65,wl(i,6)-65)=i
+	'	'		case else
+	'	'	end select
+	'	'next i
+	'	
+	'	redim wl2(wmax,wmax)
+	'	pi=@wl2(0,0)
+	'	gzf=gzopen(basedir+"\N-grams\Words\2-word_grams_english_jarlve_reddit_64k.txt","rb")
+	'	k=0
+	'	for i=0 to ((wmax+1)^2)-1
+	'		if k=0 then
+	'			bl=0
+	'			k=buffer
+	'			gzread(gzf,fd,buffer)
+	'		end if
+	'		k-=1 'byte
+	'		j=fd[bl]
+	'		bl+=1
+	'		pi[i]=j
+	'	next i
+	'	gzclose(gzf)
+	'	
+	'	'redim wl3(wmax,wmax,wmax)
+	'	'dim as string word_file=basedir+"\N-grams\Words\3-word_grams_english_jarlve_reddit_2k.txt"
+	'	'pi=@wl3(0,0,0)
+	'	'gzf=gzopen(word_file,"rb")
+	'	'k=0
+	'	'for i=0 to ((wmax+1)^3)-1
+	'	'	if k=0 then
+	'	'		bl=0
+	'	'		k=buffer
+	'	'		gzread(gzf,fd,buffer)
+	'	'	end if
+	'	'	k-=1 'byte
+	'	'	j=fd[bl]
+	'	'	bl+=1
+	'	'	pi[i]=j
+	'	'next i
+	'	'gzclose(gzf)
+	'	
+	'	'redim g6w(25,25,25,25,25,25)
+	'	'g6w(asc("B")-65,asc("E")-65,asc("C")-65,asc("A")-65,asc("U")-65,asc("S")-65)=58
+	'	'open basedir+"\N-grams\Words\test.txt" for binary as #1
+	'	'put #1,,g6w() 'doesn't work for files > 3GB (FreeBASIC bug)
+	'	'close #1
+	'	
+	'	'redim g6w(25,25,25,25,25,25)
+	'	'ps=@g6w(0,0,0,0,0,0)
+	'	''gzf=gzopen(basedir+"\N-grams\Words\6gram-to-1word-5M-line-reddit2020-test2.txt.gz","rb")
+	'	'gzf=gzopen(basedir+"\N-grams\Words\6gram-to-1word-600M-line-reddit2020-test6.txt.gz","rb")
+	'	'k=0
+	'	'for i=0 to (26^6)-1
+	'	'	if k=0 then
+	'	'		bl=0
+	'	'		k=buffer
+	'	'		gzread(gzf,fs,buffer)
+	'	'	end if
+	'	'	k-=2 'short
+	'	'	j=fs[bl]
+	'	'	bl+=1
+	'	'	ps[i]=j
+	'	'	'if j<65536 then ps[i]=j else beep
+	'	'next i
+	'	'gzclose(gzf)
+	'	
+	'	redim g7w(25,25,25,25,25,25,25)
+	'	ps=@g7w(0,0,0,0,0,0,0)
+	'	'gzf=gzopen(basedir+"\N-grams\Words\6gram-to-1word-5M-line-reddit2020-test2.txt.gz","rb")
+	'	gzf=gzopen(basedir+"\N-grams\Words\7gram-to-1word-5M-line-reddit2020-test2.txt.gz","rb")
+	'	k=0
+	'	for i=0 to (26^7)-1
+	'		if k=0 then
+	'			bl=0
+	'			k=buffer
+	'			gzread(gzf,fs,buffer)
+	'		end if
+	'		k-=2 'short
+	'		j=fs[bl]
+	'		bl+=1
+	'		ps[i]=j
+	'		'if j<65536 then ps[i]=j else beep
+	'	next i
+	'	gzclose(gzf)
+	'	
+	'	firststart=0
+	'	
+	'end if
+	'----------------------------------------------------------------------------------
 	
 	select case ngram_size
 		
@@ -28407,6 +31509,8 @@ sub thread_load_ngrams(byval none as any ptr)
 			loadngramtimer=timer
 			
 			if fileformat=2 then '1.17 beijinghouse n-gram load
+			
+				'dim as double hdiv=(255^solvesub_seqweight)/255
 				
 				gzf=gzopen(file_name_ngrams,"rb")
 				while totalbytes=buffer
@@ -28433,7 +31537,12 @@ sub thread_load_ngrams(byval none as any ptr)
 						else
 							h=(asc2num1000(fd[bl+ic])+asc2num100(fd[bl+ic+1])+asc2num10(fd[bl+ic+2])+asc2num(fd[bl+ic+3]))/10
 						end if
+						
+						'h^=solvesub_seqweight
+						'h/=hdiv
+						
 						if h>solvesub_ngramlogcutoff then
+							'if solvesub_constantngramvalue>0 andalso h>0 then h=solvesub_constantngramvalue
 							if h>highgram then highgram=h
 							if h<ngram_lowval then ngram_lowval=h
 							if h>ngram_highval then ngram_highval=h
@@ -28459,7 +31568,7 @@ sub thread_load_ngrams(byval none as any ptr)
 				wend
 				
 			else 'binary
-			
+				
 				gzf=gzopen(file_name_ngrams,"rb")
 				k=0
 				for i=0 to ((nm1+1)^ngram_size)-1
@@ -28474,6 +31583,7 @@ sub thread_load_ngrams(byval none as any ptr)
 					bl+=1
 					curr_items+=1
 					if j>solvesub_ngramlogcutoff then
+						'if solvesub_constantngramvalue>0 andalso j>0 then j=solvesub_constantngramvalue
 						pi[i]=j
 						ngram_count+=1
 						if j>highgram then highgram=j
@@ -28487,7 +31597,7 @@ sub thread_load_ngrams(byval none as any ptr)
 			
 			#include "thread_load_best_ngram.bi" 'find best n-gram for letter position
 			
-		case 8,10 'beijinghouse 8-gram system
+		case 8,10,12 'beijinghouse 8-gram system
 		
 			gzf=gzopen(table_file,"rb")
 			dim fd2 as ulong ptr 'file data
@@ -28499,10 +31609,14 @@ sub thread_load_ngrams(byval none as any ptr)
 					redim bh4(0,0,0,0)
 					redim bh4(nm1,nm1,nm1,nm1)
 					pi2=@bh4(0,0,0,0)
-				'case 10
-				'	redim bh5(0,0,0,0,0)
-				'	redim bh5(nm1,nm1,nm1,nm1,nm1)
-				'	pi2=@bh5(0,0,0,0,0)
+				case 10
+					redim bh5(0,0,0,0,0)
+					redim bh5(nm1,nm1,nm1,nm1,nm1)
+					pi2=@bh5(0,0,0,0,0)
+				case 12
+					redim bh6(0,0,0,0,0,0)
+					redim bh6(nm1,nm1,nm1,nm1,nm1,nm1)
+					pi2=@bh6(0,0,0,0,0,0)
 			end select
 			
 		 	k=0
@@ -28530,19 +31644,22 @@ sub thread_load_ngrams(byval none as any ptr)
 				ngram_mem=max_allowed_table_index*max_allowed_table_index
 				select case ngram_size
 					case 8:redim bh8(max_allowed_table_index,max_allowed_table_index)
-					'case 10:redim bh10(max_allowed_table_index,max_allowed_table_index)
+					case 10:redim bh10(max_allowed_table_index,max_allowed_table_index)
+					case 12:redim bh12(max_allowed_table_index,max_allowed_table_index)
 				end select
 			else
 				ngram_mem=ngram_maxtableindex*ngram_maxtableindex
 				select case ngram_size
 					case 8:redim bh8(ngram_maxtableindex,ngram_maxtableindex)
-					'case 10:redim bh10(ngram_maxtableindex,ngram_maxtableindex)
+					case 10:redim bh10(ngram_maxtableindex,ngram_maxtableindex)
+					case 12:redim bh12(max_allowed_table_index,max_allowed_table_index)
 				end select
 			end if
 			
 			select case ngram_size
 				case 8:pi=@bh8(0,0)
-				'case 10:pi=@bh10(0,0)
+				case 10:pi=@bh10(0,0)
+				case 12:pi=@bh12(0,0)
 			end select
 			
 			loadngramtimer=timer
@@ -28564,6 +31681,7 @@ sub thread_load_ngrams(byval none as any ptr)
 				curr_items+=1
 				if ind1<max_allowed_table_index+1 andalso ind2<max_allowed_table_index+1 then e=1 else e=0
 				if j>solvesub_ngramlogcutoff andalso e=1 then
+					'if solvesub_constantngramvalue>0 andalso j>0 then j=solvesub_constantngramvalue
 					pi[h]=j
 					ngram_count+=1
 					if j>highgram then highgram=j
@@ -28904,17 +32022,17 @@ sub thread_load_ngrambias(byval none as any ptr)
 					if v>0 then bh8(bh4(ngbn(i,0),ngbn(i,1),ngbn(i,2),ngbn(i,3)),bh4(ngbn(i,4),ngbn(i,5),ngbn(i,6),ngbn(i,7)))=v
 				end if
 			next i
-		'case 10
-		'	for i=1 to n
-		'		if bh5(ngbn(i,0),ngbn(i,1),ngbn(i,2),ngbn(i,3),ngbn(i,4))<>0 andalso bh5(ngbn(i,5),ngbn(i,6),ngbn(i,7),ngbn(i,8),ngbn(i,9))<>0 then 'protect 0 values
-		'			v=bh10(bh5(ngbn(i,0),ngbn(i,1),ngbn(i,2),ngbn(i,3),ngbn(i,4)),bh5(ngbn(i,5),ngbn(i,6),ngbn(i,7),ngbn(i,8),ngbn(i,9)))
-		'			v=log(exp(v/10)+(maxfrq*(ngbf(i)/m)*bias))*10
-		'			if v<1 then v=0:ul+=1
-		'			if v>255 then v=255:ol+=1
-		'			if v>highgram then highgram=v
-		'			if v>0 then bh10(bh5(ngbn(i,0),ngbn(i,1),ngbn(i,2),ngbn(i,3),ngbn(i,4)),bh5(ngbn(i,5),ngbn(i,6),ngbn(i,7),ngbn(i,8),ngbn(i,9)))=v
-		'		end if
-		'	next i
+		case 10
+			for i=1 to n
+				if bh5(ngbn(i,0),ngbn(i,1),ngbn(i,2),ngbn(i,3),ngbn(i,4))<>0 andalso bh5(ngbn(i,5),ngbn(i,6),ngbn(i,7),ngbn(i,8),ngbn(i,9))<>0 then 'protect 0 values
+					v=bh10(bh5(ngbn(i,0),ngbn(i,1),ngbn(i,2),ngbn(i,3),ngbn(i,4)),bh5(ngbn(i,5),ngbn(i,6),ngbn(i,7),ngbn(i,8),ngbn(i,9)))
+					v=log(exp(v/10)+(maxfrq*(ngbf(i)/m)*bias))*10
+					if v<1 then v=0:ul+=1
+					if v>255 then v=255:ol+=1
+					if v>highgram then highgram=v
+					if v>0 then bh10(bh5(ngbn(i,0),ngbn(i,1),ngbn(i,2),ngbn(i,3),ngbn(i,4)),bh5(ngbn(i,5),ngbn(i,6),ngbn(i,7),ngbn(i,8),ngbn(i,9)))=v
+				end if
+			next i
 	end select
 	
 	redim ngbt(0)
@@ -30513,6 +33631,11 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 	dim as short maps2(constcip)
 	dim as integer mi,mj
 	
+	'dim as ushort hp(constfrq) 'hp
+	
+	'dim as ushort wor(constcip) 'word arrays
+	'dim as ubyte nwor(constcip)
+	
 	do 'wait for input
 		
 		sleep twait
@@ -30634,6 +33757,7 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 						for rr=1 to random_restarts
 							
 							erase frq
+							'erase hp 'hp
 							
 							if lv=1 then
 								for i=1 to s
@@ -30653,6 +33777,7 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 									for j=1 to map1(i,0)
 										sol(map1(i,j))=new_letter
 									next j
+									'hp(new_letter)+=1 'hp
 								next i
 							else
 								for i=1 to s
@@ -30661,6 +33786,7 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 									for j=1 to map1(i,0)
 										sol(map1(i,j))=key2(i)
 									next j
+									'hp(new_letter)+=1 'hp
 								next i
 							end if
 							
@@ -30711,12 +33837,110 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 								entropy+=enttable(frq(old_letter)-mape2(curr_symbol))-enttable(frq(old_letter))
 								entropy+=enttable(frq(new_letter)+mape2(curr_symbol))-enttable(frq(new_letter))
 								
+								'hp(new_letter)+=1 'hp
+								'hp(old_letter)-=1 'hp
+								
 								old_ngram_score=new_ngram_score
 								
 								#include "solver_ngram_main.bi"
 								#include "solver_fastent.bi"
 								
+								'word gram score addon:
+								'----------------------
+								'idea: somehow allow a exception for words that end with ING,LY,etc
+								'issue: long strings of characters are moved into long unrecognizable words to minizize impact on word n-gram score
+								
+								'dim as integer words=0,nwlen=0,wordlen=0,wngs=7
+								'for i=l+1 to l+(wngs-1) 'wrap around cipher to catch last word(s)
+								'	sol(i)=sol(i-l)
+								'next i
+								'for i=1 to l 'convert sol array to words
+								'	'j=g6w(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5))
+								'	j=g7w(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5),sol(i+6))
+								'	if j>0 then
+								'		'select case nwlen
+								'		'	case 1:k=g6w2(nwor(1),26,26,26,26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								'		'	case 2:k=g6w2(nwor(1),nwor(2),26,26,26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								'		'	case 3:k=g6w2(nwor(1),nwor(2),nwor(3),26,26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								'		'	case 4:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								'		'	case 5:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								'		'	case 6:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),nwor(6)):if k>0 then words+=1:wor(words)=k:nwlen=0
+								'		'end select
+								'		if nwlen>0 then
+								'			words+=1
+								'			wor(words)=0
+								'			'wordlen+=nwlen
+								'			nwlen=0
+								'		end if
+								'		if wl(j,0)>wngs then 'if word length >7 then check word vs wordlist entry
+								'			e=1
+								'			'if wl(j,0)>=l-(i-1) then
+								'				for k=0 to wl(j,0)-1
+								'					if wl(j,k+1)<>sol(i+k)+65 then
+								'						e=0
+								'						exit for
+								'					end if
+								'				next k
+								'			'end if
+								'			if e=1 then
+								'				words+=1
+								'				wor(words)=j
+								'				'wordlen+=wl(j,0)
+								'				i+=wl(j,0)-1 'skip other letters of the found word
+								'			else
+								'				'nwlen+=1
+								'				'nwor(nwlen)=sol(i)
+								'				words+=1
+								'				wor(words)=j
+								'				'wordlen+=wl(j,0)
+								'				i+=wl(j,0)-1 'skip other letters of the found word
+								'			end if
+								'		else
+								'			words+=1
+								'			if wl(j,0)>=l-(i-1) then wor(words)=0 else wor(words)=j
+								'			'wordlen+=wl(j,0)
+								'			i+=wl(j,0)-1 'skip other letters of the found word
+								'		end if
+								'	else
+								'		nwlen+=1
+								'		nwor(nwlen)=sol(i)
+								'	end if
+								'next i
+								''select case nwlen
+								''	case 1:k=g6w2(nwor(1),26,26,26,26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								''	case 2:k=g6w2(nwor(1),nwor(2),26,26,26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								''	case 3:k=g6w2(nwor(1),nwor(2),nwor(3),26,26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								''	case 4:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),26,26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								''	case 5:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),26):if k>0 then words+=1:wor(words)=k:nwlen=0
+								''	case 6:k=g6w2(nwor(1),nwor(2),nwor(3),nwor(4),nwor(5),nwor(6)):if k>0 then words+=1:wor(words)=k:nwlen=0
+								''end select
+								'if nwlen>0 then
+								'	words+=1
+								'	wor(words)=0
+								'	'wordlen+=nwlen
+								'	nwlen=0
+								'end if
+								'if words>1 then
+								'	dim as double wscore=0
+								'	for i=1 to words-1 'score words with word 2-grams
+								'		wscore+=wl2(wor(i),wor(i+1))
+								'	next i
+								'	wscore+=wl2(wor(i),wor(1)) 'wrap around
+								'	if wscore>0 then
+								'		wscore/=words '-1
+								'		'wscore/=1+(l/words)/solvesub_seqweight
+								'		new_score*=1+(wscore/255)/6 'multiplicative
+								'		'new_score+=wscore*solvesub_matchweight 'additive
+								'	end if
+								'end if
+								
 								'---------------------------------------------------------------------
+								
+								'dim as integer hps=0 'hp
+								'for i=0 to abc_sizem1
+								'	if hp(i)>1 then hps+=hp(i)-1
+								'next i
+								'new_score*=1-((hps/(s-1))*solvesub_seqweight)
 								
 								if new_score>old_score then
 									
@@ -30737,7 +33961,7 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 											thread(tn).sol(i)=alphabet(sol(i))
 										next i
 										thread(tn).ent=entropy
-										thread(tn).multiplicity=s/l
+										thread(tn).multiplicity=s/l 'hps
 										best_score=new_score+0.00001
 										
 										#include "solver_accuracy_shortcircuit.bi" 'inflates 100% accuracy
@@ -30759,6 +33983,9 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 									end if
 									
 								else
+									
+									'hp(old_letter)+=1 'hp
+									'hp(new_letter)-=1 'hp
 									
 									accept=0
 									new_ngram_score=old_ngram_score
@@ -30813,6 +34040,4405 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 			
 			thread(tn).solver_waiting=1
 		
+		end if
+		
+	loop until thread(tn).thread_stop=1
+	
+	thread(tn).thread_active=0
+	thread(tn).thread_stop=0
+	
+end sub
+
+sub azdecrypt_nosub_234567810g(byval tn_ptr as any ptr)
+	
+	#include "solver_variables.bi"
+	
+	dim as integer solver_output=0 'solver id
+	'dim as ubyte key1(constcip)
+	'dim as ubyte key2(constcip)
+	dim as ubyte sol(constcip)
+	'dim as ubyte stl(constcip)
+	'dim as ubyte ngrams(constcip)
+	dim as long frq(constfrq)
+	dim as short frq2(constfrq)
+	dim as short nba(constcip)
+	dim as short bnba(constcip)
+	'dim as short frc(constcip)
+	'dim as short mape1(constcip)
+	'dim as short mape2(constcip)
+	dim as byte cribkey(constcip)
+	dim as double enttable(constcip) 'constent
+	dim as byte sr(10),lnb(0)
+	
+	'dim as short maps(constcip)
+	'dim as short maps2(constcip)
+	'dim as integer mi,mj
+	
+	do 'wait for input
+		
+		sleep twait
+		
+		if thread(tn).solver_waiting=0 then
+			
+			'seed+=threads
+			'if (seed*2)-1>2147483647 then seed=tn
+			'state=(seed*2)-1
+			
+			'lvmax=solvesub_subrestartlevels
+			'for i=1 to lvmax
+			'	sr(i)=solvesub_subr(i)
+			'next i
+			
+			'select case ngram_size
+			'	case 2,3,4,5:tempdiv=3
+			'	case 6:tempdiv=2.75
+			'	case 7:tempdiv=2.5
+			'	case 8:tempdiv=2.25
+			'	case 10:tempdiv=2
+			'end select
+			
+			#include "solver_settings.bi"
+			
+			'iterations_total=25
+			
+			ll=l*(l-1)
+			al=l-(ngram_size-1)
+			
+			'if use_cribs=1 then
+			'	for i=1 to s
+			'		cribkey(i)=thread(tn).ckey(i)
+			'	next i
+			'end if
+			
+			#include "ext_hc1.bi"
+			
+			'for i=1 to l*ngram_size
+			'	enttable(i)=abs(logbx(i/(l*ngram_size),2)*(i/(l*ngram_size)))
+			'next i
+			
+			for i=1 to l 'expensive !!!
+				enttable(i)=abs(logbx(i/l,2)*(i/l))
+			next i
+			
+			best_score=0
+			
+			for b=1 to bm
+				
+				#include "ext_hc2.bi" 'may reinitialize l and s for hill climbers
+				
+				'for i=1 to l*ngram_size
+				'	enttable(i)=abs(logbx(i/(l*ngram_size),2)*(i/(l*ngram_size)))
+				'next i
+				
+				'frcmax=0
+				erase frq 'memset(@frq(0),0,(l+1)*4)
+				for i=1 to l
+					'nba(i)=thread(tn).cip(i)
+					sol(i)=thread(tn).cip(i)-1
+					frq(sol(i))+=1
+					'nba(i)=thread(tn).cip(i)-1
+					'frc(nba(i))+=1
+					'if frc(nba(i))>frcmax then frcmax=frc(nba(i))
+				next i
+				
+				'dim as short map1(s,frcmax)
+				'dim as short map2(s,frcmax*ngram_size)
+				'dim as short map2b(s,frcmax*ngram_size)
+				
+				'for i=1 to s
+				'	'frc(i)=0
+				'	map1(i,0)=0
+				'	'map2(i,0)=0
+				'	'maps(i)=i
+				'	'mape2(i)=0
+				'next i
+				
+				'for i=1 to l
+				'	map1(nba(i),0)+=1
+				'	map1(nba(i),map1(nba(i),0))=i
+				'	'mape1(i)=0
+				'next i
+				
+				'for i=1 to l-(ngram_size-1) 'entropy reduction
+				'	for j=0 to ngram_size-1
+				'		mape1(i+j)+=1
+				'	next j
+				'next i
+				'j=0
+				'for i=1 to l
+				'	mape2(nba(i))+=mape1(i)
+				'	j+=mape1(i)
+				'next i
+				'ent_score_norm=(l*ngram_size)/j
+				
+				'for i=1 to l
+				'	for j=0 to ngram_size-1
+				'		h=i-(ngram_size-1)
+				'		if h+j>0 andalso h+j<l-(ngram_size-2) then
+				'			e=0
+				'			for k=1 to map2(nba(i),0)
+				'				if map2(nba(i),k)=h+j then
+				'					e=1
+				'					exit for
+				'				end if
+				'			next k
+				'			if e=0 then
+				'				map2(nba(i),0)+=1
+				'				map2(nba(i),map2(nba(i),0))=h+j
+				'				map2b(nba(i),map2(nba(i),0))=j
+				'			end if
+				'		end if
+				'	next j
+				'next i
+				
+				'start_temp=(temp1/4.61538)/((s/l)/log(l)) 'temp1/(s/l)
+				'start_temp/=m_ioc2(nba(),l,s,2)^0.75
+				'curr_temp=start_temp
+				ngf=ngramfactor '*ent_score_norm
+				ngf/=1+((s/l)*multiplicityweight)
+				ngfal=ngf/al
+				'onesixl=1.7/l
+				'best_score=0
+				
+				solution_timer=timer
+				
+				'for lv=1 to lvmax
+					
+					'for lr=1 to sr(lv)
+						
+						'iterations=(iterations_total/sr(lv))/lvmax
+						
+						'for rr=1 to random_restarts
+							
+							'erase frq
+							
+							''if lv=1 then
+							'	for i=1 to s
+							'		'if use_cribs=0 then
+							'		'	state=48271*state and 2147483647
+							'		'	new_letter=abc_size*state shr 31
+							'		'else
+							'		'	if cribkey(i)=0 then
+							'		'		state=48271*state and 2147483647
+							'		'		new_letter=abc_size*state shr 31
+							'		'	else
+							'				new_letter=cribkey(i)-1
+							'		'	end if
+							'		'end if
+							'		'stl(i)=new_letter
+							'		frq(new_letter)+=map1(i,0) 'mape2(i)
+							'		for j=1 to map1(i,0)
+							'			sol(map1(i,j))=new_letter
+							'		next j
+							'	next i
+							''else
+							''	for i=1 to s
+							''		stl(i)=key2(i)
+							''		frq(key2(i))+=mape2(i)
+							''		for j=1 to map1(i,0)
+							''			sol(map1(i,j))=key2(i)
+							''		next j
+							''	next i
+							''end if
+							
+							entropy=0
+							for i=0 to abc_sizem1
+								entropy+=enttable(frq(i))
+							next i
+							
+							'mi=0
+							'mj=0
+							
+							'old_score=0
+							'temp=curr_temp
+							'temp_min=temp/iterations
+							new_ngram_score=0
+							
+							'#include "solver_ngram_init.bi"
+							
+							select case ngram_size
+								case 2
+									for i=1 to al
+										new_ngram_score+=g2(sol(i),sol(i+1))
+									next i
+								case 3
+									for i=1 to al
+										new_ngram_score+=g3(sol(i),sol(i+1),sol(i+2))
+									next i
+								case 4
+									for i=1 to al
+										new_ngram_score+=g4(sol(i),sol(i+1),sol(i+2),sol(i+3))
+									next i
+								case 5
+									for i=1 to al
+										new_ngram_score+=g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4))
+									next i
+								case 6
+									for i=1 to al
+										new_ngram_score+=g6(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5))
+									next i
+								case 7
+									for i=1 to al
+										new_ngram_score+=g7(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5),sol(i+6))
+									next i
+								case 8
+									for i=1 to al
+										new_ngram_score+=bh8(bh4(sol(i),sol(i+1),sol(i+2),sol(i+3)),bh4(sol(i+4),sol(i+5),sol(i+6),sol(i+7)))
+									next i
+								case 10
+									for i=1 to al
+										new_ngram_score+=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
+									next i
+							end select
+							
+							'mc=5
+							'mc_minus=(mc-1)/iterations
+							
+							'accept=1
+							
+							'for it=1 to iterations
+								
+								'---------------------------------------------------------------------
+								
+								'#include "solver_picksymbol.bi"
+								
+								'if accept=0 then old_score-=temp*map1(curr_symbol,0)*onesixl*old_score/new_score
+								
+								'temp-=temp_min
+								
+								'old_letter=stl(curr_symbol)
+								
+								'if lv=lvmax then mc-=mc_minus
+								'state=48271*state and 2147483647
+								'd=4*state shr 31
+								
+								'#include "solver_pickletter.bi"
+								
+								'for i=1 to map1(curr_symbol,0)
+								'	sol(map1(curr_symbol,i))=new_letter
+								'next i
+								
+								'old_entropy=entropy
+								'entropy+=enttable(frq(old_letter)-mape2(curr_symbol))-enttable(frq(old_letter))
+								'entropy+=enttable(frq(new_letter)+mape2(curr_symbol))-enttable(frq(new_letter))
+								
+								'old_ngram_score=new_ngram_score
+								
+								'#include "solver_ngram_main.bi"
+								#include "solver_fastent.bi"
+								
+								'---------------------------------------------------------------------
+								
+								'if new_score>old_score then
+									
+									'accept=1
+									'frq(old_letter)-=mape2(curr_symbol)
+									'frq(new_letter)+=mape2(curr_symbol)
+									'stl(curr_symbol)=new_letter
+									
+									'#include "solver_ngram_tail.bi"
+									
+									'old_score=new_score
+									
+									if new_score>best_score then
+										
+										solution_improved=1
+										thread(tn).sectime=timer-sectimer
+										for i=1 to l
+											thread(tn).sol(i)=alphabet(sol(i))
+										next i
+										thread(tn).ent=entropy
+										thread(tn).multiplicity=s/l
+										best_score=new_score+0.00001
+										#include "ext_hc3.bi"
+										
+										'#include "solver_accuracy_shortcircuit.bi" 'inflates 100% accuracy
+										
+										'for i=1 to s
+										'	key1(i)=stl(i)
+										'next i
+										
+									end if
+									
+									'if solution_improved=1 andalso timer-solution_timer>solvesub_solutionreleasetimer then
+									'	solution_improved=0
+									'	solution_timer=timer
+									'	#include "solver_ioc.bi"
+									'	#include "solver_advstats.bi"
+									'	thread(tn).score=best_score
+									'	#include "solver_output.bi"
+									'	#include "ext_hc3.bi"
+									'end if
+									
+								'else
+									
+									'accept=0
+									'new_ngram_score=old_ngram_score
+									'entropy=old_entropy
+									
+									'for i=1 to map1(curr_symbol,0)
+									'	sol(map1(curr_symbol,i))=old_letter
+									'next i
+									
+								'end if
+								
+								thread(tn).iterations_completed+=1
+								if thread(tn).solver_stop=1 then exit for ',for,for,for,for
+								if pausetask=1 then do:sleep 10:loop until pausetask=0
+								
+							'next it
+						
+						'next rr
+					
+					'next lr
+					
+					'for i=1 to s
+					'	key2(i)=key1(i)
+					'next i
+					
+					'curr_temp/=tempdiv/(1+(s/l)) 'curr_temp/=tempdiv
+					
+				'next lv
+				
+			next b
+			
+			if thread(tn).solver_stop=0 then
+				
+				#include "ext_hc4.bi"
+				if solution_improved=1 then
+					solution_improved=0
+					solution_timer=timer
+					#include "solver_ioc.bi"
+					#include "solver_advstats.bi"
+					thread(tn).score=best_score
+					#include "solver_output.bi"
+				end if
+				
+				if thread(tn).combine_output=1 then combine_score(thread(tn).itemnumber)=best_score
+				
+				thread(tn).avgscore+=best_score
+				thread(tn).avgioc+=thread(tn).ioc
+				thread(tn).avgpccycles+=thread(tn).pccycles
+				thread(tn).restarts_completed+=1
+				
+			end if
+			
+			thread(tn).solver_waiting=1
+		
+		end if
+		
+	loop until thread(tn).thread_stop=1
+	
+	thread(tn).thread_active=0
+	thread(tn).thread_stop=0
+	
+end sub
+
+sub azdecrypt_rules_45678g(byval tn_ptr as any ptr)
+	
+	#include "solver_variables.bi"
+	ngs=ngram_size
+	
+	dim as integer solver_output=0 'solver id
+	
+	dim as long frq(constfrq)
+	dim as short frq2(constfrq)
+	dim as short nba(1000)
+	dim as ubyte ngrams(1000)
+	dim as ushort ngmem(1000)
+	dim as short ngpos(1000)
+	dim as short key1(1000)
+	dim as short key2(1000)
+	dim as short swapm(1,1000)
+	dim as short pnk(1000)
+	dim as short pnk0(1000)
+	'dim as short pnk2(1000,2)
+	dim as byte pmap1(-1000 to 1000)
+	dim as byte cip(1000)
+	dim as byte sol1(1000)
+	dim as byte sol2(1000)
+	dim as byte sr(0),lnb(0)
+	
+	'dim as short rn(400)
+	'dim as ushort psb(40000)
+	'dim as ulong cv(255)
+	
+	dim as integer mmaxc,mmaxc1,mmaxc12,mmaxc123
+	dim as integer smaxc,smaxc1,smaxc12,smaxc123
+	dim as integer new_rule_score,old_rule_score
+	dim as integer br1,br2,br3,br4,best_prev_op
+	dim as long best_ngram_score,best_rule_score
+	dim as integer firstrun,totk,pnk0c,pnk2c
+	dim as integer r1,r2,r3,r4,l1,rc,steps,nps
+	dim as integer prev_op,curr_ngm,ngpc,di
+	dim as integer its,itsmax,temp_start,wid,rules
+	dim as double high_score,high_score2,widfact
+	
+	for i=1 to const_rulesmaxd
+		j=(const_rulesmaxd+1)-i
+		for k=1 to j*j
+			'range(totk)=i-1
+			totk+=1
+		next k
+	next i
+	dim as byte range(totk-1)
+	totk=0
+	for i=1 to const_rulesmaxd
+		j=(const_rulesmaxd+1)-i
+		for k=1 to j*j
+			range(totk)=i-1
+			totk+=1
+		next k
+	next i
+	
+	do 'wait for input
+		
+		'wi+=1
+		'if wi>1000000 then sleep twait
+		sleep twait
+		
+		if thread(tn).solver_waiting=0 then
+			
+			'wi=0
+			
+			#include "solver_settings.bi"
+			
+			ll=l*(l-1)
+			al=l-(ngs-1)
+			
+			'extra settings
+			'----------------------------------------------------
+			'dim as double ngfact=solvesub_cyclelengthweight
+			wid=solvesub_permutations_searches
+			rules=solvesub_permutations_rules
+			steps=solvesub_rules_steps
+			ngramfactor=solvesub_permutations_ngramfactor
+			itsmax=solvesub_permutations_itsmax
+			nps=solvesub_rules_nonperiodstrength
+			
+			lr=(l-steps)*100
+			mmaxc=6*steps
+			mmaxc1=mmaxc+1
+			mmaxc12=mmaxc1*2
+			mmaxc123=mmaxc12*const_rulesmaxd
+			smaxc=10*steps
+			smaxc1=smaxc+1
+			smaxc12=smaxc1*2
+			smaxc123=smaxc12*const_rulesmaxd
+			
+			'select case steps 'need more data
+			'	case 1
+			'		'p349m145, 40000, 24000
+			'		widfact=10
+			'		temp_start=6 '50.07	
+			'	case 2
+			'		'corners2, 60000, 24000
+			'		widfact=10
+			'		temp_start=18 '35.09
+			'	case 4
+			'		'corners4, 1280000, 23000
+			'		widfact=10
+			'		temp_start=6 '50.26
+			'	case else
+			'		widfact=10
+			'		temp_start=16
+			'end select
+			temp_start=6
+			widfact=10 'solvesub_matchweight
+			
+			select case ngs
+				case 4:temp_start=temp_start/2 '???
+				case 5:temp_start=temp_start
+				case 6:temp_start=temp_start*2
+				case 7:temp_start=temp_start*4
+				case 8:temp_start=temp_start*6
+			end select
+			
+			temp=temp_start
+			temp_min=temp/itsmax
+			
+			high_score=0
+			high_score2=0
+			
+			'for i=0 to 255
+			'	cv(i)=i^ngrampower
+			'next i
+			
+			'dim as double f2=1/((nk1r(0)^1)/pk1r(0)) '^2
+			
+			seed+=threads
+			if (seed*2)-1>2147483647 then seed=tn
+			state=(seed*2)-1
+			
+			memset(@pmap1(-1000),nps,2000) 'erase pmap1
+			for i=1 to rules
+				if thread(tn).bkey(1,i)=0 then
+					pmap1(thread(tn).bkey(2,i))=100
+				else
+					pmap1(-thread(tn).bkey(2,i))=100
+				end if
+			next i
+			
+			for i=1 to l
+				cip(i)=thread(tn).cip(i)
+				nba(i)=cip(i)
+			next i
+			
+			if firstrun=0 then
+				erase frq
+				for i=1 to l
+					frq(cip(i))+=1
+				next i
+				entropy=0
+				for i=0 to abc_sizem1
+					if frq(i)>0 then entropy+=abs(logbx(frq(i)/l,2)*(frq(i)/l))
+				next i
+				ngf=ngramfactor
+				ngf/=1+((s/l)*multiplicityweight)
+				ngfal=ngf/al
+				firstrun=1
+			end if
+			
+			for i=1 to l
+				key1(i)=thread(tn).bkey(0,i)
+			next i
+			for i=1 to l
+				sol1(i)=cip(key1(i))
+			next i
+			memcpy(@key2(1),@key1(1),l*2)
+			memcpy(@sol2(1),@sol1(1),l)
+			
+			pnk0c=0
+			old_rule_score=0
+			
+			for j=1 to l-steps
+				k=key1(j+steps)-key1(j)
+				pnk(j)=pmap1(k)
+				if pnk(j)=nps then
+					pnk0(pnk0c)=j 'positions in key
+					pnk0c+=1
+				end if
+				old_rule_score+=pmap1(k)
+			next j
+			
+			old_ngram_score=0
+			select case ngs
+				case 4
+					for i=1 to al
+						ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 5
+					for i=1 to al
+						ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 6
+					for i=1 to al
+						ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 7
+					for i=1 to al
+						ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 8
+					for i=1 to al
+						ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+						old_ngram_score+=ngrams(i)
+					next i
+			end select
+			
+			for its=1 to itsmax
+				
+				wid=widfact*log(best_score+3)
+				'wid=100
+				
+				di=0
+				prev_op=0
+				curr_ngm=0
+				best_score=0
+				memset(@ngmem(1),0,l*2)
+				
+				'pnk2c=0
+				'for i=1 to pnk0c-1
+				'	for j=i+1 to pnk0c
+				'		g=key2(pnk0(i))
+				'		h=key2(pnk0(j))
+				'		if pmap1(h-g)=1 then
+				'			pnk2(pnk2c,0)=pnk0(i) 'from
+				'			pnk2(pnk2c,1)=pnk0(j) 'to
+				'			pnk2(pnk2c,2)=0
+				'			pnk2c+=1
+				'		end if
+				'		if pmap1(g-h)=1 then
+				'			pnk2(pnk2c,0)=pnk0(i) 'from
+				'			pnk2(pnk2c,1)=pnk0(j) 'to
+				'			pnk2(pnk2c,2)=1
+				'			pnk2c+=1
+				'		end if
+				'	next j
+				'next i
+		
+				'dim as integer psbc=0
+				'for i=1 to l
+				'	k=i
+				'	if k>al then k=al
+				'	'memset(@psb(psbc),i,((-(ngrams(k)-255))+1)*2)
+				'	'psbc+=(-(ngrams(k)-255))+1
+				'	for j=0 to -(ngrams(k)-255)
+				'		psb(psbc)=i
+				'		psbc+=1
+				'	next j
+				'next i
+				
+				do
+					
+					'move section
+					
+					do 'move amount
+						state=48271*state and 2147483647
+						k=totk*state shr 31
+						r3=range(k)
+					loop until r3<l
+					
+					state=48271*state and 2147483647
+					r1=2*state shr 31
+					if pnk0c>0 andalso r1=0 then
+						state=48271*state and 2147483647
+						j=pnk0c*state shr 31
+						r1=pnk0(j)-r3
+						if r1<1 then r1+=l
+					else
+						state=48271*state and 2147483647
+						r1=1+l*state shr 31
+					end if
+					do
+						state=48271*state and 2147483647
+						r2=1+l*state shr 31
+					loop until r1<>r2
+					
+					new_rule_score=old_rule_score
+					k=((r1-1)*l)+r2
+					g=(r3*mmaxc12)+(k*mmaxc123)
+					h=g+mmaxc1
+					e=1
+					for i=0 to ngp_move2(g)-1
+						new_rule_score+=pmap1(key1(ngp_move2(e+g+1))-key1(ngp_move2(e+g))) '-pnk(ngp_move2(e+h))
+						new_rule_score-=pmap1(key1(ngp_move2(e+h+1))-key1(ngp_move2(e+h)))
+						e+=2
+					next i
+					
+					if new_rule_score>=old_rule_score-100 then
+						
+						if r1+r3<=l andalso r2+r3<=l then
+							memcpy(@sol1(r2),@sol2(r1),r3+1)
+							if r2>r1 then
+								prev_op=4
+								memcpy(@sol1(r1),@sol2(r1+r3+1),r2-r1)
+							else
+								prev_op=5
+								memcpy(@sol1(r2+r3+1),@sol2(r2),r1-r2)
+							end if
+						else
+							if r1+r3>l andalso r2+r3>l then
+								prev_op=1
+								h=r1
+								k=r2
+								for i=0 to r3-1
+									sol1(k)=sol2(h)
+									h+=1
+									k+=1
+									if h>l then h-=l
+									if k>l then k-=l
+								next i
+								memcpy(@sol1(k),@sol2(h),l-r3)
+							else
+								prev_op=0
+								if r1+r3>l then
+									h=r1
+									k=r2
+									for i=0 to r3
+										if h>l then h-=l
+										sol1(k)=sol2(h)
+										h+=1
+										k+=1
+									next i
+									if r2>1 then memcpy(@sol1(1),@sol2(h),r2-1)
+									if r2+r3<>l then
+										memcpy(@sol1(r2+r3+1),@sol2(h+(r2-1)),l-(r2+r3))
+									end if
+								else
+									h=r1
+									k=r2
+									for i=0 to r3
+										if k>l then k-=l
+										sol1(k)=sol2(h)
+										h+=1
+										k+=1
+									next i
+									if r1>1 then memcpy(@sol1(k),@sol2(1),r1-1)
+									if r1+r3<>l then
+										memcpy(@sol1(k+(r1-1)),@sol2(r1+r3+1),l-(r1+r3))
+									end if
+								end if
+							end if
+						end if
+						
+						new_ngram_score=old_ngram_score
+						
+						select case ngs
+							'------------------------------------------------------------------------------------
+							case 4
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*20)+(k*const_rulesmd4)
+											h=g+10
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*20)+(k*const_rulesmd4)
+											h=g+10
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+g))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*8
+											h=g+4
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*8
+											h=g+4
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 4
+										k=ngp_move_lt(r1,r2)
+										g=(r3*20)+(k*const_rulesmd4)
+										h=g+10
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+g))
+										next i
+										'memcpy(@sol1(r1),@sol2(r1),((r2+r3)-(r1-1)))
+									case 5
+										k=ngp_move_lt(r2,r1)
+										g=(r3*20)+(k*const_rulesmd4)
+										h=g+10
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+h))
+										next i
+										'memcpy(@sol1(r2),@sol2(r2),((r1+r3)-(r2-1)))
+								end select
+							'------------------------------------------------------------------------------------
+							case 5
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*26)+(k*const_rulesmd5)
+											h=g+13
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*26)+(k*const_rulesmd5)
+											h=g+13
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+g))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*10
+											h=g+5
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*10
+											h=g+5
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 4
+										k=ngp_move_lt(r1,r2)
+										g=(r3*26)+(k*const_rulesmd5)
+										h=g+13
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+g))
+										next i
+										'memcpy(@sol1(r1),@sol2(r1),((r2+r3)-(r1-1)))
+									case 5
+										k=ngp_move_lt(r2,r1)
+										g=(r3*26)+(k*const_rulesmd5)
+										h=g+13
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+h))
+										next i
+										'memcpy(@sol1(r2),@sol2(r2),((r1+r3)-(r2-1)))
+								end select
+							'------------------------------------------------------------------------------------
+							case 6
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*32)+(k*const_rulesmd6)
+											h=g+16
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*32)+(k*const_rulesmd6)
+											h=g+16
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+g))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*12
+											h=g+6
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*12
+											h=g+6
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 4 'move
+										k=ngp_move_lt(r1,r2)
+										g=(r3*32)+(k*const_rulesmd6)
+										h=g+16
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+g))
+										next i
+										'memcpy(@sol1(r1),@sol2(r1),((r2+r3)-(r1-1)))
+									case 5 'move		
+										k=ngp_move_lt(r2,r1)
+										g=(r3*32)+(k*const_rulesmd6)
+										h=g+16
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+h))
+										next i
+										'memcpy(@sol1(r2),@sol2(r2),((r1+r3)-(r2-1)))
+								end select
+							'------------------------------------------------------------------------------------
+							case 7
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*38)+(k*const_rulesmd7)
+											h=g+19
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*38)+(k*const_rulesmd7)
+											h=g+19
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+g))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*14
+											h=g+7
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*14
+											h=g+7
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 4 'move
+										k=ngp_move_lt(r1,r2)
+										g=(r3*38)+(k*const_rulesmd7)
+										h=g+19
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+g))
+										next i
+										'memcpy(@sol1(r1),@sol2(r1),((r2+r3)-(r1-1)))
+									case 5 'move
+										k=ngp_move_lt(r2,r1)
+										g=(r3*38)+(k*const_rulesmd7)
+										h=g+19
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+h))
+										next i
+										'memcpy(@sol1(r2),@sol2(r2),((r1+r3)-(r2-1)))
+								end select
+							'------------------------------------------------------------------------------------
+							case 8
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*44)+(k*const_rulesmd8)
+											h=g+22
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*44)+(k*const_rulesmd8)
+											h=g+22
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+g))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*16
+											h=g+8
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*16
+											h=g+8
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+										'memcpy(@sol1(1),@sol2(1),l)
+									case 4 'move
+										k=ngp_move_lt(r1,r2)
+										g=(r3*44)+(k*const_rulesmd8)
+										h=g+22
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+g))
+										next i
+										'memcpy(@sol1(r1),@sol2(r1),((r2+r3)-(r1-1)))
+									case 5 'move
+										k=ngp_move_lt(r2,r1)
+										g=(r3*44)+(k*const_rulesmd8)
+										h=g+22
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+h))
+										next i
+										'memcpy(@sol1(r2),@sol2(r2),((r1+r3)-(r2-1)))
+								end select
+								'for i=1 to al
+								'	new_ngram_score+=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+								'next i
+								'for i=1 to al
+								'	z1=bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+								'	if z1<>0 then
+								'		z2=bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7))
+								'		if z2<>0 then new_ngram_score+=bh8(z1,z2)
+								'	end if
+								'next i
+							'------------------------------------------------------------------------------------
+							'case 10
+							'	'for i=1 to al
+							'	'	new_ngram_score+=bh10(bh5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4)),bh5(sol1(i+5),sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9)))
+							'	'next i
+							'	for i=1 to al
+							'		z1=bh5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+							'		if z1<>0 then
+							'			z2=bh5(sol1(i+5),sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9))
+							'			if z2<>0 then new_ngram_score+=bh10(z1,z2)
+							'		end if
+							'	next i
+							'------------------------------------------------------------------------------------
+							'case 12
+							'	'for i=1 to al
+							'	'	new_ngram_score+=bh10(bh5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4)),bh5(sol1(i+5),sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9)))
+							'	'next i
+							'	for i=1 to al
+							'		z1=bh6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+							'		if z1<>0 then
+							'			z2=bh6(sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9),sol1(i+10),sol1(i+11))
+							'			if z2<>0 then new_ngram_score+=bh12(z1,z2)
+							'		end if
+							'	next i
+							'------------------------------------------------------------------------------------
+						end select
+						
+						#include "solver_fastent.bi"
+						new_score*=(0.00001+new_rule_score)/lr '/pk1r(0))*f2
+						'new_score*=((redun_score/(l-1))/pk1r(0))*f2
+						
+						if new_score>best_score then
+							
+							best_ngram_score=new_ngram_score
+							best_rule_score=new_rule_score
+							best_score=new_score
+							br1=r1
+							br2=r2
+							br3=r3
+							br4=0
+							best_prev_op=prev_op
+							
+							if new_score>high_score then 'short-cut
+								thread(tn).iterations_completed+=1
+								exit do
+							end if
+							
+						end if
+						
+						select case prev_op
+							case 0,1:memcpy(@sol1(1),@sol2(1),l)
+							case 4:memcpy(@sol1(r1),@sol2(r1),((r2+r3)-(r1-1)))
+							case 5:memcpy(@sol1(r2),@sol2(r2),((r1+r3)-(r2-1)))
+						end select
+						
+					end if
+					
+					'swap section
+					
+					do 'swap amount
+						state=48271*state and 2147483647
+						k=totk*state shr 31
+						r3=range(k)
+					loop until r3<l
+					
+					state=48271*state and 2147483647
+					r1=2*state shr 31
+					if pnk0c>0 andalso r1=0 then
+						state=48271*state and 2147483647
+						r1=pnk0c*state shr 31
+						r1=pnk0(r1)-r3
+						if r1<1 then r1+=l
+					else
+						state=48271*state and 2147483647
+						r1=1+l*state shr 31
+					end if
+					do
+						state=48271*state and 2147483647
+						r2=1+l*state shr 31
+					loop until r1<>r2
+						
+					new_rule_score=old_rule_score
+					k=((r1-1)*l)+r2
+					g=(r3*smaxc12)+(k*smaxc123)
+					h=g+smaxc1
+					e=1
+					for i=0 to ngp_swap2(g)-1
+						new_rule_score+=pmap1(key1(ngp_swap2(e+g+1))-key1(ngp_swap2(e+g))) '-pnk(ngp_swap2(e+h))
+						new_rule_score-=pmap1(key1(ngp_swap2(e+h+1))-key1(ngp_swap2(e+h)))
+						e+=2
+					next i
+					
+					if new_rule_score>=old_rule_score-100 then
+						
+						if r1+r3<=l andalso r2+r3<=l then
+							prev_op=2
+							h=r1
+							k=r2
+							for i=0 to r3
+								swap sol1(h),sol1(k)
+								swapm(0,i)=h
+								swapm(1,i)=k
+								h+=1
+								k+=1
+							next i
+						else
+							prev_op=3
+							h=r1
+							k=r2
+							for i=0 to r3
+								if h>l then h-=l
+								if k>l then k-=l
+								swap sol1(h),sol1(k)
+								swapm(0,i)=h
+								swapm(1,i)=k
+								ngpos(1+i)=h
+								ngpos(r3+2+i)=k
+								h+=1
+								k+=1
+							next i
+							ngpc=(r3+1)*2
+						end if
+						
+						new_ngram_score=old_ngram_score
+						
+						select case ngs
+							'------------------------------------------------------------------------------------
+							case 4
+								select case prev_op
+									case 2 'swap
+										j=r1-3
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))-ngrams(i)
+										next i
+										j=r2-3
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-3
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 5
+								select case prev_op
+									case 2 'swap
+										j=r1-4
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))-ngrams(i)
+										next i
+										j=r2-4
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-4
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g5(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 6
+								select case prev_op
+									case 2 'swap
+										j=r1-5
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))-ngrams(i)
+										next i
+										j=r2-5
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-5
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g6(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 7
+								select case prev_op
+									case 2 'swap
+										j=r1-6
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))-ngrams(i)
+										next i
+										j=r2-6
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-6
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g7(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5),sol1(h+6))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 8
+								select case prev_op
+									case 2 'swap
+										j=r1-7
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))-ngrams(i)
+										next i
+										j=r2-7
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-7
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=bh8(bh4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3)),bh4(sol1(h+4),sol1(h+5),sol1(h+6),sol1(h+7)))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+						end select
+						
+						#include "solver_fastent.bi"
+						new_score*=(0.00001+new_rule_score)/lr '/pk1r(0))*f2
+						'new_score*=((redun_score/(l-1))/pk1r(0))*f2
+						
+						if new_score>best_score then
+							
+							best_ngram_score=new_ngram_score
+							best_rule_score=new_rule_score
+							best_score=new_score
+							br1=r1
+							br2=r2
+							br3=r3
+							br4=1
+							best_prev_op=prev_op
+							
+							if new_score>high_score then 'short-cut
+								thread(tn).iterations_completed+=2
+								exit do
+							end if
+							
+						end if
+						
+						for i=0 to r3
+							'j=r3-i
+							swap sol1(swapm(0,r3-i)),sol1(swapm(1,r3-i))
+						next i
+						
+					end if
+					
+					di+=2
+					thread(tn).iterations_completed+=2
+					
+					if thread(tn).solver_stop=1 then exit do
+					if pausetask=1 then do:sleep 10:loop until pausetask=0
+					
+				loop until di>=wid
+				
+				if thread(tn).solver_stop=1 then exit for
+				
+				if best_score>high_score then
+					
+					high_score=best_score
+					old_ngram_score=best_ngram_score
+					old_rule_score=best_rule_score
+					
+					select case best_prev_op
+						case 0 'move
+							if br1+br3>l then
+								h=br1
+								k=br2
+								for i=0 to br3
+									if h>l then h-=l
+									key1(k)=key2(h)
+									'sol1(k)=sol2(h)
+									h+=1
+									k+=1
+								next i
+								if br2>1 then
+									memcpy(@key1(1),@key2(h),(br2-1)*2)
+									'memcpy(@sol1(1),@sol2(h),br2-1)
+									h+=br2-1
+								end if
+								if br2+br3<>l then
+									memcpy(@key1(br2+br3+1),@key2(h),(l-(br2+br3))*2)
+									'memcpy(@sol1(br2+br3+1),@sol2(h),l-(br2+br3))
+								end if
+							else
+								h=br1
+								k=br2
+								for i=0 to br3
+									if k>l then k-=l
+									key1(k)=key2(h)
+									'sol1(k)=sol2(h)
+									h+=1
+									k+=1
+								next i
+								if br1>1 then
+									memcpy(@key1(k),@key2(1),(br1-1)*2)
+									'memcpy(@sol1(k),@sol2(1),br1-1)
+									k+=br1-1
+								end if
+								if br1+br3<>l then
+									memcpy(@key1(k),@key2(br1+br3+1),(l-(br1+br3))*2)
+									'memcpy(@sol1(k),@sol2(br1+br3+1),l-(br1+br3))
+								end if
+							end if
+						case 1 'move
+							h=br1
+							k=br2
+							for i=0 to br3-1
+								key1(k)=key2(h)
+								'sol1(k)=sol2(h)
+								h+=1
+								k+=1
+								if h>l then h-=l
+								if k>l then k-=l
+							next i
+							memcpy(@key1(k),@key2(h),(l-br3)*2)
+							'memcpy(@sol1(k),@sol2(h),l-br3)
+						case 2 'swap
+							h=br1
+							k=br2
+							for i=0 to br3
+								swap key1(h),key1(k)
+								'swap sol1(h),sol1(k)
+								h+=1
+								k+=1
+							next i
+						case 3 'swap
+							h=br1
+							k=br2
+							for i=0 to br3
+								if h>l then h-=l
+								if k>l then k-=l
+								swap key1(h),key1(k)
+								'swap sol1(h),sol1(k)
+								'ngpos(1+i)=h
+								'ngpos(br3+2+i)=k
+								h+=1
+								k+=1
+							next i
+							'ngpc=(br3+1)*2
+						case 4 'move
+							memcpy(@key1(br2),@key2(br1),(br3+1)*2)
+							'memcpy(@sol1(br2),@sol2(br1),br3+1)
+							memcpy(@key1(br1),@key2(br1+br3+1),(br2-br1)*2)
+							'memcpy(@sol1(br1),@sol2(br1+br3+1),br2-br1)
+						case 5 'move
+							memcpy(@key1(br2),@key2(br1),(br3+1)*2)
+							'memcpy(@sol1(br2),@sol2(br1),br3+1)
+							memcpy(@key1(br2+br3+1),@key2(br2),(br1-br2)*2)
+							'memcpy(@sol1(br2+br3+1),@sol2(br2),br1-br2)
+					end select
+					
+					memcpy(@key2(1),@key1(1),l*2)
+					memcpy(@sol2(1),@sol1(1),l)
+					
+					pnk0c=0
+					old_rule_score=best_rule_score
+					for j=1 to l-steps
+						k=key1(j+steps)-key1(j)
+						pnk(j)=pmap1(k)
+						if pnk(j)=nps then
+							pnk0(pnk0c)=j 'positions in key
+							pnk0c+=1
+						end if
+						'old_rule_score+=pmap1(k)
+					next j
+					
+					select case best_prev_op
+						case 0 ',1,4,5 'move
+							select case ngs
+								case 4
+									for i=1 to al
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+								case 5
+									for i=1 to al
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+								case 6
+									for i=1 to al
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+								case 7
+									for i=1 to al
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+								case 8
+									for i=1 to al
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+							end select
+						case 1 'offset
+							select case ngs
+								case 4
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+										next i
+									end if
+								case 5
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+										next i
+									end if
+								case 6
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+										next i
+									end if
+								case 7
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+										next i
+									end if
+								case 8
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+										next i
+									end if
+							end select
+						case 2 'swap
+							select case ngs
+								case 4
+									j=br1-3
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+									j=br2-3
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+										end if
+									next i
+								case 5
+									j=br1-4
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+									j=br2-4
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+										end if
+									next i
+								case 6
+									j=br1-5
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+									j=br2-5
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+										end if
+									next i
+								case 7
+									j=br1-6
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+									j=br2-6
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+										end if
+									next i
+								case 8
+									j=br1-7
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+									j=br2-7
+									if j<1 then j=1
+									k=br2+r3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+										end if
+									next i
+							end select
+						case 3 'swap
+							curr_ngm+=1
+							select case ngs
+								case 4
+									for i=1 to ngpc
+										j=ngpos(i)-3
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3))
+											end if
+										next h
+									next i
+								case 5
+									for i=1 to ngpc
+										j=ngpos(i)-4
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g5(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4))
+											end if
+										next h
+									next i
+								case 6
+									for i=1 to ngpc
+										j=ngpos(i)-5
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g6(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5))
+											end if
+										next h
+									next i
+								case 7
+									for i=1 to ngpc
+										j=ngpos(i)-6
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g7(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5),sol1(h+6))
+											end if
+										next h
+									next i
+								case 8
+									for i=1 to ngpc
+										j=ngpos(i)-7
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=bh8(bh4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3)),bh4(sol1(h+4),sol1(h+5),sol1(h+6),sol1(h+7)))
+											end if
+										next h
+									next i
+							end select
+						case 4 'move (add more optimization)
+							select case ngs
+								case 4
+									j=br1-3
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+								case 5
+									j=br1-4
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+								case 6
+									j=br1-5
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+								case 7
+									j=br1-6
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+								case 8
+									j=br1-7
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+							end select
+						case 5 'move (add more optimization)
+							select case ngs
+								case 4
+									j=br2-3
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+								case 5
+									j=br2-4
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+								case 6
+									j=br2-5
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+								case 7
+									j=br2-6
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+								case 8
+									j=br2-7
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+							end select
+					end select
+					
+					if high_score>high_score2 then
+						
+						high_score2=high_score
+						solution_improved=1
+						thread(tn).sectime=timer-sectimer
+						for i=1 to l
+							thread(tn).sol(i)=alphabet(sol1(i))
+							thread(tn).bkey(0,i)=key1(i)
+						next i
+						
+					end if
+					
+				else
+					
+					if high_score>0 then high_score-=temp
+					
+				end if
+				
+				'temp-=temp_min*(((its/itsmax)/4)+(1-((1/4)/2)))
+				temp-=temp_min*(((its/itsmax)/4)+0.75)
+				
+			next its
+			
+			if thread(tn).solver_stop=0 then
+				'#include "ext_hc4.bi"
+				if solution_improved=1 then
+					solution_improved=0
+					solution_timer=timer
+					#include "solver_ioc.bi"
+					#include "solver_advstats.bi"
+					thread(tn).ent=entropy
+					thread(tn).multiplicity=s/l
+					thread(tn).score=high_score2
+					#include "solver_output.bi"
+				end if
+				'if thread(tn).combine_output=1 then combine_score(thread(tn).itemnumber)=best_score
+				thread(tn).avgscore+=high_score2
+				thread(tn).avgioc+=thread(tn).ioc
+				thread(tn).avgpccycles+=thread(tn).pccycles
+				thread(tn).restarts_completed+=1
+			end if
+			
+			thread(tn).solver_waiting=1
+			
+		end if
+		
+	loop until thread(tn).thread_stop=1
+	
+	thread(tn).thread_active=0
+	thread(tn).thread_stop=0
+	
+end sub
+
+sub azdecrypt_rules_entropy_45678g(byval tn_ptr as any ptr)
+	
+	#include "solver_variables.bi"
+	ngs=ngram_size
+	
+	dim as integer solver_output=0 'solver id
+	
+	dim as long frq(constfrq)
+	dim as short frq2(constfrq)
+	dim as short nba(1000)
+	dim as ubyte ngrams(1000)
+	dim as ushort ngmem(1000)
+	dim as short ngpos(1000)
+	dim as short key1(1000)
+	dim as short key2(1000)
+	dim as short swapm(1,1000)
+	dim as short pnk(1000)
+	dim as short pnk0(1000)
+	'dim as short pnk2(1000,2)
+	dim as short pmap1(-1000 to 1000)
+	dim as byte cip(1000)
+	dim as byte sol1(1000)
+	dim as byte sol2(1000)
+	dim as byte sr(0),lnb(0)
+	dim as short pmap1mem1(100)
+	dim as short pmap1mem2(100)
+	'dim as double enttable(1000)
+	
+	'dim as short rn(400)
+	'dim as ushort psb(40000)
+	'dim as ulong cv(255)
+	
+	dim as integer mmaxc,mmaxc1,mmaxc12,mmaxc123
+	dim as integer smaxc,smaxc1,smaxc12,smaxc123
+	dim as integer br1,br2,br3,br4,best_prev_op
+	dim as long best_ngram_score
+	dim as integer firstrun,totk,pnk0c,pnk2c
+	dim as integer r1,r2,r3,r4,l1,rc,steps,nps
+	dim as integer prev_op,curr_ngm,ngpc,di,ll2
+	dim as integer its,itsmax,temp_start,wid,rules
+	dim as double high_score,high_score2,widfact
+	dim as double entropy3,entropy3max,entropy3max2
+	dim as double new_rule_score,old_rule_score,best_rule_score
+	dim as double itsitsmax100
+	
+	dim as integer unit=2
+	dim as integer unitrail=1 '0/1 for unit 2
+	
+	for i=1 to const_rulesmaxd
+		'if i mod unit=0 then
+			j=(const_rulesmaxd+1)-i
+			for k=1 to j*j
+				totk+=1
+			next k
+		'end if
+	next i
+	dim as byte range(totk-1)
+	totk=0
+	for i=1 to const_rulesmaxd
+		'if i mod unit=0 then
+			j=(const_rulesmaxd+1)-i
+			for k=1 to j*j
+				range(totk)=i-1
+				totk+=1
+			next k
+		'end if
+	next i
+	
+	do 'wait for input
+		
+		'wi+=1
+		'if wi>1000000 then sleep twait
+		sleep twait
+		
+		if thread(tn).solver_waiting=0 then
+			
+			'wi=0
+			
+			#include "solver_settings.bi"
+			
+			ll=l*(l-1)
+			al=l-(ngs-1)
+			
+			'extra settings
+			'----------------------------------------------------
+			'dim as double ngfact=solvesub_cyclelengthweight
+			wid=solvesub_permutations_searches
+			rules=solvesub_permutations_rules
+			steps=solvesub_rules_steps
+			ngramfactor=solvesub_permutations_ngramfactor
+			itsmax=solvesub_permutations_itsmax
+			nps=solvesub_rules_nonperiodstrength
+			
+			ll2=(l-steps)*(l-(steps+1))
+			
+			lr=(l-steps)*100
+			mmaxc=6*steps
+			mmaxc1=mmaxc+1
+			mmaxc12=mmaxc1*2
+			mmaxc123=mmaxc12*const_rulesmaxd
+			smaxc=10*steps
+			smaxc1=smaxc+1
+			smaxc12=smaxc1*2
+			smaxc123=smaxc12*const_rulesmaxd
+			
+			'select case steps 'need more data
+			'	case 1
+			'		'p349m145, 40000, 24000
+			'		widfact=10
+			'		temp_start=6 '50.07	
+			'	case 2
+			'		'corners2, 60000, 24000
+			'		widfact=10
+			'		temp_start=18 '35.09
+			'	case 4
+			'		'corners4, 1280000, 23000
+			'		widfact=10
+			'		temp_start=6 '50.26
+			'	case else
+			'		widfact=10
+			'		temp_start=16
+			'end select
+			temp_start=2 'solvesub_seqweight '2
+			widfact=10 'solvesub_matchweight '10
+			
+			select case ngs
+				case 4:temp_start=temp_start/2 '???
+				case 5:temp_start=temp_start
+				case 6:temp_start=temp_start*2
+				case 7:temp_start=temp_start*4
+				case 8:temp_start=temp_start*6
+			end select
+			
+			temp=temp_start
+			temp_min=temp/itsmax
+			
+			high_score=0
+			high_score2=0
+			
+			'for i=0 to 255
+			'	cv(i)=i^ngrampower
+			'next i
+			
+			'dim as double f2=1/((nk1r(0)^1)/pk1r(0)) '^2
+			
+			seed+=threads
+			if (seed*2)-1>2147483647 then seed=tn
+			state=(seed*2)-1
+			
+			for i=1 to l
+				cip(i)=thread(tn).cip(i)
+				nba(i)=cip(i)
+			next i
+			
+			if firstrun=0 then
+				erase frq
+				for i=1 to l
+					frq(cip(i))+=1
+				next i
+				entropy=0
+				for i=0 to abc_sizem1
+					if frq(i)>0 then entropy+=abs(logbx(frq(i)/l,2)*(frq(i)/l))
+				next i
+				ngf=ngramfactor
+				ngf/=1+((s/l)*multiplicityweight)
+				ngfal=ngf/al
+				firstrun=1
+				'for i=1 to l-steps
+				'	enttable(i)=abs(logbx(i/(l-steps),2)*(i/(l-steps)))
+				'next i
+				entropy3max=(l-steps)*enttab(1)
+				'entropy3max2=(l-2)*enttab(1)
+			end if
+			
+			for i=1 to l
+				key1(i)=thread(tn).bkey(0,i)
+			next i
+			for i=1 to l
+				sol1(i)=cip(key1(i))
+			next i
+			memcpy(@key2(1),@key1(1),l*2)
+			memcpy(@sol2(1),@sol1(1),l)
+			
+			old_rule_score=0
+			memset(@pmap1(-l),0,l*4)
+			for i=1 to l-steps
+				j=key1(i+steps)-key1(i)
+				pmap1(j)+=1
+				pnk0(i)=j
+			next i
+			pnk0c=0
+			for i=1 to l-steps
+				if pmap1(pnk0(i))<2 then 'andalso i mod unitrail=0 then
+					pnk0(pnk0c)=i
+					pnk0c+=1
+				end if
+			next i
+			for i=-l to l
+				old_rule_score+=enttab(pmap1(i))
+			next i
+			
+			old_ngram_score=0
+			select case ngs
+				case 4
+					for i=1 to al
+						ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 5
+					for i=1 to al
+						ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 6
+					for i=1 to al
+						ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 7
+					for i=1 to al
+						ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+						old_ngram_score+=ngrams(i)
+					next i
+				case 8
+					for i=1 to al
+						ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+						old_ngram_score+=ngrams(i)
+					next i
+			end select
+			
+			for its=1 to itsmax
+				
+				wid=widfact*log(best_score+3)
+				'wid=100
+				
+				di=0
+				prev_op=0
+				curr_ngm=0
+				best_score=0
+				memset(@ngmem(1),0,l*2)
+				
+				do
+					
+					''move section
+					
+					do 'move amount
+						state=48271*state and 2147483647
+						k=totk*state shr 31
+						r3=range(k)
+					loop until r3<l 'andalso (r3+1) mod unit=0
+					
+					itsitsmax100=(its/itsmax)*100
+					state=48271*state and 2147483647
+					r1=150*state shr 31
+					if pnk0c>0 andalso r1>itsitsmax100 then
+						state=48271*state and 2147483647
+						j=pnk0c*state shr 31
+						r1=pnk0(j)-r3
+						if r1<1 then r1+=l
+					else
+						'do
+							state=48271*state and 2147483647
+							r1=1+l*state shr 31
+						'loop until r1 mod unit=unitrail
+					end if
+					do
+						'do
+							state=48271*state and 2147483647
+							r2=1+l*state shr 31
+						'loop until r2 mod unit=unitrail
+					loop until r1<>r2
+					
+					new_rule_score=old_rule_score
+					k=((r1-1)*l)+r2
+					f=(r3*mmaxc12)+(k*mmaxc123)
+					h=f+mmaxc1
+					e=1
+					for i=0 to ngp_move2(f)-1
+						j=key1(ngp_move2(e+f+1))-key1(ngp_move2(e+f))
+						pmap1mem1(i)=j
+						new_rule_score+=enttab(pmap1(j)+1)-enttab(pmap1(j))
+						pmap1(j)+=1
+						e+=2
+					next i
+					e=1
+					for i=0 to ngp_move2(f)-1
+						j=key1(ngp_move2(e+h+1))-key1(ngp_move2(e+h))
+						pmap1mem2(i)=j
+						new_rule_score+=enttab(pmap1(j)-1)-enttab(pmap1(j))
+						pmap1(j)-=1
+						e+=2
+					next i
+					'for i=0 to ngp_move2(g)-1
+					'	pmap1(pmap1mem1(i))-=1
+					'	pmap1(pmap1mem2(i))+=1
+					'next i
+					
+					'if new_rule_score>=old_rule_score*solvesub_matchweight then
+						
+						if r1+r3<=l andalso r2+r3<=l then
+							memcpy(@sol1(r2),@sol2(r1),r3+1)
+							'memcpy(@key1(r2),@key2(r1),(r3+1)*2)
+							if r2>r1 then
+								prev_op=4
+								memcpy(@sol1(r1),@sol2(r1+r3+1),r2-r1)
+								'memcpy(@key1(r1),@key2(r1+r3+1),(r2-r1)*2)
+							else
+								prev_op=5
+								memcpy(@sol1(r2+r3+1),@sol2(r2),r1-r2)
+								'memcpy(@key1(r2+r3+1),@key2(r2),(r1-r2)*2)
+							end if
+						else
+							if r1+r3>l andalso r2+r3>l then
+								prev_op=1
+								h=r1
+								k=r2
+								for i=0 to r3-1
+									sol1(k)=sol2(h)
+									'key1(k)=key2(h)
+									h+=1
+									k+=1
+									if h>l then h-=l
+									if k>l then k-=l
+								next i
+								memcpy(@sol1(k),@sol2(h),l-r3)
+								'memcpy(@key1(k),@key2(h),(l-r3)*2)
+							else
+								prev_op=0
+								if r1+r3>l then
+									h=r1
+									k=r2
+									for i=0 to r3
+										if h>l then h-=l
+										sol1(k)=sol2(h)
+										'key1(k)=key2(h)
+										h+=1
+										k+=1
+									next i
+									if r2>1 then 
+										memcpy(@sol1(1),@sol2(h),r2-1)
+										'memcpy(@key1(1),@key2(h),(r2-1)*2)
+									end if
+									if r2+r3<>l then
+										memcpy(@sol1(r2+r3+1),@sol2(h+(r2-1)),l-(r2+r3))
+										'memcpy(@key1(r2+r3+1),@key2(h+(r2-1)),(l-(r2+r3))*2)
+									end if
+								else
+									h=r1
+									k=r2
+									for i=0 to r3
+										if k>l then k-=l
+										sol1(k)=sol2(h)
+										'key1(k)=key2(h)
+										h+=1
+										k+=1
+									next i
+									if r1>1 then
+										memcpy(@sol1(k),@sol2(1),r1-1)
+										'memcpy(@key1(k),@key2(1),(r1-1)*2)
+									end if
+									if r1+r3<>l then
+										memcpy(@sol1(k+(r1-1)),@sol2(r1+r3+1),l-(r1+r3))
+										'memcpy(@key1(k+(r1-1)),@key2(r1+r3+1),(l-(r1+r3))*2)
+									end if
+								end if
+							end if
+						end if
+						
+						new_ngram_score=old_ngram_score
+						
+						select case ngs
+							'------------------------------------------------------------------------------------
+							case 4
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*20)+(k*const_rulesmd4)
+											h=g+10
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*20)+(k*const_rulesmd4)
+											h=g+10
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+g))
+											next i
+										end if
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*8
+											h=g+4
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*8
+											h=g+4
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+									case 4
+										k=ngp_move_lt(r1,r2)
+										g=(r3*20)+(k*const_rulesmd4)
+										h=g+10
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+g))
+										next i
+									case 5
+										k=ngp_move_lt(r2,r1)
+										g=(r3*20)+(k*const_rulesmd4)
+										h=g+10
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3))-ngrams(ngp_move(i+h))
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 5
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*26)+(k*const_rulesmd5)
+											h=g+13
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*26)+(k*const_rulesmd5)
+											h=g+13
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+g))
+											next i
+										end if
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*10
+											h=g+5
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*10
+											h=g+5
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+									case 4
+										k=ngp_move_lt(r1,r2)
+										g=(r3*26)+(k*const_rulesmd5)
+										h=g+13
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+g))
+										next i
+									case 5
+										k=ngp_move_lt(r2,r1)
+										g=(r3*26)+(k*const_rulesmd5)
+										h=g+13
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g5(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4))-ngrams(ngp_move(i+h))
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 6
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*32)+(k*const_rulesmd6)
+											h=g+16
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*32)+(k*const_rulesmd6)
+											h=g+16
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+g))
+											next i
+										end if
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*12
+											h=g+6
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*12
+											h=g+6
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+									case 4 'move
+										k=ngp_move_lt(r1,r2)
+										g=(r3*32)+(k*const_rulesmd6)
+										h=g+16
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+g))
+										next i
+									case 5 'move		
+										k=ngp_move_lt(r2,r1)
+										g=(r3*32)+(k*const_rulesmd6)
+										h=g+16
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g6(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5))-ngrams(ngp_move(i+h))
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 7
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*38)+(k*const_rulesmd7)
+											h=g+19
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*38)+(k*const_rulesmd7)
+											h=g+19
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+g))
+											next i
+										end if
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*14
+											h=g+7
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*14
+											h=g+7
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+									case 4 'move
+										k=ngp_move_lt(r1,r2)
+										g=(r3*38)+(k*const_rulesmd7)
+										h=g+19
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+g))
+										next i
+									case 5 'move
+										k=ngp_move_lt(r2,r1)
+										g=(r3*38)+(k*const_rulesmd7)
+										h=g+19
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=g7(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3),sol1(j+4),sol1(j+5),sol1(j+6))-ngrams(ngp_move(i+h))
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 8
+								select case prev_op
+									case 0 'move
+										k=ngp_move_lt(r1,r2)
+										if k=0 then
+											k=ngp_move_lt(r2,r1)
+											g=(r3*44)+(k*const_rulesmd8)
+											h=g+22
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+g)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+h))
+											next i
+										else
+											g=(r3*44)+(k*const_rulesmd8)
+											h=g+22
+											for i=1 to ngp_move(g)
+												j=ngp_move(i+h)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+g))
+											next i
+										end if
+									case 1 'offset
+										k=r2-r1
+										if k>0 then
+											g=k*16
+											h=g+8
+											for i=1 to ngp_offset_pos(g)
+												j=ngp_offset_pos(i+g)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_offset_pos(i+h))
+											next i
+										else
+											k=-k
+											g=k*16
+											h=g+8
+											for i=1 to ngp_offset_neg(g)
+												j=ngp_offset_neg(i+g)
+												new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_offset_neg(i+h))
+											next i
+										end if
+									case 4 'move
+										k=ngp_move_lt(r1,r2)
+										g=(r3*44)+(k*const_rulesmd8)
+										h=g+22
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+h)
+											new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+g))
+										next i
+									case 5 'move
+										k=ngp_move_lt(r2,r1)
+										g=(r3*44)+(k*const_rulesmd8)
+										h=g+22
+										for i=1 to ngp_move(g)
+											j=ngp_move(i+g)
+											new_ngram_score+=bh8(bh4(sol1(j),sol1(j+1),sol1(j+2),sol1(j+3)),bh4(sol1(j+4),sol1(j+5),sol1(j+6),sol1(j+7)))-ngrams(ngp_move(i+h))
+										next i
+								end select
+								'for i=1 to al
+								'	new_ngram_score+=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+								'next i
+								'for i=1 to al
+								'	z1=bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+								'	if z1<>0 then
+								'		z2=bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7))
+								'		if z2<>0 then new_ngram_score+=bh8(z1,z2)
+								'	end if
+								'next i
+							'------------------------------------------------------------------------------------
+							'case 10
+							'	'for i=1 to al
+							'	'	new_ngram_score+=bh10(bh5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4)),bh5(sol1(i+5),sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9)))
+							'	'next i
+							'	for i=1 to al
+							'		z1=bh5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+							'		if z1<>0 then
+							'			z2=bh5(sol1(i+5),sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9))
+							'			if z2<>0 then new_ngram_score+=bh10(z1,z2)
+							'		end if
+							'	next i
+							'------------------------------------------------------------------------------------
+							'case 12
+							'	'for i=1 to al
+							'	'	new_ngram_score+=bh10(bh5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4)),bh5(sol1(i+5),sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9)))
+							'	'next i
+							'	for i=1 to al
+							'		z1=bh6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+							'		if z1<>0 then
+							'			z2=bh6(sol1(i+6),sol1(i+7),sol1(i+8),sol1(i+9),sol1(i+10),sol1(i+11))
+							'			if z2<>0 then new_ngram_score+=bh12(z1,z2)
+							'		end if
+							'	next i
+							'------------------------------------------------------------------------------------
+						end select
+						
+						#include "solver_fastent.bi"
+						
+						'new_score*=new_rule_score/ll2
+						
+						new_score/=entropy3max
+						new_score*=(entropy3max-new_rule_score)
+						new_score*=1.369
+						
+						'new_score/=(entropy3max+entropy3max2)
+						'new_score*=((entropy3max+entropy3max2)-new_rule_score)
+						
+						'new_score/=1+(new_rule_score/solvesub_matchweight)
+						'new_score*=1.369
+						
+						'new_score/=1+(((0.00001+new_rule_score)/l)*solvesub_matchweight)
+						'new_score*=(0.00001+new_rule_score)/lr '/pk1r(0))*f2
+						'new_score*=((redun_score/(l-1))/pk1r(0))*f2
+						
+						if new_score>best_score then
+							
+							best_ngram_score=new_ngram_score
+							best_rule_score=new_rule_score
+							best_score=new_score
+							br1=r1
+							br2=r2
+							br3=r3
+							br4=0
+							best_prev_op=prev_op
+							
+							if new_score>high_score then 'short-cut
+								thread(tn).iterations_completed+=1
+								exit do
+							end if
+							
+						end if
+						
+						for i=0 to ngp_move2(f)-1
+							pmap1(pmap1mem1(i))-=1
+							pmap1(pmap1mem2(i))+=1
+						next i
+						
+						select case prev_op
+							case 0,1
+								memcpy(@sol1(1),@sol2(1),l)
+								'memcpy(@key1(1),@key2(1),l*2)
+							case 4
+								memcpy(@sol1(r1),@sol2(r1),((r2+r3)-(r1-1)))
+								'memcpy(@key1(r1),@key2(r1),((r2+r3)-(r1-1))*2)
+							case 5
+								memcpy(@sol1(r2),@sol2(r2),((r1+r3)-(r2-1)))
+								'memcpy(@key1(r2),@key2(r2),((r1+r3)-(r2-1))*2)
+						end select
+						
+					'end if
+					
+					'swap section
+					
+					do 'swap amount
+						state=48271*state and 2147483647
+						k=totk*state shr 31
+						r3=range(k)
+					loop until r3<l 'andalso (r3+1) mod unit=0
+					
+					state=48271*state and 2147483647
+					r1=150*state shr 31
+					if pnk0c>0 andalso r1>itsitsmax100 then
+						state=48271*state and 2147483647
+						j=pnk0c*state shr 31
+						r1=pnk0(j)-r3
+						if r1<1 then r1+=l
+					else
+						'do
+							state=48271*state and 2147483647
+							r1=1+l*state shr 31
+						'loop until r1 mod unit=unitrail
+					end if
+					do
+						'do
+							state=48271*state and 2147483647
+							r2=1+l*state shr 31
+						'loop until r2 mod unit=unitrail
+					loop until r1<>r2
+					
+					new_rule_score=old_rule_score
+					k=((r1-1)*l)+r2
+					f=(r3*smaxc12)+(k*smaxc123)
+					h=f+smaxc1
+					e=1
+					for i=0 to ngp_swap2(f)-1
+						j=key1(ngp_swap2(e+f+1))-key1(ngp_swap2(e+f))
+						pmap1mem1(i)=j
+						new_rule_score+=enttab(pmap1(j)+1)-enttab(pmap1(j))
+						pmap1(j)+=1
+						e+=2
+					next i
+					e=1
+					for i=0 to ngp_swap2(f)-1
+						j=key1(ngp_swap2(e+h+1))-key1(ngp_swap2(e+h))
+						pmap1mem2(i)=j
+						new_rule_score+=enttab(pmap1(j)-1)-enttab(pmap1(j))
+						pmap1(j)-=1
+						e+=2
+					next i
+					'for i=0 to ngp_swap2(g)-1
+					'	pmap1(pmap1mem1(i))-=1
+					'	pmap1(pmap1mem2(i))+=1
+					'next i
+					
+					'if new_rule_score>=old_rule_score*solvesub_matchweight then
+						
+						if r1+r3<=l andalso r2+r3<=l then
+							prev_op=2
+							h=r1
+							k=r2
+							for i=0 to r3
+								swap sol1(h),sol1(k)
+								'swap key1(h),key1(k)
+								swapm(0,i)=h
+								swapm(1,i)=k
+								h+=1
+								k+=1
+							next i
+						else
+							prev_op=3
+							h=r1
+							k=r2
+							for i=0 to r3
+								if h>l then h-=l
+								if k>l then k-=l
+								swap sol1(h),sol1(k)
+								'swap key1(h),key1(k)
+								swapm(0,i)=h
+								swapm(1,i)=k
+								ngpos(1+i)=h
+								ngpos(r3+2+i)=k
+								h+=1
+								k+=1
+							next i
+							ngpc=(r3+1)*2
+						end if
+						
+						new_ngram_score=old_ngram_score
+						
+						select case ngs
+							'------------------------------------------------------------------------------------
+							case 4
+								select case prev_op
+									case 2 'swap
+										j=r1-3
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))-ngrams(i)
+										next i
+										j=r2-3
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-3
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 5
+								select case prev_op
+									case 2 'swap
+										j=r1-4
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))-ngrams(i)
+										next i
+										j=r2-4
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-4
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g5(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 6
+								select case prev_op
+									case 2 'swap
+										j=r1-5
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))-ngrams(i)
+										next i
+										j=r2-5
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-5
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g6(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 7
+								select case prev_op
+									case 2 'swap
+										j=r1-6
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))-ngrams(i)
+										next i
+										j=r2-6
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-6
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=g7(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5),sol1(h+6))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+							'------------------------------------------------------------------------------------
+							case 8
+								select case prev_op
+									case 2 'swap
+										j=r1-7
+										if j<1 then j=1
+										k=r1+r3
+										if k>al then k=al
+										curr_ngm+=1
+										for i=j to k
+											ngmem(i)=curr_ngm
+											new_ngram_score+=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))-ngrams(i)
+										next i
+										j=r2-7
+										if j<1 then j=1
+										k=r2+r3
+										if k>al then k=al
+										for i=j to k
+											if ngmem(i)<>curr_ngm then
+												new_ngram_score+=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))-ngrams(i)
+											end if
+										next i
+									case 3 'swap
+										curr_ngm+=1
+										for i=1 to ngpc
+											j=ngpos(i)-7
+											if j<1 then j=1
+											k=ngpos(i)
+											if k>al then k=al
+											for h=j to k
+												if ngmem(h)<>curr_ngm then
+													ngmem(h)=curr_ngm
+													new_ngram_score+=bh8(bh4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3)),bh4(sol1(h+4),sol1(h+5),sol1(h+6),sol1(h+7)))-ngrams(h)
+												end if
+											next h
+										next i
+								end select
+						end select
+						
+						#include "solver_fastent.bi"
+						
+						'new_score*=new_rule_score/ll2
+						
+						new_score/=entropy3max
+						new_score*=(entropy3max-new_rule_score)
+						new_score*=1.369
+						
+						'new_score/=(entropy3max+entropy3max2)
+						'new_score*=((entropy3max+entropy3max2)-new_rule_score)
+						
+						'new_score/=1+(new_rule_score/solvesub_matchweight)
+						'new_score*=1.369
+						
+						'new_score/=1+(((0.00001+new_rule_score)/l)*solvesub_matchweight)
+						'new_score*=(0.00001+new_rule_score)/lr '/pk1r(0))*f2
+						'new_score*=((redun_score/(l-1))/pk1r(0))*f2
+						
+						if new_score>best_score then
+							
+							best_ngram_score=new_ngram_score
+							best_rule_score=new_rule_score
+							best_score=new_score
+							br1=r1
+							br2=r2
+							br3=r3
+							br4=1
+							best_prev_op=prev_op
+							
+							if new_score>high_score then 'short-cut
+								thread(tn).iterations_completed+=2
+								exit do
+							end if
+							
+						end if
+						
+						for i=0 to ngp_swap2(f)-1
+							pmap1(pmap1mem1(i))-=1
+							pmap1(pmap1mem2(i))+=1
+						next i
+						
+						for i=0 to r3
+							'j=r3-i
+							swap sol1(swapm(0,r3-i)),sol1(swapm(1,r3-i))
+							'swap key1(swapm(0,r3-i)),key1(swapm(1,r3-i))
+						next i
+						
+					'end if
+					
+					di+=2
+					thread(tn).iterations_completed+=2
+					
+					if thread(tn).solver_stop=1 then exit do
+					if pausetask=1 then do:sleep 10:loop until pausetask=0
+					
+				loop until di>=wid
+				
+				if thread(tn).solver_stop=1 then exit for
+				
+				if best_score>high_score then
+					
+					high_score=best_score
+					old_ngram_score=best_ngram_score
+					old_rule_score=best_rule_score
+					
+					select case best_prev_op
+						case 0 'move
+							if br1+br3>l then
+								h=br1
+								k=br2
+								for i=0 to br3
+									if h>l then h-=l
+									key1(k)=key2(h)
+									'sol1(k)=sol2(h)
+									h+=1
+									k+=1
+								next i
+								if br2>1 then
+									memcpy(@key1(1),@key2(h),(br2-1)*2)
+									'memcpy(@sol1(1),@sol2(h),br2-1)
+									h+=br2-1
+								end if
+								if br2+br3<>l then
+									memcpy(@key1(br2+br3+1),@key2(h),(l-(br2+br3))*2)
+									'memcpy(@sol1(br2+br3+1),@sol2(h),l-(br2+br3))
+								end if
+							else
+								h=br1
+								k=br2
+								for i=0 to br3
+									if k>l then k-=l
+									key1(k)=key2(h)
+									'sol1(k)=sol2(h)
+									h+=1
+									k+=1
+								next i
+								if br1>1 then
+									memcpy(@key1(k),@key2(1),(br1-1)*2)
+									'memcpy(@sol1(k),@sol2(1),br1-1)
+									k+=br1-1
+								end if
+								if br1+br3<>l then
+									memcpy(@key1(k),@key2(br1+br3+1),(l-(br1+br3))*2)
+									'memcpy(@sol1(k),@sol2(br1+br3+1),l-(br1+br3))
+								end if
+							end if
+						case 1 'move
+							h=br1
+							k=br2
+							for i=0 to br3-1
+								key1(k)=key2(h)
+								'sol1(k)=sol2(h)
+								h+=1
+								k+=1
+								if h>l then h-=l
+								if k>l then k-=l
+							next i
+							memcpy(@key1(k),@key2(h),(l-br3)*2)
+							'memcpy(@sol1(k),@sol2(h),l-br3)
+						case 2 'swap
+							h=br1
+							k=br2
+							for i=0 to br3
+								swap key1(h),key1(k)
+								'swap sol1(h),sol1(k)
+								h+=1
+								k+=1
+							next i
+						case 3 'swap
+							h=br1
+							k=br2
+							for i=0 to br3
+								if h>l then h-=l
+								if k>l then k-=l
+								swap key1(h),key1(k)
+								'swap sol1(h),sol1(k)
+								'ngpos(1+i)=h
+								'ngpos(br3+2+i)=k
+								h+=1
+								k+=1
+							next i
+							'ngpc=(br3+1)*2
+						case 4 'move
+							memcpy(@key1(br2),@key2(br1),(br3+1)*2)
+							'memcpy(@sol1(br2),@sol2(br1),br3+1)
+							memcpy(@key1(br1),@key2(br1+br3+1),(br2-br1)*2)
+							'memcpy(@sol1(br1),@sol2(br1+br3+1),br2-br1)
+						case 5 'move
+							memcpy(@key1(br2),@key2(br1),(br3+1)*2)
+							'memcpy(@sol1(br2),@sol2(br1),br3+1)
+							memcpy(@key1(br2+br3+1),@key2(br2),(br1-br2)*2)
+							'memcpy(@sol1(br2+br3+1),@sol2(br2),br1-br2)
+					end select
+					
+					memcpy(@key2(1),@key1(1),l*2)
+					memcpy(@sol2(1),@sol1(1),l)
+					
+					memset(@pmap1(-l),0,l*4)
+					for i=1 to l-steps
+						j=key1(i+steps)-key1(i)
+						pmap1(j)+=1
+						pnk0(i)=j
+					next i
+					pnk0c=0
+					for i=1 to l-steps
+						if pmap1(pnk0(i))<2 then 'andalso i mod unitrail=0 then
+							pnk0(pnk0c)=i
+							pnk0c+=1
+						end if
+					next i
+					
+					select case best_prev_op
+						case 0 ',1,4,5 'move
+							select case ngs
+								case 4
+									for i=1 to al
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+								case 5
+									for i=1 to al
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+								case 6
+									for i=1 to al
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+								case 7
+									for i=1 to al
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+								case 8
+									for i=1 to al
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+							end select
+						case 1 'offset
+							select case ngs
+								case 4
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+										next i
+									end if
+								case 5
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+										next i
+									end if
+								case 6
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+										next i
+									end if
+								case 7
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+										next i
+									end if
+								case 8
+									if br2-br1>0 then
+										k=br2-br1
+										memmove(@ngrams(1+k),@ngrams(1),al-k)
+										for i=1 to k
+											ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+										next i
+									else
+										k=br1-br2
+										memmove(@ngrams(1),@ngrams(1+k),al-k)
+										for i=al-(k-1) to al
+											ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+										next i
+									end if
+							end select
+						case 2 'swap
+							select case ngs
+								case 4
+									j=br1-3
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+									j=br2-3
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+										end if
+									next i
+								case 5
+									j=br1-4
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+									j=br2-4
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+										end if
+									next i
+								case 6
+									j=br1-5
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+									j=br2-5
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+										end if
+									next i
+								case 7
+									j=br1-6
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+									j=br2-6
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+										end if
+									next i
+								case 8
+									j=br1-7
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									curr_ngm+=1
+									for i=j to k
+										ngmem(i)=curr_ngm
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+									j=br2-7
+									if j<1 then j=1
+									k=br2+r3
+									if k>al then k=al
+									for i=j to k
+										if ngmem(i)<>curr_ngm then
+											ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+										end if
+									next i
+							end select
+						case 3 'swap
+							curr_ngm+=1
+							select case ngs
+								case 4
+									for i=1 to ngpc
+										j=ngpos(i)-3
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3))
+											end if
+										next h
+									next i
+								case 5
+									for i=1 to ngpc
+										j=ngpos(i)-4
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g5(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4))
+											end if
+										next h
+									next i
+								case 6
+									for i=1 to ngpc
+										j=ngpos(i)-5
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g6(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5))
+											end if
+										next h
+									next i
+								case 7
+									for i=1 to ngpc
+										j=ngpos(i)-6
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=g7(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3),sol1(h+4),sol1(h+5),sol1(h+6))
+											end if
+										next h
+									next i
+								case 8
+									for i=1 to ngpc
+										j=ngpos(i)-7
+										if j<1 then j=1
+										k=ngpos(i)
+										if k>al then k=al
+										for h=j to k
+											if ngmem(h)<>curr_ngm then
+												ngmem(h)=curr_ngm
+												ngrams(h)=bh8(bh4(sol1(h),sol1(h+1),sol1(h+2),sol1(h+3)),bh4(sol1(h+4),sol1(h+5),sol1(h+6),sol1(h+7)))
+											end if
+										next h
+									next i
+							end select
+						case 4 'move (add more optimization)
+							select case ngs
+								case 4
+									j=br1-3
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+								case 5
+									j=br1-4
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+								case 6
+									j=br1-5
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+								case 7
+									j=br1-6
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+								case 8
+									j=br1-7
+									if j<1 then j=1
+									k=br2+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+							end select
+						case 5 'move (add more optimization)
+							select case ngs
+								case 4
+									j=br2-3
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3))
+									next i
+								case 5
+									j=br2-4
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g5(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4))
+									next i
+								case 6
+									j=br2-5
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g6(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5))
+									next i
+								case 7
+									j=br2-6
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=g7(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3),sol1(i+4),sol1(i+5),sol1(i+6))
+									next i
+								case 8
+									j=br2-7
+									if j<1 then j=1
+									k=br1+br3
+									if k>al then k=al
+									for i=j to k
+										ngrams(i)=bh8(bh4(sol1(i),sol1(i+1),sol1(i+2),sol1(i+3)),bh4(sol1(i+4),sol1(i+5),sol1(i+6),sol1(i+7)))
+									next i
+							end select
+					end select
+					
+					if high_score>high_score2 then
+						
+						thread(tn).ent=best_rule_score
+						high_score2=high_score
+						solution_improved=1
+						thread(tn).sectime=timer-sectimer
+						for i=1 to l
+							thread(tn).sol(i)=alphabet(sol1(i))
+							thread(tn).bkey(0,i)=key1(i)
+						next i
+						
+					end if
+					
+				else
+					
+					if high_score>0 then high_score-=temp
+					
+				end if
+				
+				'temp-=temp_min*(((its/itsmax)/4)+(1-((1/4)/2)))
+				temp-=temp_min*(((its/itsmax)/4)+0.75)
+				
+			next its
+			
+			if thread(tn).solver_stop=0 then
+				'#include "ext_hc4.bi"
+				if solution_improved=1 then
+					thread(tn).itemname="Periodic entropy: "+rdc(thread(tn).ent,5)
+					solution_improved=0
+					solution_timer=timer
+					#include "solver_ioc.bi"
+					#include "solver_advstats.bi"
+					'thread(tn).ent=entropy
+					thread(tn).multiplicity=s/l
+					thread(tn).score=high_score2
+					#include "solver_output.bi"
+				end if
+				'if thread(tn).combine_output=1 then combine_score(thread(tn).itemnumber)=best_score
+				thread(tn).avgscore+=high_score2
+				thread(tn).avgioc+=thread(tn).ioc
+				thread(tn).avgpccycles+=thread(tn).pccycles
+				thread(tn).restarts_completed+=1
+			end if
+			
+			thread(tn).solver_waiting=1
+			
+		end if
+		
+	loop until thread(tn).thread_stop=1
+	
+	thread(tn).thread_active=0
+	thread(tn).thread_stop=0
+	
+end sub
+
+sub azdecrypt_permutations_23456781012g(byval tn_ptr as any ptr)
+	
+	#include "solver_variables.bi"
+	
+	dim as integer solver_output=0 'solver id
+	dim as ubyte sol(constcip)
+	dim as long frq(constfrq)
+	dim as short frq2(constfrq)
+	dim as short nba(constcip)
+	dim as short bnba(constcip)
+	dim as short frc(constcip)
+	dim as ubyte ngrams(constcip)
+	dim as byte cribkey(constcip)
+	dim as byte sr(10),lnb(0)
+	
+	dim as integer firstrun=0
+	
+	'dim as uinteger id3(27,27,27)
+	
+	dim as ushort range(1000)
+	dim as integer totk
+	j=40:g=1
+	for h=0 to 9 'solvesub_seqweight
+		for i=1 to j
+			range(totk)=h
+			totk+=1
+		next i
+		j-=g
+	next h
+	
+	dim as ulong cv(255)
+	
+	dim as long currtri
+	dim as long tri(50,50,50)
+	
+	do 'wait for input
+		
+		'i+=1
+		'if i>1000000 then j=1
+		'if j=1 then 
+		'	sleep twait
+		'	j=0
+		'end if
+		
+		if thread(tn).solver_waiting=0 then
+			
+			currtri=0
+			erase tri
+			
+			seed+=threads
+			if (seed*2)-1>2147483647 then seed=tn
+			state=(seed*2)-1
+			
+			#include "solver_settings.bi"
+			
+			ll=l*(l-1)
+			al=l-(ngram_size-1)
+			
+			'if use_cribs=1 then
+			'	for i=1 to s
+			'		cribkey(i)=thread(tn).ckey(i)
+			'	next i
+			'end if
+			
+			'#include "ext_hc1.bi"
+			
+			'-----------------------------------------------------------------------------------------------
+			
+			dim as integer di2=0,di,chi,aladd=0
+			
+			'extra settings
+			'----------------------------------------------------
+			'dim as double ngfact=solvesub_cyclelengthweight '???
+			dim as integer rbd=solvesub_permutations_depth
+			dim as integer wid=solvesub_permutations_searches
+			dim as integer kl=solvesub_permutations_columns
+			dim as double shift=solvesub_permutations_shift
+			dim as integer solvermode=solvesub_permutations_solvermode
+			dim as integer varmode=solvesub_permutations_varmode
+			dim as double ngrampower=solvesub_permutations_ngrampower
+			dim as integer regtable=solvesub_permutations_regtable
+			dim as integer redun=solvesub_permutations_redun
+			dim as integer gpx=solvesub_permutations_gpx
+			dim as integer gpy=solvesub_permutations_gpy
+			ngramfactor=solvesub_permutations_ngramfactor
+			for i=0 to 255
+				cv(i)=i^ngrampower
+			next i
+			'----------------------------------------------------
+			
+			'dim as double f2=1/((nk1(0)^1)/pk1(0)) '^2
+			
+			'dim as integer pk(kl),nk(kl)
+			'for i=1 to kl-1
+			'	pk(i)=pk1(i)^2
+			'	nk(i)=nk1(i)^2
+			'next i
+			
+			dim as integer gpxgpy=gpx*gpy
+			dim as integer rbw=wid,firstkey=0
+			'dim as integer bg2=0,bbg2=0,bg3=0,bbg3=0,bg4=0,bbg4=0
+			'dim as integer cb2=0,cb3=0,cb4=0
+			dim as integer x,y,a,b,c,d,lpi,r1,r2,r3,r4,cc
+			dim as integer x1,x2,x3,x4,nl,irr,alt,xx,yy
+			
+			'dim as integer cdx=kl
+			'dim as integer cdy=l\kl
+			'if cdy*kl<l then cdy+=1
+			'dim as integer ic=(cdx*cdy)-l
+			
+			dim as integer cdx,cdy,ic
+			
+			select case solvermode
+				case 0,1 'columnar transposition, columnar rearrangement
+					cdx=kl
+					cdy=l\kl
+					if cdy*kl<l then cdy+=1
+				case 4 'grid permutation
+					cdx=solvesub_permutations_dx
+					cdy=solvesub_permutations_dy
+				case 5 'row rearrangement
+					cdx=l\kl
+					cdy=kl
+					if cdx*kl<l then cdx+=1
+			end select
+			ic=(cdx*cdy)-l
+			
+			dim as ushort bs(rbd+1,3)
+			dim as ushort lp(rbd+1)
+			dim as ushort ch(rbd+1)
+			dim as ushort cl(kl)
+			'dim as ushort bkey(kl,rbd+1)
+			'dim as ushort okey(kl,rbd+1)
+			dim as ushort bkey(rbd+1,kl)
+			dim as ushort okey(rbd+1,kl)
+			dim as ubyte grid(cdx,cdy)
+			dim as ubyte grid2(cdx,cdy)
+			dim as ubyte part(kl)
+			
+			b=0
+			bbest=0
+			best_score=0
+			
+			i=0
+			if ic=0 then
+				alt=1
+				select case solvermode
+					case 0 'columnar transposition
+						for x=1 to cdx
+							for y=1 to cdy
+								i+=1
+								select case varmode
+									case 0 'top-to-bottom
+										grid(x,y)=thread(tn).cip(i)
+									case 1 'bottom-to-top
+										grid(x,cdy-(y-1))=thread(tn).cip(i)
+									'case 2 'alternated 1
+									'	if alt=0 then 'top-to-bottom
+									'		grid(x,y)=thread(tn).cip(i)
+									'	else 'bottom-to-top
+									'		grid(x,cdy-(y-1))=thread(tn).cip(i)
+									'	end if
+									'case 3 'alternated 2
+									'	if alt=1 then 'top-to-bottom
+									'		grid(x,y)=thread(tn).cip(i)
+									'	else 'bottom-to-top
+									'		grid(x,cdy-(y-1))=thread(tn).cip(i)
+									'	end if
+								end select
+								'if i=l then exit for,for
+							next y
+							if alt=0 then alt=1 else alt=0
+						next x
+					case 1,4,5 'columnar rearrangement, grid permutation, row rearrangement
+						for y=1 to cdy
+							for x=1 to cdx
+								i+=1
+								grid(x,y)=thread(tn).cip(i)
+							next x
+						next y
+				end select
+			else
+				select case solvermode
+					case 1,4,5 'columnar rearrangement, grid permutation, row rearrangement
+						for y=1 to cdy
+							for x=1 to cdx
+								i+=1
+								grid(x,y)=thread(tn).cip(i)
+								if i=l then exit for,for
+							next x
+						next y
+				end select
+			end if
+			
+			dim as integer kfrom,kto
+			if ic>1 then '1
+				state=48271*state and 2147483647
+				i=10000*state shr 31
+				if (i/100)>shift then '20 ???
+					kfrom=1:kto=kl 'both
+				else 'only act on specific key range
+					state=48271*state and 2147483647
+					i=1+kl*state shr 31
+					if i>ic then
+						kfrom=1:kto=kl-ic 'regular
+					else
+						kfrom=kl-(ic-1):kto=kl 'irregular
+					end if
+					if kto-kfrom=0 then
+						kfrom=1
+						kto=kl
+					end if
+				end if
+			else
+				kfrom=1:kto=kl
+			end if
+			
+			dim as integer kfrom1,kto1,kfrom2,kto2
+			if ic>1 then
+				kfrom1=1:kto1=kl-ic
+				kfrom2=kl-(ic-1):kto2=kl
+			end if
+			dim as integer sep=0
+			if ic>1 andalso kfrom=1 andalso kto=kl then
+				state=48271*state and 2147483647
+				i=100*state shr 31
+				if i>44 then sep=1
+			end if
+			
+			if sep=0 then
+				do
+					state=48271*state and 2147483647
+					k=totk*state shr 31
+					r3=range(k)
+				loop until r3<kto-kfrom
+			else 'unused ???
+				do
+					state=48271*state and 2147483647
+					k=totk*state shr 31
+					r3=range(k)
+				loop until r3<ic
+			end if
+			
+			for di2=1 to rbd 'rbd 'depths 1 to ...
+				
+				di=rbd-(di2-1) 'depths ... to 1
+				
+				select case di
+					case 1:rbw=(wid)
+					case 2:rbw=(wid^0.5)
+					case 3:rbw=(wid^0.333333333)
+					case 4:rbw=(wid^0.25)
+					case 5:rbw=(wid^0.2)
+					case 6:rbw=(wid^0.166666666)
+				end select
+				
+				for i=1 to di
+					lp(i)=1
+					ch(i)=1
+				next i
+				
+				'for i=1 to kl
+				'	bkey(0,i)=thread(tn).bkey(0,i)
+				'next i
+				memcpy(@bkey(0,1),@thread(tn).bkey(0,1),kl*2)
+				
+				do
+				
+					chi=999
+					for i=1 to di
+						if ch(i)=1 then
+							if i<chi then chi=i
+							if sep=0 then
+								state=48271*state and 2147483647
+								r4=2*state shr 31 'move or swap
+								bs(i,3)=r4 'operation
+								bs(i,2)=r3 'move amount (from 0 to ...)
+								state=48271*state and 2147483647
+								r1=kfrom+((kto-kfrom)+1)*state shr 31
+								bs(i,0)=r1 'move from
+								state=48271*state and 2147483647
+								r2=kfrom+((kto-kfrom)+1)*state shr 31
+								bs(i,1)=r2 'move to
+							else 'move from regular to irregular side
+								r4=1 'swap
+								bs(i,3)=r4 'operation
+								bs(i,2)=0 'r3 'move amount (from 0 to ...)
+								state=48271*state and 2147483647
+								r1=kfrom1+((kto1-kfrom1)+1)*state shr 31
+								bs(i,0)=r1 'move from
+								state=48271*state and 2147483647
+								r2=kfrom2+((kto2-kfrom2)+1)*state shr 31
+								bs(i,1)=r2 'move to
+							end if
+						end if
+					next i
+					'for i=1 to kl
+					'	okey(chi,i)=bkey(chi-1,i)
+					'	bkey(chi,i)=0
+					'next i
+					memcpy(@okey(chi,1),@bkey(chi-1,1),kl*2)
+					memset(@bkey(chi,1),0,kl*2)
+					for i=chi to di
+						if bs(i,3)=0 then 'move
+							for j=0 to bs(i,2)
+								h=bs(i,0)+j 'from
+								k=bs(i,1)+j 'to
+								if h>kto then h-=(kto-kfrom)+1
+								if k>kto then k-=(kto-kfrom)+1
+								bkey(i,k)=okey(i,h)
+								okey(i,h)=0
+							next j
+							k=0
+							for j=1 to kl
+								if bkey(i,j)=0 then
+									do
+										k+=1
+									loop until okey(i,k)>0
+									bkey(i,j)=okey(i,k)
+								end if
+							next j
+						else 'swap
+							for j=1 to kl
+								bkey(i,j)=okey(i,j)
+							next j
+							if sep=0 then
+								for j=0 to bs(i,2)
+									h=bs(i,0)+j 'from
+									k=bs(i,1)+j 'to
+									if h>kto then h-=(kto-kfrom)+1
+									if k>kto then k-=(kto-kfrom)+1
+									swap bkey(i,h),bkey(i,k)
+								next j
+							else
+								for j=0 to bs(i,2)
+									h=bs(i,0)+j 'from
+									k=bs(i,1)+j 'to
+									if h>kto1 then h-=(kto1-kfrom1)+1
+									if k>kto2 then k-=(kto2-kfrom2)+1
+									swap bkey(i,h),bkey(i,k)
+								next j
+							end if
+						end if
+						if i<>di then
+							'for j=1 to kl
+							'	okey(i+1,j)=bkey(i,j)
+							'	bkey(i+1,j)=0
+							'next j
+							memcpy(@okey(i+1,1),@bkey(i,1),kl*2)
+							memset(@bkey(i+1,1),0,kl*2)
+						end if
+						ch(i)=0
+					next i
+					
+					'if firstkey=0 then 'include initial key
+					'	firstkey=1
+					'	for i=1 to kl
+					'		bkey(di,i)=thread(tn).bkey(0,i)
+					'	next i
+					'end if
+					
+					nl=0
+					'if ngram_standardalphabet=0 then
+						if ic>0 then 'irregular
+							select case solvermode
+								case 0 'columnar transposition
+									select case varmode
+										case 0 'top-to-bottom
+											k=0
+											for i=1 to kl
+												irr=0
+												for j=0 to ic-1
+													if i=bkey(di,kl-j) then
+														irr=1
+														exit for
+													end if
+												next j
+												for y=1 to cdy-irr
+													k+=1
+													grid(i,y)=thread(tn).cip(k)
+												next y
+												if irr=1 then grid(i,cdy)=0
+											next i
+										case 1 'bottom-to-top
+											k=0
+											for i=1 to kl
+												irr=0
+												for j=0 to ic-1
+													if i=bkey(di,kl-j) then
+														irr=1
+														exit for
+													end if
+												next j
+												k+=cdy-irr
+												for y=1 to cdy-irr
+													grid(i,y)=thread(tn).cip(k)
+													k-=1
+												next y
+												k+=cdy-irr
+												if irr=1 then grid(i,cdy)=0
+											next i
+										'case 2 'alternated 1
+										'	k=0
+										'	alt=0
+										'	for i=1 to kl
+										'		irr=0
+										'		for j=0 to ic-1
+										'			if i=bkey(di,kl-j) then
+										'				irr=1
+										'				exit for
+										'			end if
+										'		next j
+										'		for j=1 to kl
+										'			if i=bkey(di,j) then
+										'				alt=i mod 2
+										'				exit for
+										'			end if
+										'		next j
+										'		if alt=1 then 'bottom-to-top
+										'			k+=cdy-irr
+										'			for y=1 to cdy-irr
+										'				grid(i,y)=thread(tn).cip(k)
+										'				k-=1
+										'			next y
+										'			k+=cdy-irr
+										'		else 'top-to-bottom
+										'			for y=1 to cdy-irr
+										'				k+=1
+										'				grid(i,y)=thread(tn).cip(k)
+										'			next y
+										'		end if
+										'		if irr=1 then grid(i,cdy)=0 '255
+										'	next i
+										'case 3 'alternated 2
+										'	k=0
+										'	alt=0
+										'	for i=1 to kl
+										'		irr=0
+										'		for j=0 to ic-1
+										'			if i=bkey(di,kl-j) then
+										'				irr=1
+										'				exit for
+										'			end if
+										'		next j
+										'		for j=1 to kl
+										'			if i=bkey(di,j) then
+										'				alt=i mod 2
+										'				exit for
+										'			end if
+										'		next j
+										'		if alt=0 then 'bottom-to-top
+										'			k+=cdy-irr
+										'			for y=1 to cdy-irr
+										'				grid(i,y)=thread(tn).cip(k)
+										'				k-=1
+										'			next y
+										'			k+=cdy-irr
+										'		else 'top-to-bottom
+										'			for y=1 to cdy-irr
+										'				k+=1
+										'				grid(i,y)=thread(tn).cip(k)
+										'			next y
+										'		end if
+										'		if irr=1 then grid(i,cdy)=0 '255
+										'	next i
+									end select
+								case 1,5 'columnar rearrangement, row rearrangement
+									'...
+							end select
+						end if
+						select case solvermode
+							case 0,1 'columnar transposition, columnar rearrangement
+								for y=1 to cdy
+									for x=1 to cdx
+										if grid(bkey(di,x),y)>0 then '<>255
+											nl+=1
+											sol(nl)=grid(bkey(di,x),y)-1
+											'sol(nl)=cribkey(grid(bkey(di,x),y))-1
+											if nl=l then exit for,for
+										end if
+									next x
+								next y
+							case 5 'row rearrangement
+								for y=1 to cdy
+									for x=1 to cdx
+										if grid(x,bkey(di,y))>0 then '<>255
+											nl+=1
+											sol(nl)=grid(x,bkey(di,y))-1
+											'sol(nl)=cribkey(grid(x,bkey(di,y)))-1
+											if nl=l then exit for,for
+										end if
+									next x
+								next y
+							case 4 'grid permutation
+								select case varmode
+									case 0 '1d to 2d (scheme 2)
+										i=0
+										k=gpx*gpy
+										for y=1 to cdy step gpy
+											for x=1 to cdx step gpx
+												j=0
+												for yy=y to y+(gpy-1) 'extract part
+													for xx=x to x+(gpx-1)
+														j+=1
+														grid(xx,yy)=thread(tn).cip(i+(bkey(di,j))) '???
+													next xx
+												next yy
+												i+=gpxgpy
+											next x
+										next y
+										for y=1 to cdy
+											for x=1 to cdx
+												'if grid(x,y)>0 then
+													nl+=1
+													sol(nl)=grid(x,y)-1
+													'sol(nl)=cribkey(grid(x,y))-1
+													'if nl=l then exit for,for
+												'end if
+											next x
+										next y
+									case 1 '2d to 1d (scheme 1)
+										for y=1 to cdy step gpy
+											for x=1 to cdx step gpx
+												i=0
+												for yy=y to y+(gpy-1) 'extract part
+													for xx=x to x+(gpx-1)
+														i+=1
+														part(i)=grid(xx,yy)
+													next xx
+												next yy
+												i=0
+												for yy=y to y+(gpy-1) 'insert part and apply key
+													for xx=x to x+(gpx-1)
+														i+=1
+														'if part(bkey(di,i))>0 then
+															nl+=1
+															sol(nl)=part(bkey(di,i))-1
+														'end if
+														'sol(nl)=cribkey(part(bkey(di,i)))-1
+														'if nl=l then exit for,for
+													next xx
+												next yy
+											next x
+										next y
+									case 2 '2d to 2d (scheme 3)
+										for y=1 to cdy step gpy
+											for x=1 to cdx step gpx
+												i=0
+												for yy=y to y+(gpy-1) 'extract part
+													for xx=x to x+(gpx-1)
+														i+=1
+														part(i)=grid(xx,yy)
+													next xx
+												next yy
+												i=0
+												for yy=y to y+(gpy-1) 'insert part and apply key
+													for xx=x to x+(gpx-1)
+														i+=1
+														grid2(xx,yy)=part(bkey(di,i))
+													next xx
+												next yy
+											next x
+										next y
+										for y=1 to cdy
+											for x=1 to cdx
+												if grid2(x,y)>0 then
+													nl+=1
+													sol(nl)=grid2(x,y)-1
+													'sol(nl)=cribkey(grid2(x,y))-1
+													'if nl=l then exit for,for
+												end if
+											next x
+										next y
+								end select
+						end select
+					
+					'else
+					'	
+					'	if ic>0 then
+					'		k=0
+					'		for i=1 to kl
+					'			irr=0
+					'			for j=0 to ic-1
+					'				if i=bkey(di,kl-j) then
+					'					irr=1
+					'					exit for
+					'				end if
+					'			next j
+					'			for y=1 to cdy-irr
+					'				k+=1
+					'				grid(i,y)=thread(tn).cip(k)
+					'			next y
+					'			if irr=1 then grid(i,cdy)=0
+					'		next i
+					'	end if
+					'	for y=1 to cdy
+					'		for x=1 to cdx
+					'			j=cribkey(grid(bkey(di,x),y))-1
+					'			if j<26 then
+					'				nl+=1
+					'				sol(nl)=j
+					'			end if
+					'		next x
+					'	next y
+					'
+					'end if
+					
+					al=l-(ngram_size-1) 'nl
+					
+					'for i=1 to l
+					'	sol(i)=thread(tn).cip(i)-1
+					'next i
+					
+					solution_timer=timer
+					
+					new_ngram_score=0
+					
+					select case ngram_size
+						case 2
+							for i=1 to al
+								new_ngram_score+=g2(sol(i),sol(i+1))
+							next i
+						case 3
+							
+							currtri+=1
+							for i=1 to l-2
+								if tri(sol(i),sol(i+1),sol(i+2))=currtri then
+									new_ngram_score+=1
+								else
+									tri(sol(i),sol(i+1),sol(i+2))=currtri
+								end if
+							next i
+							
+							'for i=1 to al
+							'	new_ngram_score+=g3(sol(i),sol(i+1),sol(i+2))
+							'next i
+						case 4
+							for i=1 to al
+								new_ngram_score+=g4(sol(i),sol(i+1),sol(i+2),sol(i+3))
+							next i
+						case 5
+							
+							'if regtable=0 then
+							
+							'if ngrampower=1 then
+								for i=1 to al
+									new_ngram_score+=g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4))
+								next i
+							'else
+							'	for i=1 to al
+							'		new_ngram_score+=cv(g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)))
+							'	next i
+							'end if
+							
+							'	'for x=1 to (kl-ic)-4 '(ngram_size-1)
+							'	'		j=0
+							'	'		for y=0 to cdy-1
+							'	'			i=x+(cdx*y)
+							'	'			j+=cv(g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)))
+							'	'		next y
+							'	'	new_ngram_score+=j
+							'	'next x
+							'	'for x=(kl-ic)-3 to kl-4 '(ngram_size-1)
+							'	'	j=0
+							'	'	for y=0 to cdy-2
+							'	'		i=x+(cdx*y)
+							'	'		j+=cv(g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)))
+							'	'	next y
+							'	'	new_ngram_score+=j
+							'	'next x
+							'	'for x=kl-3 to kl
+							'	'	j=0
+							'	'	for y=0 to cdy-2
+							'	'		i=x+(cdx*y)
+							'	'		j+=cv(g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)))
+							'	'	next y
+							'	'	new_ngram_score+=j
+							'	'next x
+							'	
+							'else 'speed
+							'	
+							'	for x=1 to cdx-4 '(ngram_size-1)
+							'		j=g5k(bkey(x,di),bkey(x+1,di),bkey(x+2,di),bkey(x+3,di),bkey(x+4,di))
+							'		if j=0 then
+							'			for y=0 to cdy-1
+							'				i=x+(cdx*y)
+							'				j+=cv(g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)))
+							'			next y
+							'			if j=0 then j=1
+							'			g5k(bkey(x,di),bkey(x+1,di),bkey(x+2,di),bkey(x+3,di),bkey(x+4,di))=j
+							'		end if
+							'		new_ngram_score+=j
+							'	next x
+							'	for x=cdx-3 to cdx
+							'		j=0
+							'		for y=0 to cdy-2
+							'			i=x+(cdx*y)
+							'			j+=cv(g5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)))
+							'		next y
+							'		if j=0 then j=1 
+							'		new_ngram_score+=j
+							'	next x
+							'	
+							'end if
+							
+						case 6
+							for i=1 to al
+								new_ngram_score+=g6(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5))
+							next i
+						case 7
+							for i=1 to al
+								new_ngram_score+=g7(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5),sol(i+6))
+							next i
+						case 8
+							'for i=1 to al
+							'	new_ngram_score+=bh8(bh4(sol(i),sol(i+1),sol(i+2),sol(i+3)),bh4(sol(i+4),sol(i+5),sol(i+6),sol(i+7)))
+							'next i
+							for i=1 to al
+								z1=bh4(sol(i),sol(i+1),sol(i+2),sol(i+3))
+								if z1<>0 then
+									z2=bh4(sol(i+4),sol(i+5),sol(i+6),sol(i+7))
+									if z2<>0 then new_ngram_score+=bh8(z1,z2)
+								end if
+							next i
+						case 10
+							'for i=1 to al
+							'	new_ngram_score+=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
+							'next i
+							for i=1 to al
+								z1=bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4))
+								if z1<>0 then
+									z2=bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9))
+									if z2<>0 then new_ngram_score+=bh10(z1,z2)
+								end if
+							next i
+							'aladd=9
+							'new_ngram_score+=bh10(bh5(sol(al-8),sol(al-7),sol(al-6),sol(al-5),sol(al-4)),bh5(sol(al-3),sol(al-2),sol(al-1),sol(al),sol(1)))
+							'new_ngram_score+=bh10(bh5(sol(al-7),sol(al-6),sol(al-5),sol(al-4),sol(al-3)),bh5(sol(al-2),sol(al-1),sol(al),sol(1),sol(2)))
+							'new_ngram_score+=bh10(bh5(sol(al-6),sol(al-5),sol(al-4),sol(al-3),sol(al-2)),bh5(sol(al-1),sol(al),sol(1),sol(2),sol(3)))
+							'new_ngram_score+=bh10(bh5(sol(al-5),sol(al-4),sol(al-3),sol(al-2),sol(al-1)),bh5(sol(al),sol(1),sol(2),sol(3),sol(4)))
+							'new_ngram_score+=bh10(bh5(sol(al-4),sol(al-3),sol(al-2),sol(al-1),sol(al)),bh5(sol(1),sol(2),sol(3),sol(4),sol(5)))
+							'new_ngram_score+=bh10(bh5(sol(al-3),sol(al-2),sol(al-1),sol(al),sol(1)),bh5(sol(2),sol(3),sol(4),sol(5),sol(6)))
+							'new_ngram_score+=bh10(bh5(sol(al-2),sol(al-1),sol(al),sol(1),sol(2)),bh5(sol(3),sol(4),sol(5),sol(6),sol(7)))
+							'new_ngram_score+=bh10(bh5(sol(al-1),sol(al),sol(1),sol(2),sol(3)),bh5(sol(4),sol(5),sol(6),sol(7),sol(8)))
+							'new_ngram_score+=bh10(bh5(sol(al),sol(1),sol(2),sol(3),sol(4)),bh5(sol(5),sol(6),sol(7),sol(8),sol(9)))
+						case 12
+							'for i=1 to al
+							'	new_ngram_score+=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
+							'next i
+							for i=1 to al
+								z1=bh6(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5))
+								if z1<>0 then
+									z2=bh6(sol(i+6),sol(i+7),sol(i+8),sol(i+9),sol(i+10),sol(i+11))
+									if z2<>0 then new_ngram_score+=bh12(z1,z2)
+								end if
+							next i
+							'aladd=11
+							'new_ngram_score+=bh12(bh6(sol(al-10),sol(al-9),sol(al-8),sol(al-7),sol(al-6),sol(al-5)),bh6(sol(al-4),sol(al-3),sol(al-2),sol(al-1),sol(al),sol(1)))
+							'new_ngram_score+=bh12(bh6(sol(al-9),sol(al-8),sol(al-7),sol(al-6),sol(al-5),sol(al-4)),bh6(sol(al-3),sol(al-2),sol(al-1),sol(al),sol(1),sol(2)))
+							'new_ngram_score+=bh12(bh6(sol(al-8),sol(al-7),sol(al-6),sol(al-5),sol(al-4),sol(al-3)),bh6(sol(al-2),sol(al-1),sol(al),sol(1),sol(2),sol(3)))
+							'new_ngram_score+=bh12(bh6(sol(al-7),sol(al-6),sol(al-5),sol(al-4),sol(al-3),sol(al-2)),bh6(sol(al-1),sol(al),sol(1),sol(2),sol(3),sol(4)))
+							'new_ngram_score+=bh12(bh6(sol(al-6),sol(al-5),sol(al-4),sol(al-3),sol(al-2),sol(al-1)),bh6(sol(al),sol(1),sol(2),sol(3),sol(4),sol(5)))
+							'new_ngram_score+=bh12(bh6(sol(al-5),sol(al-4),sol(al-3),sol(al-2),sol(al-1),sol(al)),bh6(sol(1),sol(2),sol(3),sol(4),sol(5),sol(6)))
+							'new_ngram_score+=bh12(bh6(sol(al-4),sol(al-3),sol(al-2),sol(al-1),sol(al),sol(1)),bh6(sol(2),sol(3),sol(4),sol(5),sol(6),sol(7)))
+							'new_ngram_score+=bh12(bh6(sol(al-3),sol(al-2),sol(al-1),sol(al),sol(1),sol(2)),bh6(sol(3),sol(4),sol(5),sol(6),sol(7),sol(8)))
+							'new_ngram_score+=bh12(bh6(sol(al-2),sol(al-1),sol(al),sol(1),sol(2),sol(3)),bh6(sol(4),sol(5),sol(6),sol(7),sol(8),sol(9)))
+							'new_ngram_score+=bh12(bh6(sol(al-1),sol(al),sol(1),sol(2),sol(3),sol(4)),bh6(sol(5),sol(6),sol(7),sol(8),sol(9),sol(10)))
+							'new_ngram_score+=bh12(bh6(sol(al),sol(1),sol(2),sol(3),sol(4),sol(5)),bh6(sol(6),sol(7),sol(8),sol(9),sol(10),sol(11)))
+					end select
+					
+					if firstrun=0 then
+						
+						firstrun=1
+						erase frq
+						for i=1 to l 'nl
+							frq(sol(i))+=1 'sol(i)
+						next i
+						entropy=0
+						for i=0 to abc_sizem1
+							if frq(i)>0 then entropy+=abs(logbx(frq(i)/l,2)*(frq(i)/l)) 'nl
+						next i
+						ngf=ngramfactor
+						ngf/=1+((s/l)*multiplicityweight) 'nl
+						ngfal=ngf/(al+aladd)
+						'if ngram_size=8 then ngfal=ngf/(al+(l-5))
+						
+					end if
+					
+					#include "solver_fastent.bi"
+					
+					if new_score>best_score then
+						
+						thread(tn).l=l 'nl 'new length
+						
+						solution_improved=1
+						thread(tn).sectime=timer-sectimer
+						for i=1 to l 'nl
+							thread(tn).sol(i)=alphabet(sol(i))
+						next i
+						thread(tn).ent=entropy
+						thread(tn).multiplicity=s/l 'nl
+						best_score=new_score+0.00001
+						
+						'#include "ext_hc3.bi"
+						'if best_score>bbest then
+						'	bbest=best_score
+						'	bioc=ioc_int/ll
+						
+							for i=1 to kl
+								thread(tn).bkey(0,i)=bkey(di,i) 
+							next i
+							
+						'end if
+						
+					end if
+					
+					'if solution_improved=1 andalso timer-solution_timer>solvesub_solutionreleasetimer then
+					'	solution_improved=0
+					'	solution_timer=timer
+					'	#include "solver_ioc.bi"
+					'	#include "solver_advstats.bi"
+					'	thread(tn).score=best_score
+					'	#include "solver_output.bi"
+					'	#include "ext_hc3.bi"
+					'end if
+					
+					thread(tn).iterations_completed+=1
+					if thread(tn).solver_stop=1 then exit do
+					if pausetask=1 then do:sleep 10:loop until pausetask=0
+					
+					lpi=di
+					do
+						if lp(lpi)<rbw then
+							lp(lpi)+=1
+							ch(lpi)=1
+							exit do
+						else
+							if lpi=1 then exit do,do
+							lp(lpi)=1
+							ch(lpi)=1
+						end if
+						lpi-=1
+					loop
+					
+				loop
+				
+				if thread(tn).solver_stop=1 then exit for
+				
+			next di2
+			
+			'-----------------------------------------------------------------------------------------------
+			
+			if thread(tn).solver_stop=0 then
+				
+				'#include "ext_hc4.bi"
+				
+				if solution_improved=1 then
+					solution_improved=0
+					solution_timer=timer
+					#include "solver_ioc.bi"
+					#include "solver_advstats.bi"
+					thread(tn).score=best_score
+					#include "solver_output.bi"
+				end if
+				
+				if thread(tn).combine_output=1 then combine_score(thread(tn).itemnumber)=best_score
+				
+				thread(tn).avgscore+=best_score
+				thread(tn).avgioc+=thread(tn).ioc
+				thread(tn).avgpccycles+=thread(tn).pccycles
+				thread(tn).restarts_completed+=1
+				
+			end if
+			
+			thread(tn).solver_waiting=1
+			
 		end if
 		
 	loop until thread(tn).thread_stop=1
@@ -34992,6 +42618,18 @@ function m_entropy(array()as long,byval l as integer,byval s as integer)as doubl
 	
 end function
 
+function m_entropymax(byval l as integer)as double
+	
+	if l=0 then return 0
+	dim as double score
+	dim as integer i
+	for i=1 to l
+		score+=logbx(1/l,2)*(1/l)
+	next i
+	return abs(score)
+	
+end function
+
 function m_equality(array1()as long,array2()as long,byval l1 as integer,byval l2 as integer,byval s1 as integer,byval s2 as integer,byval o as integer)as double
 	
 	dim as integer i,j,im,lmin
@@ -35034,7 +42672,7 @@ function m_flatness(array()as long,byval l as integer,byval s as integer,byval n
 	dim as double mf,score
 	dim as double ls=l/s
 	dim as integer i,j
-	dim as integer frq(s)
+	dim as integer frq(s+s)
 	for i=1 to l
 		frq(array(i))+=1
 	next i
@@ -35049,7 +42687,7 @@ function m_flatness(array()as long,byval l as integer,byval s as integer,byval n
 		mf+=abs((l-(s-1))-ls)
 		return abs((score/mf)-1)
 	end if
-			
+	
 end function
 
 function m_smoothness(array()as long,byval l as integer,byval s as integer,byval n as integer)as double
@@ -35616,6 +43254,25 @@ function m_fastbigrams(array()as long,byval l as integer,byval s as integer)as i
 			score+=1
 		end if
 	next i
+	return score
+	
+end function
+
+function m_ascdistance(array()as long,byval l as integer,byval s as integer)as integer
+
+	dim as short i,score,id(610) '255*2
+	for i=1 to l-1
+		s=255+(array(i+1)-array(i))
+		'id(255+s)+=1
+		if id(s)=0 then
+			id(s)=1
+		else 
+			score+=1
+		end if
+	next i
+	'for i=0 to 610
+	'	if id(i)>1 then score+=id(i)*(id(i)-1)
+	'next i
 	return score
 	
 end function
@@ -37537,7 +45194,7 @@ function m_2cycles_perfect_cyclebreaks(array()as long,byval l as integer,byval s
 		for l2=l1+1 to s
 			if frq(l1)>1 andalso frq(l2)>1 then
 				
-				if abs(frq(l1)-frq(l2))<=int(solvesub_matchweight) then 'solvesub_matchweight
+				if abs(frq(l1)-frq(l2))<=int(1) then 'solvesub_matchweight
 				
 					e=1
 					al=0
@@ -37577,7 +45234,7 @@ function m_2cycles_perfect_cyclebreaks(array()as long,byval l as integer,byval s
 						end if
 					loop
 					
-					if b<=int(solvesub_matchweight) then 'solvesub_matchweight
+					if b<=int(1) then 'solvesub_matchweight
 						for i=1 to cl-1
 							if z(i)=z(i+1) then
 								cmap(zp(i+1))+=1
@@ -38097,6 +45754,29 @@ function rdc(byval n as double,byval dpa as integer)as string
 	
 end function
 
+function rdc2(byval n as double,byval dpa as integer)as string
+	
+	dim as string m
+	select case n
+		'case is>1000000000000000000:n/=1000000000000000000:m="Q2"
+		case is>1000000000000000:n/=1000000000000000:m="Q"
+		case is>1000000000000:n/=1000000000000:m="T"
+		case is>1000000000:n/=1000000000:m="B"
+		case is>1000000:n/=1000000:m="M"
+		'case is>1000:n/=1000:m="K"
+	end select 
+	dim as string s=str(n)
+	dim as integer i=instr(s,".")
+	if instr(s,"#INF")>0 then return "0"
+	if instr(s,"#IND")>0 then return "0"
+	if i=0 then 
+		return s+m
+	else
+		return left(s,i+dpa)+m
+	end if
+	
+end function
+
 function gcd(byval a as integer,byval b as integer)as integer
 	
   	do while b<>0
@@ -38162,6 +45842,58 @@ function fastpow1_single(byval x as single,byval b as single)as single
     return x
     
 end function
+
+function factorial(byval f as integer)as uinteger
+	
+	dim as integer i,j=1
+	for i=2 to f
+		j*=i
+	next i
+	return j
+
+end function
+
+function compare_ngrampos(ng1()as short,ng2()as short,byval l as integer,byval ngs as integer)as integer
+	
+	dim as integer i,j,k,c,e
+	for i=1 to l-(ngs-1)
+		for j=1 to l-(ngs-1)
+			e=1
+			for k=0 to ngs-1
+				if ng2(j+k)<>ng1(i+k) then
+					e=0
+					exit for
+				end if
+			next k
+			if e=1 then exit for
+		next j
+		if e=0 then
+			c+=1
+			info_out(c)=i 'plus (array positions)
+		end if
+	next i
+	for i=1 to l-(ngs-1)
+		for j=1 to l-(ngs-1)
+			e=1
+			for k=0 to ngs-1
+				if ng1(j+k)<>ng2(i+k) then
+					e=0
+					exit for
+				end if
+			next k
+			if e=1 then exit for
+		next j
+		if e=0 then
+			c+=1
+			info_out(c)=i 'minus (array positions)
+		end if
+		'add shortcut at previous count?
+	next i
+	return c
+	
+end function
+
+
 
 sub generate_permutations(n as long) 
 	

@@ -1,5 +1,5 @@
 dim as string load_status=""
-load_status+=str(solver_file_name_ngrams)+lb
+load_status+="N-grams: "+str(solver_file_name_ngrams)+lb
 load_status+="---------------------------------------------------------"+lb
 load_status+="N-gram file format: "+ngram_format+lb
 select case ngram_size
@@ -19,7 +19,7 @@ load_status+="---------------------------------------------------------"+lb
 load_status+="N-gram items: "+str(ngram_count)+" ("+rdc(ngram_count/(ngram_alphabet_size^ngram_size)*100,2)+"% coverage)"+lb
 if ngram_maxtableindex>0 then load_status+="N-gram system table size: "+str(ngram_maxtableindex)+ " ("+rdc(trimmed_table_ratio*100,2)+"% usage)"+lb
 load_status+="N-gram log value range: "+str(ngram_lowval)+" to "+str(ngram_highval)+" ("+str(distinct_values)+" distinct values)"+lb
-load_status+="N-gram log value average: "+rdc(ngram_avgval/ngram_count,2)+" / "+rdc(ngram_avgval/(ngram_alphabet_size^ngram_size),2)+lb
+load_status+="N-gram log value average: "+rdc(ngram_avgval/(ngram_alphabet_size^ngram_size),2)+" / "+rdc(ngram_avgval/ngram_count,2)+lb
 load_status+="N-gram log value entropy: "+rdc(abs(ngram_value_entropy1),2)+" / "+rdc(abs(ngram_value_entropy2),2)+lb
 load_status+="N-gram memory usage: "+rdc(ngram_mem/1073741824,2)+" GB RAM ("+str(ngram_mem)+" bytes)"+lb
 if ngram_size=8 andalso solvesub_ngramcaching=1 then

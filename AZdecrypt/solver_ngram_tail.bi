@@ -34,9 +34,9 @@ select case ngram_size
 			j=map2(curr_symbol,i)
 			ngrams(j)=bh8(bh4(sol(j),sol(j+1),sol(j+2),sol(j+3)),bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7)))
 		next i
-	'case 10
-	'	for i=1 to map2(curr_symbol,0)
-	'		j=map2(curr_symbol,i)
-	'		ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
-	'	next i
+	case 10
+		for i=1 to map2(curr_symbol,0)
+			j=map2(curr_symbol,i)
+			ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
+		next i
 end select

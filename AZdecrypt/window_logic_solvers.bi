@@ -7,15 +7,19 @@ case button_main_process
 		if soi="Ok" or bypass=1 then 'if cipher is ok
 			if info_symbols>1 or bypass=1 then 'symbol check
 				if task_active<>"none" then stop_current_task 'stop current task
-				sleep 100
+				sleep 50
 				if len(solver_file_name_ngrams)>0 then 'if n-grams are ok
 					if task_active="none" then
 						toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",4,1,threads) 'stop solver
 						toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",2,1,threads) 'stop thread
 						toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",1,1,threads) 'start thread
-						sleep 10
+						sleep 50
+						solvesub_nosub=0
 						if solverexist=1 then
 							select case ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))
+								case "Non-substitution"
+									solvesub_nosub=1
+									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_nosub,0)
 								case "Substitution","Substitution + sequential homophones","Higher-order homophonic","Substitution + sparse polyalphabetism"
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_substitution,0)
 								case "Substitution + crib grid","Bigram substitution","Substitution + monoalphabetic groups"
@@ -39,6 +43,27 @@ case button_main_process
 									else
 										thread_ptr(threadsmax+1)=threadcreate(@thread_solve_cribgrid,0)
 									end if
+								case "Columnar transposition","Columnar rearrangement","Row rearrangement","Grid rearrangement"
+									if cl_windowup=0 then
+										create_window_permutations
+									else
+										solvesub_nosub=1
+										thread_ptr(threadsmax+1)=threadcreate(@thread_solve_permutations,0)
+									end if
+								case "Periodic transposition"
+									if pt_windowup=0 then
+										create_window_rules
+									else
+										solvesub_nosub=1
+										if ui_editbox_gettext(editbox_rules_manual)="" then
+											thread_ptr(threadsmax+1)=threadcreate(@thread_solve_rules,0)
+										else
+											thread_ptr(threadsmax+1)=threadcreate(@thread_solve_rules_manual,0)
+										end if
+									end if
+								case "Periodic transposition (automatic)"
+									solvesub_nosub=1
+									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_rules_manual,0)
 								case "Substitution + columnar transposition","Substitution + columnar rearrangement","Substitution + nulls and skips"
 									select case ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))
 										case "Substitution + columnar rearrangement"
@@ -47,7 +72,7 @@ case button_main_process
 											genhc_mode="columnar transposition"
 										case "Substitution + nulls and skips"
 											genhc_mode="nulls and skips"
-									end select	
+									end select
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_genhc,0)
 								case "Substitution + row bound"
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_rowbound,0)
@@ -64,7 +89,8 @@ case button_main_process
 										if ui_radiobutton_getcheck(radiobutton_polyphones_hafer1)=1 then thread_ptr(threadsmax+1)=threadcreate(@thread_solve_polyphones_hafer,0)
 										if ui_radiobutton_getcheck(radiobutton_polyphones_hafer2)=1 then thread_ptr(threadsmax+1)=threadcreate(@thread_solve_polyphones_hafer,0)
 									end if
-								case "Substitution + simple transposition"
+								case "Substitution + simple transposition","Simple transposition"
+									if ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))="Simple transposition" then solvesub_nosub=1
 									if ts_windowup=0 then
 										create_window_transpositionsolver
 									else
@@ -82,8 +108,6 @@ case button_main_process
 										end if
 										thread_ptr(threadsmax+1)=threadcreate(@thread_solve_simpletransposition,0)
 									end if
-								case "Substitution + rectangles"	
-									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_rectangles,0)
 								case "Substitution + vigenère"
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_vigenere,0)
 								case "Substitution + vigenère word list"
