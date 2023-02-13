@@ -7,6 +7,9 @@ Latest binaries can be found here:  https://zodiackiller.net/community/zodiac-ci
 # Table of Contents
 1. [Solvers](#solvers)
 2. [Settings](#settings)
+3. [Build Steps](#build)
+4. [Stats](#stats)
+5. [Notes, Tips, and Tricks](#notes)
 
 # Solvers <a name="solvers"></a>
 
@@ -137,6 +140,31 @@ Jarl says:  It follows this calculation: `score/=1+((unique_symbols/cipher_lengt
 
 ---
 
+# Build steps <a name="build"></a>
+
+1. Unzip the 3 folders in the root of C drive. (`AZdecrypt`, `FbEdit` and `FreeBASIC-1.09.0-winlibs-gcc-9.3.0`)
+2. Open `FbEdit` under `FbEdit`.
+3. Open `AZdecrypt.bas`.
+4. Click the green play icon to compile and run.
+
+Next to the green play icon there is `Windows GCC` which can be changed to `Windows GAS` for much faster compilation time. But GAS builds a slower program.
+
+Options, Build Options to change compiler flags.
+
+Options, Path Options to change paths.
+
+The substitution solver = `sub azdecrypt_234567810g(byval tn_ptr as any ptr)`.
+
+# Stats <a name="stats"></a>
+
+## Unigrams
+
+[Jarl demonstrates how to extract periodicities from a transposition matrix entered in the input window](https://zodiackiller.net/community/postid/88297/), and explains Entropy vs Normalized Entropy.
+
+---
+
+# Notes, tips and tricks <a name="notes">
+
 # Pangrams
 
 AZDecrypt was not able to solve this cipher with default settings:
@@ -197,23 +225,3 @@ Sometimes you have a plaintext that lacks spaces and want to automatically add s
     * (General) Add spaces to output iterations
 * It uses a small hill climber for the function so upping the iterations may improve quality slightly.
 
-# Build steps
-
-1. Unzip the 3 folders in the root of C drive. (`AZdecrypt`, `FbEdit` and `FreeBASIC-1.09.0-winlibs-gcc-9.3.0`)
-2. Open `FbEdit` under `FbEdit`.
-3. Open `AZdecrypt.bas`.
-4. Click the green play icon to compile and run.
-
-Next to the green play icon there is `Windows GCC` which can be changed to `Windows GAS` for much faster compilation time. But GAS builds a slower program.
-
-Options, Build Options to change compiler flags.
-
-Options, Path Options to change paths.
-
-The substitution solver = `sub azdecrypt_234567810g(byval tn_ptr as any ptr)`.
-
-# Stats
-
-## Unigrams
-
-[Jarl demonstrates how to extract periodicities from a transposition matrix entered in the input window](https://zodiackiller.net/community/postid/88297/), and explains Entropy vs Normalized Entropy.
