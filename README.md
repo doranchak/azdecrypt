@@ -4,7 +4,11 @@ AZdecrypt is a fast and powerful hillclimbing classical cipher solver written in
 
 Latest binaries can be found here:  https://zodiackiller.net/community/zodiac-cipher-mailings-discussion/azdecrypt-1-19b/
 
-# Solvers 
+# Table of Contents
+1. [Solvers](#solvers)
+2. [Settings](#settings)
+
+# Solvers <a name="solvers"></a>
 
 AZDecrypt's main window has a list of solvers.  Each one is a type of hillclimber that specializes in different types of ciphers:
 
@@ -58,7 +62,7 @@ The same solver as the Substitution + simple transposition but does not perform 
 
 ---
 
-# Settings
+# Settings <a name="settings"></a>
 
 Under "Options -> Solvers":
 
@@ -112,7 +116,7 @@ List of solvers that use both the inner and outer hill climbers:
 
 This value will "punish" solutions that are produced by increasing the multiplicity (ratio of unique symbols to cipher length) of the cipher text.  Defaults to 0 which means this punishment will not occur.  A value of 1 is a good starting point for including the punishment.
 
-Jarl says:  It follows this calculation: score/=1+((unique_symbols/cipher_length)*multiplicity_weight). The higher the multiplicity, the more the score will be reduced. It may prevent some of the solvers from inflating the score by changes that increase multiplicity. It will still do that but now there is a trade off.  Secondly it can also be used as a filter, in case of using the Substitution + units solver for removing the spaces as nulls, the key size (amount of null symbols) will increase with every hill-climber iteration and eventually the multiplicity will become very high and the solver may find non-solutions that exceed the score of the underlying plain text, in that case the multiplicity weight will punish these and the best solution (according to the multiplicity weight trade off) will still be on top, sort of.
+Jarl says:  It follows this calculation: `score/=1+((unique_symbols/cipher_length)*multiplicity_weight)`. The higher the multiplicity, the more the score will be reduced. It may prevent some of the solvers from inflating the score by changes that increase multiplicity. It will still do that but now there is a trade off.  Secondly it can also be used as a filter, in case of using the Substitution + units solver for removing the spaces as nulls, the key size (amount of null symbols) will increase with every hill-climber iteration and eventually the multiplicity will become very high and the solver may find non-solutions that exceed the score of the underlying plain text, in that case the multiplicity weight will punish these and the best solution (according to the multiplicity weight trade off) will still be on top, sort of.
 
 ## [General] Output to file
 ## [General] Output to batch
