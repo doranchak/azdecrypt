@@ -161,6 +161,42 @@ The substitution solver = `sub azdecrypt_234567810g(byval tn_ptr as any ptr)`.
 
 [Jarl demonstrates how to extract periodicities from a transposition matrix entered in the input window](https://zodiackiller.net/community/postid/88297/), and explains Entropy vs Normalized Entropy.
 
+## Symbol n-grams
+
+## Encoding
+
+## Observations
+
+## Alphabets
+
+## Hafer shifts
+
+## Output graphs
+
+## Periodic analysis
+
+## Transposition matrix analysis
+
+## Compare input and output
+
+## Find vigenere keyword length
+
+## Find omnidirectional repeats
+
+## Find plaintext direction
+
+## Find encoding direction
+
+## Find perfect n-symbol cycles
+
+## Find n-symbol cycle types
+
+## Find n-symbol cycle patterns
+
+## Find sequential homphonic randomizations
+
+## Find post sequential homophonic row or columnar rearrangement
+
 ---
 
 # Notes, tips and tricks <a name="notes">
