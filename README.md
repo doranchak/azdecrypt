@@ -165,7 +165,7 @@ The substitution solver = `sub azdecrypt_234567810g(byval tn_ptr as any ptr)`.
 
 # Notes, tips and tricks <a name="notes">
 
-# Pangrams
+## Pangrams
 
 AZDecrypt was not able to solve this cipher with default settings:
 
@@ -182,13 +182,13 @@ Jarl's fix, under "Options -> Solvers":
 
 Now it can solve the cipher.
 
-# Batch mode
+## Batch mode
 
 In batch mode (processing multiple ciphers), under default settings, AZDecrypt will not write output files if newly cracked ciphers' scores are not higher than previously cracked ciphers' scores.  To change this, set "Output improvements only" to "No" in "Options -> Solvers"
 
 In v1.2, "Batch ciphers (non-substitution)" has been added to the File menu.
 
-# Solving "Ambiguous Caesar shift" ciphers (aka Hafer ciphers or Hafer homophonic ciphers)
+## Solving "Ambiguous Caesar shift" ciphers (aka Hafer ciphers or Hafer homophonic ciphers)
 
 Instructions and details on configuring AZDecrypt to solve these kinds of ciphers [can be found here](https://zodiackiller.net/community/postid/78642/)  ([old broken link](http://zodiackillersite.com/viewtopic.php?p=81511#p81511))
 
@@ -196,17 +196,17 @@ The description of the encipherment system [is here](http://zodiackillersite.com
 
 Jarlve posted a new version of AZDecrypt that can solve Hafer ciphers [here](http://zodiackillersite.com/viewtopic.php?p=81853#p81853).
 
-# Polyphone solver improvements
+## Polyphone solver improvements
 
 Jarl has added improvements to the polyphone solver.  [Details here](http://zodiackillersite.com/viewtopic.php?p=81694#p81694).
 
-# Compute score for a given plaintext
+## Compute score for a given plaintext
 
 Select the "Non-substitution" solver.
 
 Before that feature was available, it was achievable like this: Use the "Substitution + crib grid" solver, click on Show cipher and then type in the letters of the plain text. Though you will have to leave one letter uncribbed for it to work.
 
-# Homophonic substitution with spaces
+## Homophonic substitution with spaces
 
 Sometimes a homophonic substitution cipher will encode spaces with one or more symbols.  
 
@@ -214,7 +214,7 @@ To solve it:  Go to File, Load n-grams, navigate to `AZdecrypt/N-grams/Spaces` a
 
 Before that method was available, one way was to select the Substitution + units solver with the standard settings, Unit: symbol, Mode: Remove and perhaps Multiplicity weight: 1.   [Thread](http://zodiackillersite.com/viewtopic.php?f=81&t=5059#p82408)
 
-# Using AZDecrypt to auto-insert spaces in input
+## Using AZDecrypt to auto-insert spaces in input
 
 Sometimes you have a plaintext that lacks spaces and want to automatically add spaces between words (or what might seem like words).  Steps:
 
