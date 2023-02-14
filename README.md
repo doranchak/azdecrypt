@@ -80,7 +80,7 @@ Say we have the following transposition matrix:
 
 A) Say we put the first letter of the plaintext at position 1, the second letter at pos 2, then pos 3 etc. (transposition)
 
-If we use the methodology I explained in the link we end up with the following period map:
+If we use the methodology [explained here](https://zodiackiller.net/community/postid/88297/) we end up with the following period map:
 
 ```118  -117 116  -115 114  -113 112  -111 110  -109 108  -107 106  -105 104  -103 102
 -101 100  -99  98   -97  96   -95  94   -93  92   -91  90   -89  88   -87  86   -85
