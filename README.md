@@ -56,10 +56,96 @@ Scores your plain text and provides detailed n-gram stats
 [Demonstration](https://www.freebasic.net/forum/viewtopic.php?p=291162&sid=bc32599734174f3a33be0cb32188da84#p291162)
 ## Grid rearrangement (keyed)
 ## Periodic transposition
+
 [Demonstration of partial solve on transposed Z340 plaintext](https://zodiackiller.net/community/postid/88298/)
-Can solve a whole variety of transposition ciphers keyed or unkeyed as long as the transposition can be summarized by a limited set of periodic rules
+
+Can solve a whole variety of transposition ciphers keyed or unkeyed as long as the transposition can be summarized by a limited set of periodic rules.
 Select "Periodic transposition [auto]" or "Periodic transposition inverted [auto]" if you want the solver to try to automatically determine the transposition.
-Note that the transposition solver will write additional output to the Output folder (for example, the transposition matrices it finds)
+Note that the transposition solver will write additional output to the Output folder (for example, the transposition matrices it finds).
+
+One of the factors that guides this solver is *periodic redundancy*, a measurement that looks at periodicity in candidate transposition matrices.  Matrices that have a lot of periodic behavior will have a lot of repeating periods, which increases periodic redundancy.  If there is more randomness to the matrix, periodic redundancy will be low.  This measurement is balanced against the n-grams score to try to arrive at the correct transposition matrix.  [More info here in Jarl's post](https://zodiackiller.net/community/postid/88297/).
+
+**Normal vs inverted transposition matrices**
+
+Say we have the following transposition matrix:
+
+```1   3   5   7   9   11  13  15  17  19  21  23  25  27  29  31  33
+35  37  39  41  43  45  47  49  51  53  55  57  59  61  63  65  67
+69  71  73  75  77  79  81  83  85  87  89  91  93  95  97  99  101
+103 105 107 109 111 113 115 117 119 118 116 114 112 110 108 106 104
+102 100 98  96  94  92  90  88  86  84  82  80  78  76  74  72  70
+68  66  64  62  60  58  56  54  52  50  48  46  44  42  40  38  36
+34  32  30  28  26  24  22  20  18  16  14  12  10  8   6   4   2
+```
+
+A) Say we put the first letter of the plaintext at position 1, the second letter at pos 2, then pos 3 etc. (transposition)
+
+If we use the methodology I explained in the link we end up with the following period map:
+
+```118  -117 116  -115 114  -113 112  -111 110  -109 108  -107 106  -105 104  -103 102
+-101 100  -99  98   -97  96   -95  94   -93  92   -91  90   -89  88   -87  86   -85
+84   -83  82   -81  80   -79  78   -77  76   -75  74   -73  72   -71  70   -69  68
+-67  66   -65  64   -63  62   -61  60   -59  58   -57  56   -55  54   -53  52   -51
+50   -49  48   -47  46   -45  44   -43  42   -41  40   -39  38   -37  36   -35  34
+-33  32   -31  30   -29  28   -27  26   -25  24   -23  22   -21  20   -19  18   -17
+16   -15  14   -13  12   -11  10   -9   8    -7   6    -5   4    -3   2    -1
+```
+
+These are all unique periods so the solver could never get it. Study the matrices and see why.
+
+Now, if we go back to step A, instead of putting, we get the letter from position 1, then we get the letter from pos 2 etc. (untransposition)
+
+It would equal to the following matrix (for putting, transposition)
+
+```1   119 2   118 3   117 4   116 5   115 6   114 7   113 8   112 9
+111 10  110 11  109 12  108 13  107 14  106 15  105 16  104 17  103
+18  102 19  101 20  100 21  99  22  98  23  97  24  96  25  95  26
+94  27  93  28  92  29  91  30  90  31  89  32  88  33  87  34  86
+35  85  36  84  37  83  38  82  39  81  40  80  41  79  42  78  43
+77  44  76  45  75  46  74  47  73  48  72  49  71  50  70  51  69
+52  68  53  67  54  66  55  65  56  64  57  63  58  62  59  61  60
+```
+
+And if we extract the period map now we get:
+
+```2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+2  2  2  2  2  2  2  2  -1 -2 -2 -2 -2 -2 -2 -2 -2
+-2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2
+-2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2
+-2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2 -2
+```
+
+So now it's periodic again. So by inverting the matrix in the solver we can solve these more difficult cases.
+
+Jarl made a tool for analyzing transposition matrices as of AZdecrypt 1.21: *Stats, transposition matrix analysis*.
+
+Also, if you go to *Format*, and then *Convert*, there are tools to extract period maps and invert matrices, etc.
+
+Put in the first matrix, the one that starts with `1 3 5` etc and click *transposition matrix analysis*.
+
+Output should be:
+
+```AZdecrypt transposition matrix stats for: test.txt
+---------------------------------------------------------
+Locality (linear distance between numbers): 98.31%, 0.83%
+Locality (distance from natural positions): 33.89%, 33.89%
+
+Periodic stepping: redundancy% (inverted, standard)
+--------------------------------------------------
+1: 84.57%, 0%
+2: 83.62%, 85.44%
+3: 82.67%, 0%
+4: 81.70%, 85.39%
+5: 80.71%, 0%
+6: 79.71%, 85.33%
+```
+
+It shows that the logarithmic periodic redundancy at stepping 1 inverted is 84.57%, meaning that it should be easy to solve.
+
+More difficult cases require higher stepping levels to solve.
+
 ## Simple transposition
 The same solver as the Substitution + simple transposition but does not perform substitution
 
