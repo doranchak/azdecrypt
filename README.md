@@ -69,7 +69,8 @@ One of the factors that guides this solver is *periodic redundancy*, a measureme
 
 Say we have the following transposition matrix:
 
-```1   3   5   7   9   11  13  15  17  19  21  23  25  27  29  31  33
+```
+1   3   5   7   9   11  13  15  17  19  21  23  25  27  29  31  33
 35  37  39  41  43  45  47  49  51  53  55  57  59  61  63  65  67
 69  71  73  75  77  79  81  83  85  87  89  91  93  95  97  99  101
 103 105 107 109 111 113 115 117 119 118 116 114 112 110 108 106 104
@@ -82,7 +83,8 @@ A) Say we put the first letter of the plaintext at position 1, the second letter
 
 If we use the methodology [explained here](https://zodiackiller.net/community/postid/88297/) we end up with the following period map:
 
-```118  -117 116  -115 114  -113 112  -111 110  -109 108  -107 106  -105 104  -103 102
+```
+118  -117 116  -115 114  -113 112  -111 110  -109 108  -107 106  -105 104  -103 102
 -101 100  -99  98   -97  96   -95  94   -93  92   -91  90   -89  88   -87  86   -85
 84   -83  82   -81  80   -79  78   -77  76   -75  74   -73  72   -71  70   -69  68
 -67  66   -65  64   -63  62   -61  60   -59  58   -57  56   -55  54   -53  52   -51
@@ -97,7 +99,8 @@ Now, if we go back to step A, instead of putting, we get the letter from positio
 
 It would equal to the following matrix (for putting, transposition)
 
-```1   119 2   118 3   117 4   116 5   115 6   114 7   113 8   112 9
+```
+1   119 2   118 3   117 4   116 5   115 6   114 7   113 8   112 9
 111 10  110 11  109 12  108 13  107 14  106 15  105 16  104 17  103
 18  102 19  101 20  100 21  99  22  98  23  97  24  96  25  95  26
 94  27  93  28  92  29  91  30  90  31  89  32  88  33  87  34  86
@@ -108,7 +111,8 @@ It would equal to the following matrix (for putting, transposition)
 
 And if we extract the period map now we get:
 
-```2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+```
+2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 2  2  2  2  2  2  2  2  -1 -2 -2 -2 -2 -2 -2 -2 -2
@@ -127,7 +131,8 @@ Put in the first matrix, the one that starts with `1 3 5` etc and click *transpo
 
 Output should be:
 
-```AZdecrypt transposition matrix stats for: test.txt
+```
+AZdecrypt transposition matrix stats for: test.txt
 ---------------------------------------------------------
 Locality (linear distance between numbers): 98.31%, 0.83%
 Locality (distance from natural positions): 33.89%, 33.89%
