@@ -2,7 +2,9 @@
 
 AZdecrypt is a fast and powerful hillclimbing classical cipher solver written in [FreeBASIC](https://www.freebasic.net/).
 
-Latest binaries can be found here:  https://zodiackiller.net/community/zodiac-cipher-mailings-discussion/azdecrypt-1-19b/
+Latest binaries can be found here:  
+- https://zodiackiller.net/community/zodiac-cipher-mailings-discussion/azdecrypt-1-19b/
+- https://www.freebasic.net/forum/viewtopic.php?p=203927#p203927
 
 # Table of Contents
 1. [Solvers](#solvers)
