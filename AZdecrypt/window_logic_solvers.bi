@@ -1,14 +1,15 @@
 case button_main_process
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		dim as byte bypass=0
 		if ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))="Substitution + crib grid" andalso wc_windowup=1 then bypass=1 'soi="Ok" 'exception
-		if ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))="Substitution + simple transposition" andalso ts_windowup=0 then bypass=1 'soi="Ok" 'exception
+		if ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))="Substitution + simple transposition" andalso ts_windowup=0 then bypass=1 'soi="Ok" 'exception '???
+		if ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))="Substitution + simple transposition" andalso wc_windowup=1 andalso ui_checkbox_getcheck(checkbox_transpostionsolver_tpmatrix)=1 then bypass=1 'soi="Ok" 'exception
 		if soi="Ok" or bypass=1 then 'if cipher is ok
 			if info_symbols>1 or bypass=1 then 'symbol check
 				if task_active<>"none" then stop_current_task 'stop current task
 				sleep 50
-				if len(solver_file_name_ngrams)>0 then 'if n-grams are ok
+				if len(solver_file_name_ngrams)>0 then 'if letter n-grams are ok
 					if task_active="none" then
 						toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",4,1,threads) 'stop solver
 						toggle_solverthreads(empty(),0,0,0,0,basedir+"\Output\",2,1,threads) 'stop thread
@@ -20,7 +21,8 @@ case button_main_process
 								case "Non-substitution"
 									solvesub_nosub=1
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_nosub,0)
-								case "Substitution","Substitution + sequential homophones","Higher-order homophonic","Substitution + sparse polyalphabetism"
+								case "Substitution","Substitution + sequential homophones","Higher-order homophonic",_
+									"Substitution + sparse polyalphabetism","Substitution (test)"
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_substitution,0)
 								case "Substitution + crib grid","Bigram substitution","Substitution + monoalphabetic groups"
 									dim as byte prev_solvesub_cribgridinstance=solvesub_cribgridinstance
@@ -43,7 +45,8 @@ case button_main_process
 									else
 										thread_ptr(threadsmax+1)=threadcreate(@thread_solve_cribgrid,0)
 									end if
-								case "Columnar transposition","Columnar rearrangement","Row rearrangement","Grid rearrangement"
+								case "Columnar transposition","Columnar rearrangement","Row rearrangement","Grid rearrangement","Roche's first method",_
+									"Variable row rearrangement"
 									if cl_windowup=0 then
 										create_window_permutations
 									else
@@ -61,10 +64,11 @@ case button_main_process
 											thread_ptr(threadsmax+1)=threadcreate(@thread_solve_rules_manual,0)
 										end if
 									end if
-								case "Periodic transposition (automatic)"
+								case "Periodic transposition [auto]","Periodic transposition inverted [auto]"
 									solvesub_nosub=1
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_rules_manual,0)
-								case "Substitution + columnar transposition","Substitution + columnar rearrangement","Substitution + nulls and skips"
+								case "Substitution + columnar transposition","Substitution + columnar rearrangement",_
+									"Substitution + nulls and skips","Nulls and skips"
 									select case ui_listbox_gettext(list_main,ui_listbox_getcursel(list_main))
 										case "Substitution + columnar rearrangement"
 											genhc_mode="columnar rearrangement"
@@ -72,6 +76,9 @@ case button_main_process
 											genhc_mode="columnar transposition"
 										case "Substitution + nulls and skips"
 											genhc_mode="nulls and skips"
+										case "Nulls and skips"
+											genhc_mode="nulls and skips"
+											solvesub_nosub=1
 									end select
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_genhc,0)
 								case "Substitution + row bound"
@@ -112,8 +119,6 @@ case button_main_process
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_vigenere,0)
 								case "Substitution + vigenère word list"
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_vigenerelist,0)
-								case "Substitution + word cribs"
-									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_wordcribs,0)
 								case "Substitution + crib list"
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_criblist,0)
 								case "Substitution + units"
@@ -124,10 +129,13 @@ case button_main_process
 									end if
 								case "Merge sequential homophones"
 									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_mergeseqhom,0)
+								case "Multiple caesar shifts"
+									solvesub_nosub=1
+									thread_ptr(threadsmax+1)=threadcreate(@thread_solve_caesarshifts,0)
 							end select
 						end if
 					end if
-				else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+				else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 				end if
 			else ui_editbox_settext(output_text,"Error: cipher must have at least two unique symbols")
 			end if

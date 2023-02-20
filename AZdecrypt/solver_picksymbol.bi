@@ -14,7 +14,7 @@ if use_cribs=0 then
 	
 else
 	
-	if use_cribs<2 then 'for "row bound fragments" solver
+	if use_cribs<2 then '2 for "row bound fragments" solver
 	
 		do
 			
@@ -30,7 +30,7 @@ else
 		   	next i
 		   end if
 			
-		loop until cribkey(curr_symbol)=0
+		loop until cribkey(curr_symbol)=0 or stoptask=1
 		
 	else
 		

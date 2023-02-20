@@ -1,6 +1,6 @@
 case button_units_start
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			if task_active<>"none" then stop_current_task
 			if len(solver_file_name_ngrams)>0 then
@@ -14,7 +14,7 @@ case button_units_start
 					sleep 10
 					thread_ptr(threadsmax+1)=threadcreate(@thread_solve_units,0)
 				end if
-			else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+			else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 			end if
 		else ui_editbox_settext(output_text,soi)
 		end if

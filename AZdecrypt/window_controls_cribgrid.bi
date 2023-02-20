@@ -1,7 +1,7 @@
 case button_cribs_solve
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
-		if soi="Ok" then
+		'soi=string_to_info(ui_editbox_gettext(input_text),constcip)
+		'if soi="Ok" then
 			if task_active<>"none" then stop_current_task
 			if len(solver_file_name_ngrams)>0 then
 				e=1
@@ -29,10 +29,10 @@ case button_cribs_solve
 					sleep 10
 					thread_ptr(threadsmax+1)=threadcreate(@thread_solve_cribgrid,0)
 				end if
-			else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+			else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 			end if
-		else ui_editbox_settext(output_text,soi)
-		end if
+		'else ui_editbox_settext(output_text,soi)
+		'end if
 	end if
 
 case button_cribs_clear
@@ -47,7 +47,7 @@ case button_cribs_clear
 
 case button_cribs_reload
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			if task_active<>"none" then stop_current_task
 			if len(solver_file_name_ngrams)>0 then
@@ -61,7 +61,7 @@ case button_cribs_reload
 					ui_window_getposition(window_cribs,wc_x0,wc_y0,wc_x1,wc_y1)
 					create_window_cribgrid(wc_x0,wc_y0,1)
 				end if
-			else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+			else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 			end if
 		else ui_editbox_settext(output_text,soi)
 		end if

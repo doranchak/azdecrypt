@@ -2,7 +2,7 @@ case button_combine_add
 	if msg.message=wm_lbuttondown then
 		if ui_listbox_getcursel(list_combine_operations)>-1 then
 			if val(ui_editbox_gettext(editbox_combine_a1))>0 andalso val(ui_editbox_gettext(editbox_combine_a2))>0 then
-				soi=string_to_info(ui_editbox_gettext(input_text)) 'get cipher
+				soi=string_to_info(ui_editbox_gettext(input_text),constcip) 'get cipher
 				if soi="Ok" then
 					combine_stacksize+=1
 					i=ui_listbox_getcursel(list_combine_operations)

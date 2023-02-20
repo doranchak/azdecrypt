@@ -8,7 +8,7 @@ case button_transposition_transpose,button_transposition_untranspose
 				untransposed=1
 		end select
 		dim as string operation=ui_listbox_gettext(list_transposition,ui_listbox_getcursel(list_transposition))
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if operation="Use transposition matrix" then
 			if soi="Ok" then
 				dim as integer l1=info_length
@@ -20,7 +20,7 @@ case button_transposition_transpose,button_transposition_untranspose
 				for i=1 to l1
 					cip1(i)=info(i)
 				next i
-				soi=string_to_info(ui_editbox_gettext(output_text))
+				soi=string_to_info(ui_editbox_gettext(output_text),constcip)
 				if soi="Ok" then
 					if info_length=l1 then
 						dim as integer l2=info_length

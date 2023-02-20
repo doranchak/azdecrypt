@@ -1,4 +1,4 @@
-AZdecrypt 1.21 by jarlve@yahoo.com (23/04/22) dd/mm/yy
+AZdecrypt 1.22 by jarlve@yahoo.com (20/02/23) dd/mm/yy
 --------------------------------------------------------
 A powerful multi-threaded letter n-gram based substitution cipher solver for Windows since 2014. Originally written in attempt to solve the Zodiac Killer's unsolved 340 code.
 
@@ -14,7 +14,7 @@ Discussion and support: https://www.freebasic.net/forum/viewtopic.php?t=23188
 --------------------------------------------------------
 --> Providing excellent all-around n-grams that were compiled from a multi-terabyte corpus.
 --> Special no-compromise low memory n-gram format.
---> Recoding the n-gram loading routine so that it is up to 20 times faster with the added support for loading n-grams directly from .gz files.
+--> Recoding the text n-gram loading routine so that it is up to 20 times faster with the added support for loading n-grams directly from .gz files.
 --> Several code optimizations to the solvers which increase speed by up to 10%.
 --> N-gram score calculation abort routine which speeds up the solver when using higher n-gram sizes.
 --> The many suggestions and working with me on AZdecrypt from 2019 to 2020.
@@ -31,6 +31,8 @@ Discussion and support: https://www.freebasic.net/forum/viewtopic.php?t=23188
 - Many thanks to the people of the Zodiackillersite cipher forums for their help and support: daikon, doranchak, glurk, Largo, Marclean, Mr lowe, smokie treats, f.reichmann, beldenge and many more.
 - Many thanks to the people of the FreeBASIC forum for helping me out with code issues: counting_pine, dodicat, fxm, jj2007, Lothar Schirm, MichaelW, MrSwiss, paul doe, PaulSquires, SARG, srvaldez, St_W and many more.
 
+Various resources:
+--------------------------------------------------------------------
 David Oranchak's Zodiac Ciphers wiki: http://zodiackillerciphers.com/wiki/index.php?title=Main_Page
 David Oranchak's Cipher Explorer: http://zodiackillersite.com/viewtopic.php?f=81&t=3661
 David Oranchak's WebToy: http://zodiackillerciphers.com/webtoy/
@@ -40,8 +42,14 @@ Largo's Peek-a-boo: http://www.zodiackillersite.com/viewtopic.php?f=81&t=3255
 CrypTool: https://www.cryptool.org/en/
 George Belden's Project Zenith: http://projectzenith.net/dashboard
 f.reichmann's solvers: http://zodiackillersite.com/viewtopic.php?f=81&t=5013
-
+https://ciphermysteries.com/
+Cipherbrain: https://scienceblogs.de/klausis-krypto-kolumne/
+Cipher challenges: https://mysterytwister.org/home/welcome/
+https://www.gzip.org/
 https://zlib.net/
+
+AZdecrypt draws heavily upon the collection of language data at: https://wortschatz.uni-leipzig.de/en/usage
+https://creativecommons.org/licenses/by-nc/4.0/
 
 Let me know if I have forgotten you or something else!
 

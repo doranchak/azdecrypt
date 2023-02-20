@@ -61,7 +61,7 @@ case button_creatematrix_undo
 	
 case button_creatematrix_transpose
 	if msg.message=wm_lbuttondown then
-		dim as string soi=string_to_info(ui_editbox_gettext(input_text))
+		dim as string soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			i=0
 			dim as short licm1(info_length)
@@ -90,7 +90,7 @@ case button_creatematrix_transpose
 	
 case button_creatematrix_untranspose
 	if msg.message=wm_lbuttondown then
-		dim as string soi=string_to_info(ui_editbox_gettext(input_text))
+		dim as string soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			i=0
 			dim as short licm1(info_length)

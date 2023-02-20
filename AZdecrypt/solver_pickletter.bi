@@ -134,9 +134,13 @@ else
 		case 8
 			new_letter=abc_size
 			#include "solver_pickletter_bh8.bi"
-		'case 10
-		'	new_letter=abc_size
-		'	#include "solver_pickletter_bh10.bi"
+		case 10
+			new_letter=abc_size
+			#include "solver_pickletter_bh10.bi"
+		case else
+			state=48271*state and 2147483647
+			k=1+map2(curr_symbol,0)*state shr 31
+			j=map2(curr_symbol,k)
 	end select
 	if new_letter=old_letter or new_letter=abc_size then
 		#include "solver_randomnewletter.bi"

@@ -112,7 +112,7 @@ if wc_windowup=1 then
 								if i=wc_l then exit for,for
 							next x2
 						next y2
-						dim as string sti=string_to_info(pstring)
+						dim as string sti=string_to_info(pstring,constcip)
 						if sti="Ok" then
 							wc_s=info_symbols
 							wc_pgrid(0,x,y)=""
@@ -172,7 +172,7 @@ if wc_windowup=1 then
 									pstring+=" "
 								next x2
 							next y2
-							string_to_info(pstring)
+							string_to_info(pstring,constcip)
 							wc_s=info_symbols
 							wc_pgrid(0,x,y)=""
 							ui_editbox_settext(wc_cribs(x,y),"")

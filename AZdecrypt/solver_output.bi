@@ -25,19 +25,27 @@ if local_outputdir=1 then
 			else
 				solstring="Score: "+rdc(thread(tn).score,2)+" IOC: "+rdc(thread(tn).ioc,4)+" Multiplicity: "+rdc(thread(tn).multiplicity,4)+stt(thread(tn).sectime)+lb
 				if local_advstats=1 then
-					solstring+=str(thread(tn).repeats)+lb
-					if solvesub_nosub=0 then solstring+="PC-cycles: "+str(thread(tn).pccycles)+lb
+					if thread(tn).repeats<>"" then solstring+=str(thread(tn).repeats)+lb
+					if solvesub_nosub=0 then 
+						solstring+="PC-cycles: "+str(thread(tn).pccycles) '+lb
+						select case thread(tn).solver_outputid
+							case 0 'substitution
+								solstring+=" Homophones: "+str(thread(tn).homophones)+lb
+							case else
+								solstring+=lb
+						end select
+					end if
 					'if ngram_standardalphabet=1 then solstring+=" Word-flow: "+rdc(thread(tn).wordflow,2)
 				end if
 				solstring+=lb
-				select case solver_output
+				select case thread(tn).solver_outputid
 					case 1:solstring+="Symbols: "+str(thread(tn).effectivesymbols)+lb+lb
-					case 2:solstring+="Average n-gram size: "+rdc(thread(tn).tmpd1,4)+lb+lb
+					case 2:solstring+="Average letter n-gram size: "+rdc(thread(tn).tmpd1,4)+lb+lb
 					case 3:solstring+="Polyalphabetism: "+rdc((1-thread(tn).match)*100,2)+"%"+lb+lb
 					case 6:solstring+="Collisions: "+str(thread(tn).ioc2)+lb+lb
 				end select
 				if thread(tn).itemname<>"" then solstring+=thread(tn).itemname+lb+lb
-				select case solver_output
+				select case thread(tn).solver_outputid
 					case 2 'row bound (keep unspaced ???)	
 						j=1:k=0
 						for i=1 to l
@@ -62,9 +70,8 @@ if local_outputdir=1 then
 						next j
 					case 5 'merge sequential homophones
 						solstring+=info_to_string(thread(tn).sol(),l,thread(tn).dim_x,thread(tn).dim_y,thread(tn).num,0,0)
-					case else
-						'separate into new case ???
-						if solvesub_bigramheatmap=1 andalso task_active="bigram substitution" then 'heatmap
+					case 9 'bigram substitution
+						if solvesub_bigramheatmap=1 then 'heatmap
 							mutexlock csolmutex
 							csol(0,0)+=1
 							csn=csol(0,0)
@@ -83,7 +90,8 @@ if local_outputdir=1 then
 							next i
 							mutexunlock csolmutex
 						end if
-						'default
+						solstring+=info_to_string(thread(tn).sol(),l,thread(tn).dim_x,thread(tn).dim_y,0,solvesub_addspaces,0)
+					case else 'default
 						solstring+=info_to_string(thread(tn).sol(),l,thread(tn).dim_x,thread(tn).dim_y,0,solvesub_addspaces,0)
 				end select
 				open filename for output as #filenum
@@ -105,19 +113,27 @@ if local_outputdir=1 then
 			solstring+=" Multiplicity: "+rdc(thread(tn).multiplicity,4)
 			solstring+=stt(thread(tn).sectime)
 			if local_advstats=1 then 
-				solstring+=" "+str(thread(tn).repeats)
-				solstring+=" PC-cycles: "+str(thread(tn).pccycles)
+				if thread(tn).repeats<>"" then solstring+=" "+str(thread(tn).repeats)
+				if solvesub_nosub=0 then
+					solstring+=" PC-cycles: "+str(thread(tn).pccycles)
+					select case thread(tn).solver_outputid
+						case 0 'substitution
+							solstring+=" Homophones: "+str(thread(tn).homophones)
+						case else
+							solstring+=lb
+					end select
+				end if
 				'if ngram_standardalphabet=1 then solstring+=" Word-flow: "+rdc(thread(tn).wordflow,2)
 			end if
-			select case solver_output
+			select case thread(tn).solver_outputid
 				case 1:solstring+=" Symbols: "+str(thread(tn).effectivesymbols)
-				case 2:solstring+=" Average n-gram size: "+rdc(thread(tn).tmpd1,4)
+				case 2:solstring+=" Average letter n-gram size: "+rdc(thread(tn).tmpd1,4)
 				case 3:solstring+=" Polyalphabetism: "+rdc((1-thread(tn).match)*100,2)+"%"
 				case 6:solstring+=" Collisions: "+str(thread(tn).ioc2)
 			end select
 			if thread(tn).itemname<>"" then solstring+=", "+thread(tn).itemname
 			solstring+=" " 'solstring+=lb
-			select case solver_output
+			select case thread(tn).solver_outputid
 				case 2 'row bound
 					j=1:k=0
 					for i=1 to l

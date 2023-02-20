@@ -18,6 +18,7 @@ dim as integer cl,cs,low,mii,cal,tcs 'seqhom
 dim as integer cur_its,cur_pos,match_int,old_match_int,old_mpp2,nl2 'sparse
 dim as integer ngrf,ngrt,ngs 'row-bound
 dim as integer subtract,vig_letter 'vigenere
+dim as integer new_key,old_key 'caesar shifts
 
 dim as uinteger it,iterations,random_restarts
 dim as long state 'faster than 64-bit integer

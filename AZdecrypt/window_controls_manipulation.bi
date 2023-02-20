@@ -5,9 +5,9 @@ case button_manipulation_process
 		operation=ui_listbox_gettext(list_manipulation_operations,ui_listbox_getcursel(list_manipulation_operations))
 		select case operation 'convert input to lcase/ucase
 			case "Encode: digraph substitution","Encode: caesar shift"
-				soi=string_to_info(ucase(ui_editbox_gettext(input_text)))
+				soi=string_to_info(ucase(ui_editbox_gettext(input_text)),constcip)
 			case else
-				soi=string_to_info(ui_editbox_gettext(input_text))
+				soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		end select
 		select case operation
 			case "Generate numbers","Generate random numbers"

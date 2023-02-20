@@ -1,6 +1,6 @@
 case button_symbols_update
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then 
 			get_symbols(0)
 			ui_listbox_setcursel(list_symbols_ngrams,0)
@@ -10,7 +10,7 @@ case button_symbols_update
 
 case button_symbols_process
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip2)
 		if soi="Ok" then 
 			dim as string operation=ui_listbox_gettext(list_symbols_operations,ui_listbox_getcursel(list_symbols_operations))	
 			select case operation
@@ -23,7 +23,7 @@ case button_symbols_process
 						ngram1=left(ngram1,instr(ngram1,":  ")-1)
 						dim as integer lng1=len(ngram1)
 						if lng1>1 then
-							ui_editbox_settext(output_text,"Error: n-gram size > 1")
+							ui_editbox_settext(output_text,"Error: symbol n-gram size > 1")
 							exit select
 						end if
 						dim as string string1=info_to_string(info(),info_length,info_x,info_y,info_numerical,0,0)
@@ -59,7 +59,7 @@ case button_symbols_process
 						 		exit do
 						 	end if
 						loop
-						string_to_info(string1)
+						string_to_info(string1,constcip2)
 						ui_editbox_settext(input_text,string1)
 						get_symbols(0)
 						ui_listbox_setcursel(list_symbols_ngrams,cursor)
@@ -86,7 +86,7 @@ case button_symbols_process
 							number1=""
 					   end if
 						if numbers1(0)>1 then
-							ui_editbox_settext(output_text,"Error: n-gram size > 1")
+							ui_editbox_settext(output_text,"Error: symbol n-gram size > 1")
 							exit select			
 						end if
 						dim as integer table1(65536)
@@ -119,7 +119,7 @@ case button_symbols_process
 						next i
 						dim as string string1=info_to_string(info(),info_length,info_x,info_y,info_numerical,0,0)
 						ui_editbox_settext(input_text,string1)
-						string_to_info(string1)
+						string_to_info(string1,constcip2)
 						get_symbols(0)
 						ui_listbox_setcursel(list_symbols_ngrams,cursor)	
 					end if
@@ -146,7 +146,7 @@ case button_symbols_process
 						 		exit do
 						 	end if
 						loop	
-						string_to_info(string1)
+						string_to_info(string1,constcip2)
 						ui_editbox_settext(input_text,string1)
 						get_symbols(0)
 						ui_listbox_setcursel(list_symbols_ngrams,cursor)
@@ -219,7 +219,7 @@ case button_symbols_process
 						next i									
 						dim as string string1=info_to_string(new_info(),k,info_x,info_y,info_numerical,0,0)
 						ui_editbox_settext(input_text,string1)
-						string_to_info(string1)
+						string_to_info(string1,constcip2)
 						get_symbols(0)
 						ui_listbox_setcursel(list_symbols_ngrams,cursor)											
 					end if		
@@ -244,7 +244,7 @@ case button_symbols_process
 						 		exit do
 						 	end if
 						loop
-						string_to_info(string1)
+						string_to_info(string1,constcip2)
 						ui_editbox_settext(input_text,string1)
 						get_symbols(0)
 						ui_listbox_setcursel(list_symbols_ngrams,cursor)
@@ -297,7 +297,7 @@ case button_symbols_process
 						next i
 						dim as string string1=info_to_string(new_info(),new_length,info_x,info_y,info_numerical,0,0)
 						ui_editbox_settext(input_text,string1)
-						string_to_info(string1)
+						string_to_info(string1,constcip2)
 						get_symbols(0)
 						ui_listbox_setcursel(list_symbols_ngrams,cursor)
 					end if

@@ -70,7 +70,7 @@ case button_transpostionsolver_removeall
 '					sleep 10
 '					thread_ptr(threadsmax+1)=threadcreate(@thread_solve_simpletransposition,0)
 '				end if
-'			else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+'			else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 '			end if
 '		else ui_editbox_settext(output_text,soi)
 '		end if
@@ -103,7 +103,7 @@ case button_transpostionsolver_batchciphers1
 				sleep 10
 				thread_ptr(threadsmax+1)=threadcreate(@thread_solve_simpletransposition,0)
 			end if
-		else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+		else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 		end if
 	end if
 	
@@ -134,6 +134,6 @@ case button_transpostionsolver_batchciphers2
 				sleep 10
 				thread_ptr(threadsmax+1)=threadcreate(@thread_solve_simpletransposition,0)
 			end if
-		else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+		else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 		end if
 	end if

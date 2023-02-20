@@ -1,6 +1,6 @@
 case button_polyphones_reload
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			get_symbols(1)
 			ui_listbox_setcursel(list_polyphones_stl,0)
@@ -10,7 +10,7 @@ case button_polyphones_reload
 	
 case button_polyphones_setsel
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			dim as integer cursor=ui_listbox_getcursel(list_polyphones_stl)
 			dim as string ngram1=ui_listbox_gettext(list_polyphones_stl,cursor)
@@ -40,7 +40,7 @@ case button_polyphones_setsel
 	
 case button_polyphones_setall
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			dim as integer cursor=ui_listbox_getcursel(list_polyphones_stl)
 			j=val(ui_editbox_gettext(editbox_polyphones_setall))
@@ -70,7 +70,7 @@ case button_polyphones_setall
 '					sleep 10
 '					thread_ptr(threadsmax+1)=threadcreate(@thread_solve_polyphones_user,0)
 '				end if
-'			else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+'			else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 '			end if
 '		else ui_editbox_settext(output_text,soi)
 '		end if

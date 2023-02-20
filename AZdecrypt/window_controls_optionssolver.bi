@@ -8,10 +8,10 @@ case button_optionssolver_normalize
 				normalize_ngramfactor
 			else ui_editbox_settext(output_text,"Error: "+task_active+ " still active")
 			end if
-		else ui_editbox_settext(output_text,"Error: no n-grams loaded")
+		else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
 		end if
 	end if
-
+	
 case button_optionssolver_change
 	if msg.message=wm_lbuttondown then
 		if ui_editbox_gettext(editbox_optionssolver_a1)<>"" then
@@ -19,16 +19,29 @@ case button_optionssolver_change
 				i=ui_listbox_getcursel(list_optionssolver)
 				s=ui_listbox_gettext(list_optionssolver,i)
 				s=left(s,instr(s,":")-1)
-				dim as integer mul=0,change=0
+				dim as integer op=0,change=0
 				dim as double d=-1
 				dim as string dd=ui_editbox_gettext(editbox_optionssolver_a1)
-				if chr(asc(dd,1))="*" then 'unfinished
-					mul=1
-					d=val(right(dd,len(dd)-1))
-				end if
-				if lcase(chr(asc(dd,1)))="n" then d=0
-				if lcase(chr(asc(dd,1)))="y" then d=1
-				if d=-1 then d=val(ui_editbox_gettext(editbox_optionssolver_a1))
+				dim as string numd=""
+				for j=1 to len(dd)
+					select case chr(asc(dd,j))
+						case "0","1","2","3","4","5","6","7","8","9"
+							numd+=chr(asc(dd,j))
+							d=val(numd)
+						case ",","."
+							numd+="."
+						case "*"
+							op=1
+						case "/""\"
+							op=2
+						case "y"
+							d=0
+							exit select
+						case "n"
+							d=1
+							exit select
+					end select
+				next j
 				select case s
 					case "(General) CPU threads"
 						if d>=1 andalso d<=threadsmax then
@@ -59,16 +72,19 @@ case button_optionssolver_change
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
 					case "(General) Iterations"
-						if d>=100000 or mul=1 then
-							if mul=0 then
-								solvesub_iterations=d
-							else
-								solvesub_iterations*=d
-								if solvesub_iterations<100000 then solvesub_iterations=100000
+						'if d>=100000 or mul=1 then
+							select case op
+								case 0:solvesub_iterations=d
+								case 1:solvesub_iterations*=d
+								case 2:solvesub_iterations/=d
+							end select
+							if solvesub_iterations<100000 then 
+								solvesub_iterations=100000
+								ui_editbox_settext(output_text,"Error: minimum 100000 iterations")
 							end if
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_iterations))
-						else ui_editbox_settext(output_text,"Error: solver options (A1)")
-						end if
+						'else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						'end if
 					case "(General) Iterations factor"
 						if d>=1 then
 							solvesub_iterationsfactor=d
@@ -76,18 +92,26 @@ case button_optionssolver_change
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
 					case "(General) Hill climber iterations"
-						if d>=1000 then
-							solvesub_hciterations=d
+						'if d>=1000 then
+							select case op
+								case 0:solvesub_hciterations=d
+								case 1:solvesub_hciterations*=d
+								case 2:solvesub_hciterations/=d
+							end select
+							if solvesub_hciterations<1000 then 
+								solvesub_hciterations=1000
+								ui_editbox_settext(output_text,"Error: minimum 1000 iterations")
+							end if
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_hciterations))
-						else ui_editbox_settext(output_text,"Error: solver options (A1)")
-						end if
+						'else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						'end if
 					case "(General) Hill climber iterations factor"
 						if d>=1 then
 							solvesub_hciterationsfactor=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_hciterationsfactor))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(General) N-gram factor"
+					case "(General) Letter n-gram factor"
 						if d>0 then
 							solvesub_ngramfactor=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+rdc(solvesub_ngramfactor,5))
@@ -165,13 +189,13 @@ case button_optionssolver_change
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+yesno(screensizecheck))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(General) 8-gram memory limit"
+					case "(General) Letter 8-gram memory limit"
 						if d>=1 and d<=1048576 then
 							solvesub_bhmaxgb=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_bhmaxgb)+" GB RAM")
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(General) 8-gram caching"
+					case "(General) Letter 8-gram caching"
 						if d=0 or d=1 then
 							if solvesub_ngramcaching<>int(d) then change=2
 							solvesub_ngramcaching=d
@@ -190,19 +214,25 @@ case button_optionssolver_change
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_addspacesquality))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(General) N-gram log value cut-off"
+					case "(General) Letter n-gram log value cut-off"
 						if d>=0 or d<=254 then
 							solvesub_ngramlogcutoff=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_ngramlogcutoff))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(General) N-gram log value constant"
-						if d>=0 or d<=255 then
-							solvesub_constantngramvalue=d
-							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_constantngramvalue))
+					case "(General) Homophone weight"
+						if d>=0 or d<=1000000 then
+							solvesub_homophoneweight=d
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_homophoneweight))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(Batch n-grams) Iterations"
+					'case "(General) Letter n-gram log value constant"
+					'	if d>=0 or d<=255 then
+					'		solvesub_constantngramvalue=d
+					'		ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_constantngramvalue))
+					'	else ui_editbox_settext(output_text,"Error: solver options (A1)")
+					'	end if
+					case "(Batch letter n-grams) Iterations"
 						if d>=1 then
 							solvesub_batchngramsrestarts=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_batchngramsrestarts))
@@ -214,7 +244,7 @@ case button_optionssolver_change
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_batchciphersbigrams))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(Batch ciphers & n-grams) Shutdown computer after task completion"
+					case "(Batch ciphers & letter n-grams) Shutdown PC after task completion"
 						if d=0 or d=1 then
 							solvesub_batchshutdown=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+yesno(solvesub_batchshutdown))

@@ -1,6 +1,6 @@
 case button_dimension_update
 	if msg.message=wm_lbuttondown then
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip)
 		if soi="Ok" then
 			get_native_dimensions
 		else ui_editbox_settext(output_text,soi)
@@ -23,7 +23,7 @@ case button_dimension_custom
 					end if
 			end select
 		next i
-		soi=string_to_info(ui_editbox_gettext(input_text))
+		soi=string_to_info(ui_editbox_gettext(input_text),constcip2)
 		if val(x1)>0 andalso val(x1)<=info_length then
 			if soi="Ok" then
 				info_x=val(x1)
@@ -33,8 +33,11 @@ case button_dimension_custom
 					else
 						y1=str((info_length\info_x)+1)
 					end if
-				end if	
-				ui_editbox_settext(input_text,info_to_string(info(),val(x1)*val(y1),val(x1),val(y1),info_numerical,0,0))
+				end if
+				info_y=val(y1)
+				if val(x1)*val(y1)<info_length then info_length=val(x1)*val(y1)
+				ui_editbox_settext(input_text,info_to_string(info(),info_length,val(x1),val(y1),info_numerical,0,0))
+				'ui_editbox_settext(input_text,info_to_string(info(),val(x1)*val(y1),val(x1),val(y1),info_numerical,0,0))
 			else ui_editbox_settext(output_text,soi)
 			end if
 		end if	

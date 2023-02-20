@@ -1,6 +1,6 @@
 if local_advstats=1 then
-	select case solver_output
-		case 0,2,4,6 'substitution, no-substitution, higher-order, bigram, mono-groups, row-bound
+	select case thread(tn).solver_outputid
+		case 0,2,4,6,8,9,10,11,13,14 'substitution, no-substitution, higher-order, bigram, mono-groups, row-bound, caesar shifts, seq-hom
 			thread(tn).repeats=m_repeats(thread(tn).sol(),l,0)
 			'if ngram_standardalphabet=1 then thread(tn).wordflow=m_wordflow(thread(tn).sol(),l)
 			if local_pcmode=0 then 'use transposed texts
