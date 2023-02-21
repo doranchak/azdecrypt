@@ -560,3 +560,128 @@ What is new?
 - Support for up to 65536 CPU threads.
 - Slightly overhauled look and feel.
 - Fixed lots of small issues.
+
+## 1.11
+   
+What is new?
+
+- Improvements to the substitution solver.
+- Some of the Stats 1 and Stats 2 are improved.
+- The program should no longer crash after exiting on some systems.
+- New solver, Substitution + columnar rearrangement. Solves rearrangements of columns. The amount of columns and more can be set via Options, Solver, (Substitution + columnar transposition & rearrangement) ...
+- New solver, Substitution + columnar transposition. Solves keyed columnar transposition. The amount of columns and more can be set via Options, Solver, (Substitution + columnar transposition & rearrangement) ...
+- New solver, Substitution + period + nulls & skips. Solves unkeyed columnar transposition with nulls & skips. Similarly, its settings can be found via Options, Solvers, (Substitution + period + nulls & skips) ...
+- Added a Misc directory with a file trithemius.txt, this can be used in conjunction with the Substitution + vigenère wordlist solver to crack trithemius ciphers.
+- Added a Versions directory which houses versions that have been compiled to work faster on newer CPU architectures.
+- Added a Benchmark which can be found via Options, Benchmark.
+- Solver performance mode. Up to 40% faster solvers but only works with English ngrams. Enabled via Options, Toggle solver performance mode. If the toggle is successful this message should appear:
+
+```
+5-gram solver performance mode enabled, supported:
+--------------------------------------------------------
+- Substitution
+- Substitution + columnar rearrangement
+- Substitution + columnar transposition
+- Substitution + period + nulls & skips
+- Substitution + transposition
+- Batch ciphers (substitution)
+```
+
+And the ngram file should have a [PM] next to it:
+
+```
+Task: none
+[PM] 5-grams_english_practicalcryptography_wortschatz.txt
+--------------------------------------------------------
+Can be auto-enabled via Options, Solver, set (General) Use performance mode ngrams if applicable to 1.
+```
+
+## 1.9
+   
+What is new?
+
+- Slightly improved substitution solver.
+- Batch ciphers (substitution) is faster when processing ciphers with a reasonably low number of iterations and restarts.
+- The vigenère solver can be set to solve by rows under the options, solver menu by changing by columns to 0.
+- Fixed a bug where the 7-gram substitution solver was erroneously linked to a polyalphabetic solver.
+- Fixed a bug with the 6-gram vigenère solver.
+- Added some stats and various other bugfixes.
+
+## 1.8
+   
+What is new?
+
+- New solver: Substitution + polyphones [auto]. It can solve wildcard ciphers automatically and more. The number of extra letters to use can be changed via the options menu. I recommend that you use 6-grams and a multiplicity weight of 1 or lower/higher. This multiplicity weight ensures that the solver uses as few extra letters as possible.
+- Renamed the Substitution + user defined polyphones solver to Substitution + polyphones [user].
+- Improved solver: Substitution + transposition and added some options to alter.
+- New solver: Merge seq. homophones with options to alter. Works very well on sequential homophonic substitution ciphers without much encoding randomization.
+- Added option: (General) output to batch. Will output all solutions of a solver in a file instead of many when set to 1.
+- Added option: (General) output additional stats. Ngram score of solution and plaintext to ciphertext cycles score.
+- Slightly improved n-gram loading times.
+- Improved options menus.
+- Bugfixes.
+
+## 1.7
+   
+What is new?
+
+- Substitution + null symbols solver. It decrypts ciphers were a bunch of symbols are to be removed, assuming that every instance of that symbol needs to be removed.
+- The Stats menu has been split into Stats and More stats.
+- Encoding randomization tests have been added to More stats, it attempts to find sections of randomization in sequential homophonic substitution ciphers.
+- Stats options has been added to the options menu. It allows to change some settings that pertain to the encoding randomization and plaintext/encoding direction tests.
+- 2 and 3-symbol cycles output with details has been added to More stats.
+- Renamed the Substitution + by rows solver to Substitution + row bound.
+- Various other updates and bug fixes.
+
+## 1.6
+   
+What is new?
+
+- Substitution + light polyalphabetism solver. It aims to decrypt homophonic substitution + up to about 20% polyalphabetism/randomization considering 408/340 multiplicity. Using 6-grams is recommended and take in mind that this solver converges very slowly on the solution. You could let it run overnight.
+
+There is a new setting (match weight) under the solver options menu, this will let you control how much polyalphabetism it targets. Which is indicated with the solutions the solver returns. For example, the solver might return a solution that includes "Match 0.80123". This means that 80.123% of the plaintext correctly matches the ciphertext and that the other 19.877% is freely assigned by the solver. Increasing the match weight (under the solver options menu) will force the solver to higher match ratios while decreasing it allows for more polyalphabetism.
+
+- Renamed Substitution + polyphones solver to Substitution + user defined polyphones.
+- Various other updates and bug fixes.
+
+## 1.5
+   
+What is new?
+
+- Substitution + by rows solver. Concept by smokie treats; It does not cross row boundaries and uses a combination of ngram sizes to compensate for the loss of information.
+- Support for CTRL-A in the input and output windows.
+- Some new stats and bugfixes.
+   
+## 1.4
+   
+What is new?
+
+- Substitution + vigenère solver. Set a keyword length size in the solver menu under options.
+- Substitution + vigenère wordlist solver. Will simply go through all words in a list and could double as a one time pad solver. Words in the list must use the same alphabet as defined in the ngram .ini file (case sensitive).
+- Vigenère encoder. Under functions -> manipulation.
+- Digraph subtitution encoder. Under functions -> manipulation.
+- Added a few extra stats here and there such as odd/even bigrams. (thanks smokie)
+- Added undo button to create transposition matrix.
+- Easier to navigate menus with spacers.
+- Bugfixes and many little things. (thanks again Largo)
+
+The substitution + vigenère solver can solve 63 symbol 340 character homophonic substitution + vigenère ciphers with keywords up to a length of 10 (and probably much longer) without any problems but it may take a while. With homophonic substitution it is assumed that the vigenère is actual at the plaintext level. The solver is _very much_ susceptible to nulls.
+   
+## 1.0c
+   
+- Bug fixes.
+- Faster solver.
+- Wider window.
+- Added new stats and format options.
+- Added demo version of a transposition solver, let it run for a very long time.
+   
+## 1.0b
+   
+- Bug fixes.
+- Added symbols menu.
+- Added and improved stats.
+- Added transposition schemes.
+- Changed and moved some stuff, if you can't find something please ask.
+- Added "Batch ngrams" under File. Open "languages.txt" under "/Ngrams/Languages/" for example functionality.
+
+If there are any issues please let me know and I will fix them asap. Marclean, your transposition idea can be found under Functions -> Transposition -> Offset rectangular chain.
