@@ -596,7 +596,7 @@ Task: none
 Can be auto-enabled via Options, Solver, set (General) Use performance mode ngrams if applicable to 1.
 ```
 
-## 1.9
+## 1.09
    
 What is new?
 
@@ -607,7 +607,7 @@ What is new?
 - Fixed a bug with the 6-gram vigenère solver.
 - Added some stats and various other bugfixes.
 
-## 1.8
+## 1.08
    
 What is new?
 
@@ -621,7 +621,7 @@ What is new?
 - Improved options menus.
 - Bugfixes.
 
-## 1.7
+## 1.07
    
 What is new?
 
@@ -633,7 +633,7 @@ What is new?
 - Renamed the Substitution + by rows solver to Substitution + row bound.
 - Various other updates and bug fixes.
 
-## 1.6
+## 1.06
    
 What is new?
 
@@ -644,7 +644,7 @@ There is a new setting (match weight) under the solver options menu, this will l
 - Renamed Substitution + polyphones solver to Substitution + user defined polyphones.
 - Various other updates and bug fixes.
 
-## 1.5
+## 1.05
    
 What is new?
 
@@ -652,7 +652,7 @@ What is new?
 - Support for CTRL-A in the input and output windows.
 - Some new stats and bugfixes.
    
-## 1.4
+## 1.04
    
 What is new?
 
