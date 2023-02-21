@@ -359,7 +359,7 @@ Sometimes you have a plaintext that lacks spaces and want to automatically add s
 
 # Release History <a name="releases"></a>
 
-## 1.22
+## 1.22 - Feb 20, 2023
 
 https://drive.google.com/file/d/12ngl8-_hd7EvofHRKkNB7VtBNBceB2Tl/view?usp=share_link
 
@@ -383,7 +383,9 @@ New features:
 
 - Lots of bugfixes, small additions and improvements
 
-## 1.20
+## 1.21 - Apr 23, 2022
+
+## 1.20 - Mar 28, 2022
 
 https://drive.google.com/file/d/1gfdgnbuntedRPyG472QekZo-bImGR3D6/view?usp=sharing
 
@@ -403,7 +405,7 @@ Additional n-gram downloads:
 7-gram beijinghouse v6: https://drive.google.com/file/d/1lvh3Ih_P9OShWzQVub7wsTk8f1YtLQg8/view?usp=sharing (420 MB download)
 8-gram beijinghouse v6: https://drive.google.com/file/d/1v9xvmKQoARyerV2lIK3tphdeGiw_JmZ7/view?usp=sharing (5 GB download)
 
-## 1.19
+## 1.19 - Nov 11, 2020
 
 https://drive.google.com/file/d/1_lP82NAvj5-vzd8O33e5aggWViHd-THJ/view?usp=sharing
 
@@ -436,7 +438,7 @@ UNTIL IT BECAME MEANING LESS ENOUGH TO BE
 UNBREAKABLE I FIND THE LATTER SOME
 ```
 
-## 1.18
+## 1.18 - Jul 12, 2020
 
 https://drive.google.com/file/d/1v0nyazUTqFGKse8qAoi2FYeQASqRz152/view?usp=sharing
 
@@ -459,7 +461,7 @@ Download 6-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1aXzSQ
 Download 8-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1v9xvmKQoARyerV2lIK3tphdeGiw_JmZ7/view?usp=sharing (5 GB)
 Download 8-grams_english_jarlve_reddit: https://drive.google.com/file/d/1V1N0dp8iMoT0f7fz62eAvYAaOJVvLq52/view?usp=sharing (1.2 GB)
 
-## 1.17
+## 1.17 - Dec 25, 2019
 
 https://drive.google.com/open?id=1Sw0P9N9svMlx4QNtObZ56vEtDJHk6sZ8
 
@@ -478,7 +480,7 @@ What's new?
 
 Important note: I changed all normal n-grams (non-beijinghouse) to 1-byte log values. If you have any old n-grams from sizes 2 to 6 then you need to change the n-gram .ini file from "N-gram size=5" to "N-gram size=old5" to get it to work again.
 
-## 1.16
+## 1.16 - Oct 8, 2019
 
 https://drive.google.com/open?id=1vB1G8IAeelsz6mZU6chQ7azthSv8seky
 
@@ -494,7 +496,7 @@ What's new?
 - Minor bug fixes and improvements all over the place.
 - Compiled with the new FreeBASIC 1.07.1 release.
 
-## 1.15
+## 1.15 - May 25, 2019
 
 https://drive.google.com/open?id=1YOBOXIz6ElHd5ej48E-FA7z7FYJsVuVg
 
@@ -519,7 +521,7 @@ Again a huge update and I will illustrate some examples of the new functionality
 
 beijnghouse's new 7-grams: https://drive.google.com/open?id=1NFV-Ph6xJUsfwA8f3dGMzR35wlL47CFC
 
-## 1.14
+## 1.14 - Mar 24, 2019
 
 What has changed?
 
@@ -557,7 +559,7 @@ I've added this transposition to my solver for the next AZdecrypt release. It ha
 
 Updated the readme.txt with added names of the people that have helped me over the years plus some links to other people's work. Let me know if I have forgotten you!
 
-## 1.13
+## 1.13 - Jan 1, 2019
 
 What is new?
 
@@ -568,7 +570,7 @@ What is new?
 
 The statistics may use sigma's here and there, that is, the amount of standard deviations something is away from the mean. These will however likely not convert properly to the odds usually associated with them. They are there to give a quick indication only.
 
-## 1.12
+## 1.12 - Nov 03, 2018
 
 What is new?
 
@@ -581,7 +583,7 @@ What is new?
 - Slightly overhauled look and feel.
 - Fixed lots of small issues.
 
-## 1.11
+## 1.11 - Apr 7, 2018
    
 What is new?
 
@@ -616,7 +618,7 @@ Task: none
 Can be auto-enabled via Options, Solver, set (General) Use performance mode ngrams if applicable to 1.
 ```
 
-## 1.09
+## 1.09 - Dec 5, 2017
    
 What is new?
 
@@ -627,7 +629,7 @@ What is new?
 - Fixed a bug with the 6-gram vigenère solver.
 - Added some stats and various other bugfixes.
 
-## 1.08
+## 1.08 - Sep 7, 2017
    
 What is new?
 
@@ -641,7 +643,7 @@ What is new?
 - Improved options menus.
 - Bugfixes.
 
-## 1.07
+## 1.07 - Aug 5, 2017
    
 What is new?
 
@@ -653,7 +655,7 @@ What is new?
 - Renamed the Substitution + by rows solver to Substitution + row bound.
 - Various other updates and bug fixes.
 
-## 1.06
+## 1.06 - Jul 20, 2017
    
 What is new?
 
@@ -664,7 +666,7 @@ There is a new setting (match weight) under the solver options menu, this will l
 - Renamed Substitution + polyphones solver to Substitution + user defined polyphones.
 - Various other updates and bug fixes.
 
-## 1.05
+## 1.05 - Jun 15, 2017
    
 What is new?
 
@@ -672,7 +674,7 @@ What is new?
 - Support for CTRL-A in the input and output windows.
 - Some new stats and bugfixes.
    
-## 1.04
+## 1.04 - Apr 29, 2017
    
 What is new?
 
@@ -687,7 +689,9 @@ What is new?
 
 The substitution + vigenère solver can solve 63 symbol 340 character homophonic substitution + vigenère ciphers with keywords up to a length of 10 (and probably much longer) without any problems but it may take a while. With homophonic substitution it is assumed that the vigenère is actual at the plaintext level. The solver is _very much_ susceptible to nulls.
    
-## 1.0c
+## [??? - Apr 17, 2017](https://zodiackiller.net/community/postid/52032/)
+   
+## 1.0c - Mar 7, 2017
    
 - Bug fixes.
 - Faster solver.
@@ -695,7 +699,7 @@ The substitution + vigenère solver can solve 63 symbol 340 character homophonic
 - Added new stats and format options.
 - Added demo version of a transposition solver, let it run for a very long time.
    
-## 1.0b
+## 1.0b - Jan 27, 2017
    
 - Bug fixes.
 - Added symbols menu.
