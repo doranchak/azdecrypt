@@ -383,6 +383,26 @@ New features:
 
 - Lots of bugfixes, small additions and improvements
 
+## 1.20
+
+https://drive.google.com/file/d/1gfdgnbuntedRPyG472QekZo-bImGR3D6/view?usp=sharing
+
+Added a whole bunch of transpositions solvers that operate on non-subsitution ciphers:
+
+Non-substitution (scores your plain text + detailed n-gram stats)
+Columnar transposition (keyed)
+Columnar rearrangement (keyed)
+Grid rearrangement (keyed)
+Periodic transposition (can solve a whole variety of transposition ciphers keyed or unkeyed as long as the transposition can be summarized by a limited set of periodic rules)
+Simple transposition (the same solver as the Substitution + simple transposition but does not perform substitution)
+
+Also File, Batch ciphers (non-subsitution) has been added.
+
+Additional n-gram downloads:
+
+7-gram beijinghouse v6: https://drive.google.com/file/d/1lvh3Ih_P9OShWzQVub7wsTk8f1YtLQg8/view?usp=sharing (420 MB download)
+8-gram beijinghouse v6: https://drive.google.com/file/d/1v9xvmKQoARyerV2lIK3tphdeGiw_JmZ7/view?usp=sharing (5 GB download)
+
 ## 1.19
 
 https://drive.google.com/file/d/1_lP82NAvj5-vzd8O33e5aggWViHd-THJ/view?usp=sharing
