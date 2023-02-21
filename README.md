@@ -6,12 +6,15 @@ Latest binaries can be found here:
 - https://zodiackiller.net/community/zodiac-cipher-mailings-discussion/azdecrypt-1-19b/
 - https://www.freebasic.net/forum/viewtopic.php?p=203927#p203927
 
+[Additional README](https://raw.githubusercontent.com/doranchak/azdecrypt/main/AZdecrypt/Readme.txt)
+
 # Table of Contents
 1. [Solvers](#solvers)
 2. [Settings](#settings)
 3. [Build Steps](#build)
 4. [Stats](#stats)
 5. [Notes, Tips, and Tricks](#notes)
+6. [Release History](#releases)
 
 # Solvers <a name="solvers"></a>
 
@@ -353,4 +356,105 @@ Sometimes you have a plaintext that lacks spaces and want to automatically add s
     * (General) Add spaces to output
     * (General) Add spaces to output iterations
 * It uses a small hill climber for the function so upping the iterations may improve quality slightly.
+
+# Release History <a name="releases"></a>
+
+## 1.22
+
+https://drive.google.com/file/d/12ngl8-_hd7EvofHRKkNB7VtBNBceB2Tl/view?usp=share_link
+
+New features:
+
+- Ciphers up to 4000 characters long, up from 2000
+
+- Non-substitution Nulls and skips solver
+
+- Automatic word spacing and dedicated n-grams for the following latin alphabet languages: Danish, Dutch, English, Finnish, French, German, Italian, Portuguese, Spanish and Swedish
+
+- Chi-squared test for the languages above as well, (under Statistics)
+
+- N-gram tools to convert/output existing n-grams to text or binary format. Plus downscaling of existing n-grams, from letter 5-grams to letter 4-grams etc (under File, N-gram tools)
+
+- "Substitution + crib grid" can now be used in junction with "Substitution + simple transposistion". Have the pop-up windows of both solvers open and enable the "Use Substitution + crib grid" option in the Simple transposition solver window to have it work.
+
+- Homophone weight setting (under Settings, Solver settings) that works for all solvers that output the number of homophones in the Output window, and the latter being a new addition as well.
+
+- Added some error checking for loading n-grams, possible problems will show up as *** WARNINGS ***
+
+- Lots of bugfixes, small additions and improvements
+
+## 1.19
+
+https://drive.google.com/file/d/1_lP82NAvj5-vzd8O33e5aggWViHd-THJ/view?usp=sharing
+
+What's new?
+
+- Spacing between words for English text is now added to the solutions but can be disabled through Options, Solvers, Add spaces to output: No. You can also add spaces to text via the Input window and then Format, Add spaces to plaintext.
+- Solvers Substitution + polyphones [auto] and [user] have been merged into Substitution + polyphones. Using the solver will open up a new menu that includes all the old functionality and more plus a new Hafer shifts solver mode!
+- In previous versions results were not output until the thread was completely finished and that resulted in a possible wait time on very long runs. That's no longer the case.
+- The solvers that use a additional hill-climber on top now update the Output window every second and the best result is now persistent between restarts.
+- Re-enabled the 7-gram functionality. beijinghouse v6 7-grams download: https://drive.google.com/file/d/1lvh3Ih_P9OShWzQVub7wsTk8f1YtLQg8/view?usp=sharing (418 MB)
+- Very noteworthy across-the-board improved solver efficiency.
+- Size reduced beijinghouse v6 5 and 6-grams included.
+
+Example output with the new word spacing (not perfect but pretty good):
+
+```
+Score: 24636.42 IOC: 0.0589 Multiplicity: 0.1882 Seconds: 0.12
+Repeats: ANALYS CIPHER COULD MEAN TOBE LESS AND YST THE
+PC-cycles: 490
+
+ALTERNATIVELY AND FAR LESS GLORIOUSLY THE 
+CIPHERS COULD BE THE BACKLASH OF A LUCKY 
+LOW DOWN CRIMINAL WITH A TEXTBOOK ON HOW 
+TO BEAT FREQUENCY ANALYSIS THE FIRST CIPHER 
+WAS SOLVED BY A HUSBAND AND WIFE TEAM OF 
+A MATEUR CRYSTANALYSTS OUT OF THEIR HOME 
+AN ANNOYED KILLER COULD HAVE TAKEN THE RECIPE 
+FOR CODE MAKING AND BE GUN CONVOLUTING IT 
+UNTIL IT BECAME MEANING LESS ENOUGH TO BE 
+UNBREAKABLE I FIND THE LATTER SOME
+```
+
+# 1.18
+
+https://drive.google.com/file/d/1v0nyazUTqFGKse8qAoi2FYeQASqRz152/view?usp=sharing
+
+I made a huge effort to simplify the program in many ways and the overlapping n-gram systems have been removed. And thus, old n-grams may no longer work and 7-grams have been removed in favor of 8-grams. N-gram sizes 2 to 6 use the default system and n-gram size 8 uses beijinghouse's system.
+
+- New beijinghouse and reddit n-grams.
+- Binary n-gram file format which results in much smaller files and faster loading times.
+- 8-grams will dynamically load into memory to the constraints of the system and will work even with as little as 1 GB of free RAM. Under "Options, Solvers" a setting can be found to force the 8-grams to a certain memory size.
+- 8-gram caching, a setting under "Options, Solvers" will increase speed by up to 30% at the cost of more RAM and some warm-up time.
+- In general almost all solvers have a 2x to 8x efficiency increase resulting in much faster solve times for all ciphers.
+- The "simple transposition" solver has support for batch solving. (suggested by doranchak)
+- Higher-order homophonic solver.
+- Monoalphabetic groups solver (for Nick Pelling's challenge ciphers, idea and concept by beijnghouse: https://ciphermysteries.com/2020/01/07/nicks-challenge-cipher-1-cracked-by-louie-helm)
+- Batch ciphers bigram repeats filter under "Options, Solvers"
+- Load n-gram bias now supports files up to 10 MB.
+- Performance mode removed.
+- Bug fixes.
+
+Download 6-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1aXzSQoBcQ9MXD5fcH3jvq6UbqpU3GXaQ/view?usp=sharing (200 MB)
+Download 8-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1v9xvmKQoARyerV2lIK3tphdeGiw_JmZ7/view?usp=sharing (5 GB)
+Download 8-grams_english_jarlve_reddit: https://drive.google.com/file/d/1V1N0dp8iMoT0f7fz62eAvYAaOJVvLq52/view?usp=sharing (1.2 GB)
+
+# 1.17
+
+https://drive.google.com/open?id=1Sw0P9N9svMlx4QNtObZ56vEtDJHk6sZ8
+
+What's new?
+
+- Version 5 of beijinghouse's fantastic n-grams. His 8-grams as a separate 5 GB download: https://drive.google.com/open?id=1eDrhQMqL-jak1_Gvlij42sQUXkky1AY8
+- New solver "Bigram substitution + crib grid" (which broke Klaus' 750 and 1000 world record challenges using beijinghouse's 8-grams).
+- New solver "Substitution + row bound fragments" (idea by smokie treats).
+- Improved convergence especially for hard ciphers, up to 5x faster solve.
+- New Statistic "Observations" which automatically outputs some general observations (to be improved upon).
+- Improved "Batch settings" functionality (suggested by beijinghouse).
+- Start of a Linux harness (suggested by beijinghouse).
+- Source now included with program.
+- New Reddit n-grams version 1907.
+- Fixes here and there.
+
+Important note: I changed all normal n-grams (non-beijinghouse) to 1-byte log values. If you have any old n-grams from sizes 2 to 6 then you need to change the n-gram .ini file from "N-gram size=5" to "N-gram size=old5" to get it to work again.
 
