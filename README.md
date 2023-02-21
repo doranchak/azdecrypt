@@ -689,7 +689,7 @@ What is new?
 
 The substitution + vigenère solver can solve 63 symbol 340 character homophonic substitution + vigenère ciphers with keywords up to a length of 10 (and probably much longer) without any problems but it may take a while. With homophonic substitution it is assumed that the vigenère is actual at the plaintext level. The solver is _very much_ susceptible to nulls.
    
-## [??? - Apr 17, 2017](https://zodiackiller.net/community/postid/52032/)
+## [1.03 - Apr 17, 2017](https://zodiackiller.net/community/postid/52032/)
 
 What is new?
 
