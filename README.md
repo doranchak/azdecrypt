@@ -416,7 +416,7 @@ UNTIL IT BECAME MEANING LESS ENOUGH TO BE
 UNBREAKABLE I FIND THE LATTER SOME
 ```
 
-# 1.18
+## 1.18
 
 https://drive.google.com/file/d/1v0nyazUTqFGKse8qAoi2FYeQASqRz152/view?usp=sharing
 
@@ -439,7 +439,7 @@ Download 6-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1aXzSQ
 Download 8-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1v9xvmKQoARyerV2lIK3tphdeGiw_JmZ7/view?usp=sharing (5 GB)
 Download 8-grams_english_jarlve_reddit: https://drive.google.com/file/d/1V1N0dp8iMoT0f7fz62eAvYAaOJVvLq52/view?usp=sharing (1.2 GB)
 
-# 1.17
+## 1.17
 
 https://drive.google.com/open?id=1Sw0P9N9svMlx4QNtObZ56vEtDJHk6sZ8
 
@@ -458,3 +458,105 @@ What's new?
 
 Important note: I changed all normal n-grams (non-beijinghouse) to 1-byte log values. If you have any old n-grams from sizes 2 to 6 then you need to change the n-gram .ini file from "N-gram size=5" to "N-gram size=old5" to get it to work again.
 
+## 1.16
+
+https://drive.google.com/open?id=1vB1G8IAeelsz6mZU6chQ7azthSv8seky
+
+What's new?
+
+- Version 4 of beijinghouse's 6-grams and 7-grams included which use a special low memory no-compromise n-gram system. For example, beijinghouse's 7-grams only take up 2 GB of ram and can thus be used on 4 or 8 GB system. His new version 4 n-grams are also much more dense and boast ridiculously good convergence rates. Version 4 of beijinghouse's 8-grams are available as a separate 4 GB download and require a 24 GB RAM system: https://drive.google.com/open?id=1vB1G8IAeelsz6mZU6chQ7azthSv8seky Thank you beijinghouse for all your work on this!
+
+- Added timer to solver output so that the user knows how much time to program took to arrive at a certain solution.
+- Added the option the add the PC-cycles stat the solver output "(General) Add PC-cycles to file output format".
+- Fixed IOC inflation bug with Row bound solver that happened with certain ciphers.
+- Fixed bug with Vigenère solver when using entropy weight other than 1.
+- Fixed possible crash with Batch settings.
+- Minor bug fixes and improvements all over the place.
+- Compiled with the new FreeBASIC 1.07.1 release.
+
+## 1.15
+
+https://drive.google.com/open?id=1YOBOXIz6ElHd5ej48E-FA7z7FYJsVuVg
+
+Again a huge update and I will illustrate some examples of the new functionality during the next days.
+
+- beijinghouse made a special 8-gram system that is only 50% slower than 7-grams and uses only 8 GB of memory! It works very well and he can elaborate on how exactly he achieved this. Get his 8-grams here: https://drive.google.com/open?id=1oIHa67MUJEABCF6RpRVo_JISz5nLU94c You will still need about 12 GB of ram to use these.
+- beijinghouse also came up with a speed optimization that aborts the n-gram score calculation when it is known that the new_score cannot be higher than the old_score. This works very well with sparse n-grams such as 7-grams or higher. For now it is only used with beijinghouse's 8-grams.
+
+- Added extensive cipher and plain text library, it can be found in the "Ciphers/" folder.
+- Internally the score calculation is now using entropy instead of the index of coincidence. This may change the scores you are used to seeing a little bit. A small adjustment to the n-gram ini files has been made to reflect this. Old ini files still work via internal conversion.
+- You may notice a slowdown of the solving speed (about 20%) due to a big improvement to most of the solvers such that for example 500,000 iterations are now worth about 1,000,000 iterations with a greater effect on ciphers that tend to get stuck.
+- New function "Bias n-grams", bejinghouse asked for this, it can be found under "File, Load n-gram bias" and it tunes the n-grams in memory to some text of your choice. For example: to offer support for rare occurring n-grams such as names.
+- "Batch ciphers (substitution)" now supports plain text accuracy testing, a example can be found in the "Ciphers/Batch/" folder.
+- New solver "Substitution + units", it allows to solve a variety of cipher schemes such as masootz's cipher or operations on symbols, rows or columns such as remove, expand, separate into 2nd key, replace and reverse.
+- New option "(Substitution + sequential homophones) Sequential weight: 5", setting it lower will decrease the weight of the sequential homophones and setting it higher will increase it.
+- New function "Normalize n-gram factor", the button can be found under "Options, Solvers" and it will normalize the n-gram factor to some internal plain text. This ensures that AZdecrypt performs optimally with your n-grams.
+- Fixed major 1.14 issues with the following solvers: columnar transpostion & rearrangement, nulls and skips, and poly [auto, user].
+- Removed many code redundancies in the source (merged solvers etc) and it is about 33% smaller.
+- New function "Batch settings" to optimize temperature etc, suggested by beijinghouse.
+- Solvers are using much less memory outside of the regular n-gram memory use.
+- Vigenère solver works much better now.
+
+beijnghouse's new 7-grams: https://drive.google.com/open?id=1NFV-Ph6xJUsfwA8f3dGMzR35wlL47CFC
+
+## 1.14
+
+What has changed?
+
+First of all a big thank you to beijinghouse for his code contributions:
+
+- beijinghouse recoded the loading routine and it is now loads n-grams up to 20 times as fast! It also supports loading n-gram files directly from .gz files.
+- beijinghouse also made some speed optimizations to the variable types, random number generator and IOC calculations of the solver and this sped up the solvers by up to 10%.
+- beijinghouse excellent all-around 6-grams are included with the download. I like to see these as a 6-gram version of the Practical cryptography 5-grams.
+- Download link to beijinghouse's 7-grams: https://drive.google.com/open?id=1eEWCO0ABE72WV4YEbwQou-29c2ijw3_f
+
+```
+is there how to rearrange varies columns at the same time ??! I say, for example, use an argument as 3,2,4,7,8,10,17,1,5,6,9,11,12,13,14,15,16.
+```
+
+- @ Marclean: added, go to Functions, Transposition and look for Rearrange columns or rows. In the A1 "key#" field enter a key such as you described separated by commas or spaces.
+
+```
+The text in the input window is now transposed correctly. If you now click on "Solve", the cipher will still be solved. Apparently the previously loaded cipher is still stored somewhere. If you copy the transposed cipher and insert it again, "Solve" does not lead to any result anymore (as desired). Something is obviously not updated correctly.
+```
+
+- @ Largo: issued, this was actually part of some hidden functionality which is now disabled.
+- Renamed the "Substitution + transposition" to "Substitution + simple transposition" and added an interface. All transposition operations that have a smaller set of possible arguments will be housed here. Added Spiral and L-route transpositions as well as Largo's Split transposition idea:
+
+```
+I've added this transposition to my solver for the next AZdecrypt release. It has solved your cipher and no results on the 340 so far. It can pick any set of dimensions and then make a horizontal or vertical split at any offset of which each part could have its own transposition (none, mirrored, flipped, columnars, diagonals).
+```
+
+- Improved "Substitution + row bound" solver.
+- Improved the solve rate of mostly all solvers a bit.
+- Added solver "Substitution + crib list" by request of beijinghouse. Go to the Misc folder and look to the readme.txt for an explanation. It basically allows you to batch cribs at the positions of your choosing.
+- Included a new build of my Reddit n-grams. These are great when first-person language is expected such as the Zodiac communications.
+- Fixed issue with status display. MIPS is now more accurate. Also added the average IOC.
+- Compiled with the new 2019 FreeBASIC 1.06.0 release.
+- Many bug fixes. New source can be found in: https://drive.google.com/open?id=0B5r0rDAOuzIQd0p1NmljRWJvYkU
+
+Updated the readme.txt with added names of the people that have helped me over the years plus some links to other people's work. Let me know if I have forgotten you!
+
+## 1.13
+
+What is new?
+
+- Crib grid solver. This allows some very basic cribbing functionality.
+- Pause button that works with all solvers.
+- Refurbished menus and statistics.
+- Bug fixes.
+
+The statistics may use sigma's here and there, that is, the amount of standard deviations something is away from the mean. These will however likely not convert properly to the odds usually associated with them. They are there to give a quick indication only.
+
+## 1.12
+
+What is new?
+
+- Optimized "nulls and skips" solver with the help of smokie treats.
+- Updated Reddit n-grams. This however increased the download to about 560 megabytes.
+- Much faster Solver performance mode, which can be toggled on or off from the Options menu.
+- Fixed an issue with the "row bound" solver so that it now correctly displays the "N-grams" and "PC-cycles" statistics scores.
+- AZdecrypt determines the number of CPU threads available to your system and automatically assigns 3/4 of it to the solvers. The number of CPU threads can still be changed through the Options, Solvers menu.
+- Support for up to 65536 CPU threads.
+- Slightly overhauled look and feel.
+- Fixed lots of small issues.
