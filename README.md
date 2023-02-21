@@ -690,6 +690,17 @@ What is new?
 The substitution + vigenère solver can solve 63 symbol 340 character homophonic substitution + vigenère ciphers with keywords up to a length of 10 (and probably much longer) without any problems but it may take a while. With homophonic substitution it is assumed that the vigenère is actual at the plaintext level. The solver is _very much_ susceptible to nulls.
    
 ## [??? - Apr 17, 2017](https://zodiackiller.net/community/postid/52032/)
+
+What is new?
+
+- Support for 4, 7 and 8-grams added
+- Substitution + polyphones solver
+- Create transposition matrix
+- Bugfixes and stuff
+
+The amount of polyphones/letters per symbol for the new substitution + polyphones solver have to be set through the symbols menu (under functions).
+
+The new create transposition matrix (under functions) requires you to open a cipher with the dimensions you want to create a matrix in first. Then left mouse click on the button-grid to set a number one by one, it increments automatically. A right mouse click draws (when possible) a horizontal, vertical or diagonal line between the last number and your new position. 
    
 ## 1.0c - Mar 7, 2017
    
