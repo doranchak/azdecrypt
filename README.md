@@ -2,7 +2,11 @@
 
 AZdecrypt is a fast and powerful hillclimbing classical cipher solver written in [FreeBASIC](https://www.freebasic.net/).
 
-Latest binaries can be found here:  https://zodiackiller.net/community/zodiac-cipher-mailings-discussion/azdecrypt-1-19b/
+Latest binaries can be found here:  
+- https://zodiackiller.net/community/zodiac-cipher-mailings-discussion/azdecrypt-1-19b/
+- https://www.freebasic.net/forum/viewtopic.php?p=203927#p203927
+
+[Additional README](https://raw.githubusercontent.com/doranchak/azdecrypt/main/AZdecrypt/Readme.txt)
 
 # Table of Contents
 1. [Solvers](#solvers)
@@ -10,6 +14,7 @@ Latest binaries can be found here:  https://zodiackiller.net/community/zodiac-ci
 3. [Build Steps](#build)
 4. [Stats](#stats)
 5. [Notes, Tips, and Tricks](#notes)
+6. [Release History](#releases)
 
 # Solvers <a name="solvers"></a>
 
@@ -352,3 +357,366 @@ Sometimes you have a plaintext that lacks spaces and want to automatically add s
     * (General) Add spaces to output iterations
 * It uses a small hill climber for the function so upping the iterations may improve quality slightly.
 
+# Release History <a name="releases"></a>
+
+## 1.22 - Feb 20, 2023
+
+https://drive.google.com/file/d/12ngl8-_hd7EvofHRKkNB7VtBNBceB2Tl/view?usp=share_link
+
+New features:
+
+- Ciphers up to 4000 characters long, up from 2000
+
+- Non-substitution Nulls and skips solver
+
+- Automatic word spacing and dedicated n-grams for the following latin alphabet languages: Danish, Dutch, English, Finnish, French, German, Italian, Portuguese, Spanish and Swedish
+
+- Chi-squared test for the languages above as well, (under Statistics)
+
+- N-gram tools to convert/output existing n-grams to text or binary format. Plus downscaling of existing n-grams, from letter 5-grams to letter 4-grams etc (under File, N-gram tools)
+
+- "Substitution + crib grid" can now be used in junction with "Substitution + simple transposistion". Have the pop-up windows of both solvers open and enable the "Use Substitution + crib grid" option in the Simple transposition solver window to have it work.
+
+- Homophone weight setting (under Settings, Solver settings) that works for all solvers that output the number of homophones in the Output window, and the latter being a new addition as well.
+
+- Added some error checking for loading n-grams, possible problems will show up as *** WARNINGS ***
+
+- Lots of bugfixes, small additions and improvements
+
+## 1.21 - Apr 23, 2022
+
+## 1.20 - Mar 28, 2022
+
+https://drive.google.com/file/d/1gfdgnbuntedRPyG472QekZo-bImGR3D6/view?usp=sharing
+
+Added a whole bunch of transpositions solvers that operate on non-subsitution ciphers:
+
+Non-substitution (scores your plain text + detailed n-gram stats)
+Columnar transposition (keyed)
+Columnar rearrangement (keyed)
+Grid rearrangement (keyed)
+Periodic transposition (can solve a whole variety of transposition ciphers keyed or unkeyed as long as the transposition can be summarized by a limited set of periodic rules)
+Simple transposition (the same solver as the Substitution + simple transposition but does not perform substitution)
+
+Also File, Batch ciphers (non-subsitution) has been added.
+
+Additional n-gram downloads:
+
+7-gram beijinghouse v6: https://drive.google.com/file/d/1lvh3Ih_P9OShWzQVub7wsTk8f1YtLQg8/view?usp=sharing (420 MB download)
+8-gram beijinghouse v6: https://drive.google.com/file/d/1v9xvmKQoARyerV2lIK3tphdeGiw_JmZ7/view?usp=sharing (5 GB download)
+
+## 1.19 - Nov 11, 2020
+
+https://drive.google.com/file/d/1_lP82NAvj5-vzd8O33e5aggWViHd-THJ/view?usp=sharing
+
+What's new?
+
+- Spacing between words for English text is now added to the solutions but can be disabled through Options, Solvers, Add spaces to output: No. You can also add spaces to text via the Input window and then Format, Add spaces to plaintext.
+- Solvers Substitution + polyphones [auto] and [user] have been merged into Substitution + polyphones. Using the solver will open up a new menu that includes all the old functionality and more plus a new Hafer shifts solver mode!
+- In previous versions results were not output until the thread was completely finished and that resulted in a possible wait time on very long runs. That's no longer the case.
+- The solvers that use a additional hill-climber on top now update the Output window every second and the best result is now persistent between restarts.
+- Re-enabled the 7-gram functionality. beijinghouse v6 7-grams download: https://drive.google.com/file/d/1lvh3Ih_P9OShWzQVub7wsTk8f1YtLQg8/view?usp=sharing (418 MB)
+- Very noteworthy across-the-board improved solver efficiency.
+- Size reduced beijinghouse v6 5 and 6-grams included.
+
+Example output with the new word spacing (not perfect but pretty good):
+
+```
+Score: 24636.42 IOC: 0.0589 Multiplicity: 0.1882 Seconds: 0.12
+Repeats: ANALYS CIPHER COULD MEAN TOBE LESS AND YST THE
+PC-cycles: 490
+
+ALTERNATIVELY AND FAR LESS GLORIOUSLY THE 
+CIPHERS COULD BE THE BACKLASH OF A LUCKY 
+LOW DOWN CRIMINAL WITH A TEXTBOOK ON HOW 
+TO BEAT FREQUENCY ANALYSIS THE FIRST CIPHER 
+WAS SOLVED BY A HUSBAND AND WIFE TEAM OF 
+A MATEUR CRYSTANALYSTS OUT OF THEIR HOME 
+AN ANNOYED KILLER COULD HAVE TAKEN THE RECIPE 
+FOR CODE MAKING AND BE GUN CONVOLUTING IT 
+UNTIL IT BECAME MEANING LESS ENOUGH TO BE 
+UNBREAKABLE I FIND THE LATTER SOME
+```
+
+## 1.18 - Jul 12, 2020
+
+https://drive.google.com/file/d/1v0nyazUTqFGKse8qAoi2FYeQASqRz152/view?usp=sharing
+
+I made a huge effort to simplify the program in many ways and the overlapping n-gram systems have been removed. And thus, old n-grams may no longer work and 7-grams have been removed in favor of 8-grams. N-gram sizes 2 to 6 use the default system and n-gram size 8 uses beijinghouse's system.
+
+- New beijinghouse and reddit n-grams.
+- Binary n-gram file format which results in much smaller files and faster loading times.
+- 8-grams will dynamically load into memory to the constraints of the system and will work even with as little as 1 GB of free RAM. Under "Options, Solvers" a setting can be found to force the 8-grams to a certain memory size.
+- 8-gram caching, a setting under "Options, Solvers" will increase speed by up to 30% at the cost of more RAM and some warm-up time.
+- In general almost all solvers have a 2x to 8x efficiency increase resulting in much faster solve times for all ciphers.
+- The "simple transposition" solver has support for batch solving. (suggested by doranchak)
+- Higher-order homophonic solver.
+- Monoalphabetic groups solver (for Nick Pelling's challenge ciphers, idea and concept by beijnghouse: https://ciphermysteries.com/2020/01/07/nicks-challenge-cipher-1-cracked-by-louie-helm)
+- Batch ciphers bigram repeats filter under "Options, Solvers"
+- Load n-gram bias now supports files up to 10 MB.
+- Performance mode removed.
+- Bug fixes.
+
+Download 6-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1aXzSQoBcQ9MXD5fcH3jvq6UbqpU3GXaQ/view?usp=sharing (200 MB)
+Download 8-grams_english_beijinghouse_v6: https://drive.google.com/file/d/1v9xvmKQoARyerV2lIK3tphdeGiw_JmZ7/view?usp=sharing (5 GB)
+Download 8-grams_english_jarlve_reddit: https://drive.google.com/file/d/1V1N0dp8iMoT0f7fz62eAvYAaOJVvLq52/view?usp=sharing (1.2 GB)
+
+## 1.17 - Dec 25, 2019
+
+https://drive.google.com/open?id=1Sw0P9N9svMlx4QNtObZ56vEtDJHk6sZ8
+
+What's new?
+
+- Version 5 of beijinghouse's fantastic n-grams. His 8-grams as a separate 5 GB download: https://drive.google.com/open?id=1eDrhQMqL-jak1_Gvlij42sQUXkky1AY8
+- New solver "Bigram substitution + crib grid" (which broke Klaus' 750 and 1000 world record challenges using beijinghouse's 8-grams).
+- New solver "Substitution + row bound fragments" (idea by smokie treats).
+- Improved convergence especially for hard ciphers, up to 5x faster solve.
+- New Statistic "Observations" which automatically outputs some general observations (to be improved upon).
+- Improved "Batch settings" functionality (suggested by beijinghouse).
+- Start of a Linux harness (suggested by beijinghouse).
+- Source now included with program.
+- New Reddit n-grams version 1907.
+- Fixes here and there.
+
+Important note: I changed all normal n-grams (non-beijinghouse) to 1-byte log values. If you have any old n-grams from sizes 2 to 6 then you need to change the n-gram .ini file from "N-gram size=5" to "N-gram size=old5" to get it to work again.
+
+## 1.16 - Oct 8, 2019
+
+https://drive.google.com/open?id=1vB1G8IAeelsz6mZU6chQ7azthSv8seky
+
+What's new?
+
+- Version 4 of beijinghouse's 6-grams and 7-grams included which use a special low memory no-compromise n-gram system. For example, beijinghouse's 7-grams only take up 2 GB of ram and can thus be used on 4 or 8 GB system. His new version 4 n-grams are also much more dense and boast ridiculously good convergence rates. Version 4 of beijinghouse's 8-grams are available as a separate 4 GB download and require a 24 GB RAM system: https://drive.google.com/open?id=1vB1G8IAeelsz6mZU6chQ7azthSv8seky Thank you beijinghouse for all your work on this!
+
+- Added timer to solver output so that the user knows how much time to program took to arrive at a certain solution.
+- Added the option the add the PC-cycles stat the solver output "(General) Add PC-cycles to file output format".
+- Fixed IOC inflation bug with Row bound solver that happened with certain ciphers.
+- Fixed bug with Vigenère solver when using entropy weight other than 1.
+- Fixed possible crash with Batch settings.
+- Minor bug fixes and improvements all over the place.
+- Compiled with the new FreeBASIC 1.07.1 release.
+
+## 1.15 - May 25, 2019
+
+https://drive.google.com/open?id=1YOBOXIz6ElHd5ej48E-FA7z7FYJsVuVg
+
+Again a huge update and I will illustrate some examples of the new functionality during the next days.
+
+- beijinghouse made a special 8-gram system that is only 50% slower than 7-grams and uses only 8 GB of memory! It works very well and he can elaborate on how exactly he achieved this. Get his 8-grams here: https://drive.google.com/open?id=1oIHa67MUJEABCF6RpRVo_JISz5nLU94c You will still need about 12 GB of ram to use these.
+- beijinghouse also came up with a speed optimization that aborts the n-gram score calculation when it is known that the new_score cannot be higher than the old_score. This works very well with sparse n-grams such as 7-grams or higher. For now it is only used with beijinghouse's 8-grams.
+
+- Added extensive cipher and plain text library, it can be found in the "Ciphers/" folder.
+- Internally the score calculation is now using entropy instead of the index of coincidence. This may change the scores you are used to seeing a little bit. A small adjustment to the n-gram ini files has been made to reflect this. Old ini files still work via internal conversion.
+- You may notice a slowdown of the solving speed (about 20%) due to a big improvement to most of the solvers such that for example 500,000 iterations are now worth about 1,000,000 iterations with a greater effect on ciphers that tend to get stuck.
+- New function "Bias n-grams", bejinghouse asked for this, it can be found under "File, Load n-gram bias" and it tunes the n-grams in memory to some text of your choice. For example: to offer support for rare occurring n-grams such as names.
+- "Batch ciphers (substitution)" now supports plain text accuracy testing, a example can be found in the "Ciphers/Batch/" folder.
+- New solver "Substitution + units", it allows to solve a variety of cipher schemes such as masootz's cipher or operations on symbols, rows or columns such as remove, expand, separate into 2nd key, replace and reverse.
+- New option "(Substitution + sequential homophones) Sequential weight: 5", setting it lower will decrease the weight of the sequential homophones and setting it higher will increase it.
+- New function "Normalize n-gram factor", the button can be found under "Options, Solvers" and it will normalize the n-gram factor to some internal plain text. This ensures that AZdecrypt performs optimally with your n-grams.
+- Fixed major 1.14 issues with the following solvers: columnar transpostion & rearrangement, nulls and skips, and poly [auto, user].
+- Removed many code redundancies in the source (merged solvers etc) and it is about 33% smaller.
+- New function "Batch settings" to optimize temperature etc, suggested by beijinghouse.
+- Solvers are using much less memory outside of the regular n-gram memory use.
+- Vigenère solver works much better now.
+
+beijnghouse's new 7-grams: https://drive.google.com/open?id=1NFV-Ph6xJUsfwA8f3dGMzR35wlL47CFC
+
+## 1.14 - Mar 24, 2019
+
+What has changed?
+
+First of all a big thank you to beijinghouse for his code contributions:
+
+- beijinghouse recoded the loading routine and it is now loads n-grams up to 20 times as fast! It also supports loading n-gram files directly from .gz files.
+- beijinghouse also made some speed optimizations to the variable types, random number generator and IOC calculations of the solver and this sped up the solvers by up to 10%.
+- beijinghouse excellent all-around 6-grams are included with the download. I like to see these as a 6-gram version of the Practical cryptography 5-grams.
+- Download link to beijinghouse's 7-grams: https://drive.google.com/open?id=1eEWCO0ABE72WV4YEbwQou-29c2ijw3_f
+
+```
+is there how to rearrange varies columns at the same time ??! I say, for example, use an argument as 3,2,4,7,8,10,17,1,5,6,9,11,12,13,14,15,16.
+```
+
+- @ Marclean: added, go to Functions, Transposition and look for Rearrange columns or rows. In the A1 "key#" field enter a key such as you described separated by commas or spaces.
+
+```
+The text in the input window is now transposed correctly. If you now click on "Solve", the cipher will still be solved. Apparently the previously loaded cipher is still stored somewhere. If you copy the transposed cipher and insert it again, "Solve" does not lead to any result anymore (as desired). Something is obviously not updated correctly.
+```
+
+- @ Largo: issued, this was actually part of some hidden functionality which is now disabled.
+- Renamed the "Substitution + transposition" to "Substitution + simple transposition" and added an interface. All transposition operations that have a smaller set of possible arguments will be housed here. Added Spiral and L-route transpositions as well as Largo's Split transposition idea:
+
+```
+I've added this transposition to my solver for the next AZdecrypt release. It has solved your cipher and no results on the 340 so far. It can pick any set of dimensions and then make a horizontal or vertical split at any offset of which each part could have its own transposition (none, mirrored, flipped, columnars, diagonals).
+```
+
+- Improved "Substitution + row bound" solver.
+- Improved the solve rate of mostly all solvers a bit.
+- Added solver "Substitution + crib list" by request of beijinghouse. Go to the Misc folder and look to the readme.txt for an explanation. It basically allows you to batch cribs at the positions of your choosing.
+- Included a new build of my Reddit n-grams. These are great when first-person language is expected such as the Zodiac communications.
+- Fixed issue with status display. MIPS is now more accurate. Also added the average IOC.
+- Compiled with the new 2019 FreeBASIC 1.06.0 release.
+- Many bug fixes. New source can be found in: https://drive.google.com/open?id=0B5r0rDAOuzIQd0p1NmljRWJvYkU
+
+Updated the readme.txt with added names of the people that have helped me over the years plus some links to other people's work. Let me know if I have forgotten you!
+
+## 1.13 - Jan 1, 2019
+
+What is new?
+
+- Crib grid solver. This allows some very basic cribbing functionality.
+- Pause button that works with all solvers.
+- Refurbished menus and statistics.
+- Bug fixes.
+
+The statistics may use sigma's here and there, that is, the amount of standard deviations something is away from the mean. These will however likely not convert properly to the odds usually associated with them. They are there to give a quick indication only.
+
+## 1.12 - Nov 03, 2018
+
+What is new?
+
+- Optimized "nulls and skips" solver with the help of smokie treats.
+- Updated Reddit n-grams. This however increased the download to about 560 megabytes.
+- Much faster Solver performance mode, which can be toggled on or off from the Options menu.
+- Fixed an issue with the "row bound" solver so that it now correctly displays the "N-grams" and "PC-cycles" statistics scores.
+- AZdecrypt determines the number of CPU threads available to your system and automatically assigns 3/4 of it to the solvers. The number of CPU threads can still be changed through the Options, Solvers menu.
+- Support for up to 65536 CPU threads.
+- Slightly overhauled look and feel.
+- Fixed lots of small issues.
+
+## 1.11 - Apr 7, 2018
+   
+What is new?
+
+- Improvements to the substitution solver.
+- Some of the Stats 1 and Stats 2 are improved.
+- The program should no longer crash after exiting on some systems.
+- New solver, Substitution + columnar rearrangement. Solves rearrangements of columns. The amount of columns and more can be set via Options, Solver, (Substitution + columnar transposition & rearrangement) ...
+- New solver, Substitution + columnar transposition. Solves keyed columnar transposition. The amount of columns and more can be set via Options, Solver, (Substitution + columnar transposition & rearrangement) ...
+- New solver, Substitution + period + nulls & skips. Solves unkeyed columnar transposition with nulls & skips. Similarly, its settings can be found via Options, Solvers, (Substitution + period + nulls & skips) ...
+- Added a Misc directory with a file trithemius.txt, this can be used in conjunction with the Substitution + vigenère wordlist solver to crack trithemius ciphers.
+- Added a Versions directory which houses versions that have been compiled to work faster on newer CPU architectures.
+- Added a Benchmark which can be found via Options, Benchmark.
+- Solver performance mode. Up to 40% faster solvers but only works with English ngrams. Enabled via Options, Toggle solver performance mode. If the toggle is successful this message should appear:
+
+```
+5-gram solver performance mode enabled, supported:
+--------------------------------------------------------
+- Substitution
+- Substitution + columnar rearrangement
+- Substitution + columnar transposition
+- Substitution + period + nulls & skips
+- Substitution + transposition
+- Batch ciphers (substitution)
+```
+
+And the ngram file should have a [PM] next to it:
+
+```
+Task: none
+[PM] 5-grams_english_practicalcryptography_wortschatz.txt
+--------------------------------------------------------
+Can be auto-enabled via Options, Solver, set (General) Use performance mode ngrams if applicable to 1.
+```
+
+## 1.09 - Dec 5, 2017
+   
+What is new?
+
+- Slightly improved substitution solver.
+- Batch ciphers (substitution) is faster when processing ciphers with a reasonably low number of iterations and restarts.
+- The vigenère solver can be set to solve by rows under the options, solver menu by changing by columns to 0.
+- Fixed a bug where the 7-gram substitution solver was erroneously linked to a polyalphabetic solver.
+- Fixed a bug with the 6-gram vigenère solver.
+- Added some stats and various other bugfixes.
+
+## 1.08 - Sep 7, 2017
+   
+What is new?
+
+- New solver: Substitution + polyphones [auto]. It can solve wildcard ciphers automatically and more. The number of extra letters to use can be changed via the options menu. I recommend that you use 6-grams and a multiplicity weight of 1 or lower/higher. This multiplicity weight ensures that the solver uses as few extra letters as possible.
+- Renamed the Substitution + user defined polyphones solver to Substitution + polyphones [user].
+- Improved solver: Substitution + transposition and added some options to alter.
+- New solver: Merge seq. homophones with options to alter. Works very well on sequential homophonic substitution ciphers without much encoding randomization.
+- Added option: (General) output to batch. Will output all solutions of a solver in a file instead of many when set to 1.
+- Added option: (General) output additional stats. Ngram score of solution and plaintext to ciphertext cycles score.
+- Slightly improved n-gram loading times.
+- Improved options menus.
+- Bugfixes.
+
+## 1.07 - Aug 5, 2017
+   
+What is new?
+
+- Substitution + null symbols solver. It decrypts ciphers were a bunch of symbols are to be removed, assuming that every instance of that symbol needs to be removed.
+- The Stats menu has been split into Stats and More stats.
+- Encoding randomization tests have been added to More stats, it attempts to find sections of randomization in sequential homophonic substitution ciphers.
+- Stats options has been added to the options menu. It allows to change some settings that pertain to the encoding randomization and plaintext/encoding direction tests.
+- 2 and 3-symbol cycles output with details has been added to More stats.
+- Renamed the Substitution + by rows solver to Substitution + row bound.
+- Various other updates and bug fixes.
+
+## 1.06 - Jul 20, 2017
+   
+What is new?
+
+- Substitution + light polyalphabetism solver. It aims to decrypt homophonic substitution + up to about 20% polyalphabetism/randomization considering 408/340 multiplicity. Using 6-grams is recommended and take in mind that this solver converges very slowly on the solution. You could let it run overnight.
+
+There is a new setting (match weight) under the solver options menu, this will let you control how much polyalphabetism it targets. Which is indicated with the solutions the solver returns. For example, the solver might return a solution that includes "Match 0.80123". This means that 80.123% of the plaintext correctly matches the ciphertext and that the other 19.877% is freely assigned by the solver. Increasing the match weight (under the solver options menu) will force the solver to higher match ratios while decreasing it allows for more polyalphabetism.
+
+- Renamed Substitution + polyphones solver to Substitution + user defined polyphones.
+- Various other updates and bug fixes.
+
+## 1.05 - Jun 15, 2017
+   
+What is new?
+
+- Substitution + by rows solver. Concept by smokie treats; It does not cross row boundaries and uses a combination of ngram sizes to compensate for the loss of information.
+- Support for CTRL-A in the input and output windows.
+- Some new stats and bugfixes.
+   
+## 1.04 - Apr 29, 2017
+   
+What is new?
+
+- Substitution + vigenère solver. Set a keyword length size in the solver menu under options.
+- Substitution + vigenère wordlist solver. Will simply go through all words in a list and could double as a one time pad solver. Words in the list must use the same alphabet as defined in the ngram .ini file (case sensitive).
+- Vigenère encoder. Under functions -> manipulation.
+- Digraph subtitution encoder. Under functions -> manipulation.
+- Added a few extra stats here and there such as odd/even bigrams. (thanks smokie)
+- Added undo button to create transposition matrix.
+- Easier to navigate menus with spacers.
+- Bugfixes and many little things. (thanks again Largo)
+
+The substitution + vigenère solver can solve 63 symbol 340 character homophonic substitution + vigenère ciphers with keywords up to a length of 10 (and probably much longer) without any problems but it may take a while. With homophonic substitution it is assumed that the vigenère is actual at the plaintext level. The solver is _very much_ susceptible to nulls.
+   
+## [1.03 - Apr 17, 2017](https://zodiackiller.net/community/postid/52032/)
+
+What is new?
+
+- Support for 4, 7 and 8-grams added
+- Substitution + polyphones solver
+- Create transposition matrix
+- Bugfixes and stuff
+
+The amount of polyphones/letters per symbol for the new substitution + polyphones solver have to be set through the symbols menu (under functions).
+
+The new create transposition matrix (under functions) requires you to open a cipher with the dimensions you want to create a matrix in first. Then left mouse click on the button-grid to set a number one by one, it increments automatically. A right mouse click draws (when possible) a horizontal, vertical or diagonal line between the last number and your new position. 
+   
+## 1.0c - Mar 7, 2017
+   
+- Bug fixes.
+- Faster solver.
+- Wider window.
+- Added new stats and format options.
+- Added demo version of a transposition solver, let it run for a very long time.
+   
+## 1.0b - Jan 27, 2017
+   
+- Bug fixes.
+- Added symbols menu.
+- Added and improved stats.
+- Added transposition schemes.
+- Changed and moved some stuff, if you can't find something please ask.
+- Added "Batch ngrams" under File. Open "languages.txt" under "/Ngrams/Languages/" for example functionality.
+
+If there are any issues please let me know and I will fix them asap. Marclean, your transposition idea can be found under Functions -> Transposition -> Offset rectangular chain.
