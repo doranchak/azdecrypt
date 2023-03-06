@@ -231,6 +231,9 @@ Jarl says:  It follows this calculation: `score/=1+((unique_symbols/cipher_lengt
 ## [General] 8-gram memory limit
 ## [General] 8-gram caching
 ## [General] Add spaces to output
+
+Note: For this feature to work, n-gram stats that consist only of the letters A through Z must be loaded.  For example, any of the languages in the `Wortschatz` folder meet this condition.
+
 ## [General] Add spaces to output iterations
 ## [General] N-gram log value cut-off
 
@@ -357,6 +360,8 @@ Sometimes you have a plaintext that lacks spaces and want to automatically add s
     * (General) Add spaces to output iterations
 * It uses a small hill climber for the function so upping the iterations may improve quality slightly.
 
+Note: For this feature to work, n-gram stats that consist only of the letters A through Z must be loaded.  For example, any of the languages in the `Wortschatz` folder meet this condition.
+   
 # Release History <a name="releases"></a>
 
 ## 1.22 - Feb 20, 2023
