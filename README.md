@@ -163,7 +163,7 @@ The same solver as the Substitution + simple transposition but does not perform 
 
 # Settings <a name="settings"></a>
 
-Under "Options -> Solvers":
+Under "Settings → Solver Settings":
 
 ## [General] CPU Threads
 
@@ -235,7 +235,10 @@ Jarl says:  It follows this calculation: `score/=1+((unique_symbols/cipher_lengt
 Note: For this feature to work, n-gram stats that consist only of the letters A through Z must be loaded.  For example, any of the languages in the `Wortschatz` folder meet this condition.
 
 ## [General] Add spaces to output iterations
-## [General] N-gram log value cut-off
+## [General] Letter n-gram log value cut-off
+## [General] Hompophone weight: 0
+
+Normally, the substitution solver will allow a plaintext letter to be assigned to more than one ciphertext letter.  If you want this to be more strict, where only zero or one ciphertext letter assignments are permitted per plaintext letter, change the `Homophone weight` to `1`.
 
 ---
 
