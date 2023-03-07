@@ -238,7 +238,7 @@ Note: For this feature to work, n-gram stats that consist only of the letters A 
 ## [General] Letter n-gram log value cut-off
 ## [General] Homophone weight
 
-Normally, the substitution solver will allow a plaintext letter to be assigned to more than one ciphertext letter.  If you want this to be more strict, where only zero or one ciphertext letter assignments are permitted per plaintext letter, change the `Homophone weight` to `1`.
+When this is set to 0 (the default value), the substitution solver may sometimes allow a plaintext letter to be assigned to more than one ciphertext letter.  If you want this to be more strict, where only zero or one ciphertext letter assignments are permitted per plaintext letter, change the `Homophone weight` to `1`.
 
 ---
 
