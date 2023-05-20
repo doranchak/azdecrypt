@@ -179,7 +179,7 @@ select case msg.message
 			case 19 'randomize positions
 				soi=string_to_info(ui_editbox_gettext(input_text),constcip2)
 				if soi="Ok" then
-					for i=1 to info_length*sqr(info_length)
+					for i=1 to 1000000 'info_length^2
 						swap info(int(rnd*info_length)+1),info(int(rnd*info_length)+1)
 					next i
 					ui_editbox_settext(input_text,info_to_string(info(),info_length,info_x,info_y,info_numerical,0,0))
@@ -621,24 +621,26 @@ select case msg.message
 				dim as string cv=ui_editbox_gettext(input_text)
 				soi=string_to_info(cv,constcip2)
 				if soi="Ok" then
-					dim as short snba(constcip2,constcip2)
+					redim rep2(constcip2,constcip2)
+					'dim as short snba(constcip2,constcip2)
 					dim as short snba1(constcip2)
-					erase snba,snba1
+					erase snba1
 					for i=1 to info_length
-						snba(nuba(i),0)+=1
-						snba(nuba(i),snba(nuba(i),0))=i
+						rep2(nuba(i),0)+=1
+						rep2(nuba(i),rep2(nuba(i),0))=i
 					next i
 					j=0
 					erase info
 					for i=1 to info_length
 						snba1(nuba(i))+=1
-						if snba1(nuba(i))<snba(nuba(i),0) then
+						if snba1(nuba(i))<rep2(nuba(i),0) then
 							j+=1
-							info(j)=snba(nuba(i),snba1(nuba(i))+1)-snba(nuba(i),snba1(nuba(i)))
+							info(j)=rep2(nuba(i),snba1(nuba(i))+1)-rep2(nuba(i),snba1(nuba(i)))
 						end if
 					next i
 					info_length=j
 					ui_editbox_settext(input_text,info_to_string(info(),info_length,info_x,info_y,1,0,0))
+					redim rep2(0,0)
 				else ui_editbox_settext(output_text,soi)
 				end if
 			case 52 'convert to incremental map
@@ -715,7 +717,9 @@ select case msg.message
 				soi=string_to_info(ui_editbox_gettext(input_text),constcip2)
 				if soi="Ok" then
 					dim as string con=ui_editbox_gettext(input_text)+" "
-					dim as short symn(constcip2,constcip2+1),seq(constcip2),news=0,nl=0
+					'dim as short symn(constcip2,constcip2+1)
+					redim rep2(constcip2,constcip2+1)
+					dim as short seq(constcip2),news=0,nl=0
 					dim as long ncip(constcip2)
 					j=0:e=0
 					'erase symn,seq,ncip
@@ -725,9 +729,9 @@ select case msg.message
 								if j>0 then
 									for k=1 to news
 										e=1
-										if symn(k,1)=j then
+										if rep2(k,1)=j then
 											for h=1 to j
-												if symn(k,h+1)<>seq(h) then
+												if rep2(k,h+1)<>seq(h) then
 													e=0
 													exit for
 												end if
@@ -739,15 +743,15 @@ select case msg.message
 									next k
 									if e=0 then
 										news+=1
-										symn(news,0)=news 'nba
-										symn(news,1)=j 'length
+										rep2(news,0)=news 'nba
+										rep2(news,1)=j 'length
 										for h=1 to j
-											symn(news,h+1)=seq(h)
+											rep2(news,h+1)=seq(h)
 										next h
 										k=news
 									end if
 									nl+=1
-									ncip(nl)=symn(k,0)
+									ncip(nl)=rep2(k,0)
 									j=0
 								end if
 							case else
@@ -756,6 +760,7 @@ select case msg.message
 						end select
 					next i
 					ui_editbox_settext(input_text,info_to_string(ncip(),nl,info_x,info_y,1,0,0))
+					redim rep2(0,0)
 				else ui_editbox_settext(output_text,soi)
 				end if
 			case 58 'add spaces to plaintext
@@ -912,7 +917,7 @@ select case msg.message
 					thread_ptr(threadsmax+1)=threadcreate(@output_ngrams_text,0)
 				end if
 			case 67 'generate nulls and skips
-				soi=string_to_info(ui_editbox_gettext(input_text),constcip2)	
+				soi=string_to_info(ui_editbox_gettext(input_text),constcip2)
 				if soi="Ok" then
 					if task_active<>"none" then stop_current_task
 					sleep 10 
@@ -921,6 +926,20 @@ select case msg.message
 						thread_ptr(threadsmax+1)=threadcreate(@generate_nullsandskips,0)
 					end if
 				else ui_editbox_settext(output_text,soi)
+				end if
+			case 68 'generate skip n-grams
+				if task_active<>"none" then stop_current_task
+				sleep 10
+				if task_active="none" then
+					sleep 10
+					thread_ptr(threadsmax+1)=threadcreate(@generate_skipngrams,0)
+				end if
+			case 69 'generate ciphers
+				if task_active<>"none" then stop_current_task
+				sleep 10
+				if task_active="none" then
+					sleep 10
+					thread_ptr(threadsmax+1)=threadcreate(@generate_ciphers,0)
 				end if
 			case 100 to 300 'statsmenu
 				soi=string_to_info(ui_editbox_gettext(input_text),constcip)

@@ -53,6 +53,13 @@ case button_main_process
 										solvesub_nosub=1
 										thread_ptr(threadsmax+1)=threadcreate(@thread_solve_permutations,0)
 									end if
+								case "Double columnar transposition"
+									if dct_windowup=0 then
+										create_window_dct
+									else
+										solvesub_nosub=1
+										thread_ptr(threadsmax+1)=threadcreate(@thread_solve_dct,0)
+									end if
 								case "Periodic transposition"
 									if pt_windowup=0 then
 										create_window_rules

@@ -4,8 +4,9 @@ bls=0
 if d>mc then
 	#include "solver_randomnewletter.bi"
 else
-	state=48271*state and 2147483647
-	k=1+map2(curr_symbol,0)*state shr 31
+	rng(k,1+map2(curr_symbol,0),state)
+	'state=48271*state and 2147483647
+	'k=1+map2(curr_symbol,0)*state shr 31
 	j=map2(curr_symbol,k)
 	select case ngram_size
 		case 2
@@ -138,8 +139,9 @@ else
 			new_letter=abc_size
 			#include "solver_pickletter_bh10.bi"
 		case else
-			state=48271*state and 2147483647
-			k=1+map2(curr_symbol,0)*state shr 31
+			rng(k,1+map2(curr_symbol,0),state)
+			'state=48271*state and 2147483647
+			'k=1+map2(curr_symbol,0)*state shr 31
 			j=map2(curr_symbol,k)
 	end select
 	if new_letter=old_letter or new_letter=abc_size then

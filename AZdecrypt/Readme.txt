@@ -1,4 +1,4 @@
-AZdecrypt 1.22 by jarlve@yahoo.com (20/02/23) dd/mm/yy
+AZdecrypt 1.23 by jarlve@yahoo.com (13/04/23) dd/mm/yy
 --------------------------------------------------------
 A powerful multi-threaded letter n-gram based substitution cipher solver for Windows since 2014. Originally written in attempt to solve the Zodiac Killer's unsolved 340 code.
 

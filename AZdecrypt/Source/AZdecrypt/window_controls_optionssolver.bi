@@ -19,6 +19,7 @@ case button_optionssolver_change
 				i=ui_listbox_getcursel(list_optionssolver)
 				s=ui_listbox_gettext(list_optionssolver,i)
 				s=left(s,instr(s,":")-1)
+				'ui_editbox_settext(output_text,s)
 				dim as integer op=0,change=0
 				dim as double d=-1
 				dim as string dd=ui_editbox_gettext(editbox_optionssolver_a1)
@@ -32,7 +33,7 @@ case button_optionssolver_change
 							numd+="."
 						case "*"
 							op=1
-						case "/""\"
+						case "/","\"
 							op=2
 						case "y"
 							d=0
@@ -46,6 +47,11 @@ case button_optionssolver_change
 					case "(General) CPU threads"
 						if d>=1 andalso d<=threadsmax then
 							change=1
+							if memcheck=1 andalso d*50000*1000>fre then
+								change=0
+								ui_editbox_settext(output_text,"Error: not enough memory")
+								exit select
+							end if
 							solvesub_cputhreads=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_cputhreads))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
@@ -224,6 +230,15 @@ case button_optionssolver_change
 						if d>=0 or d<=1000000 then
 							solvesub_homophoneweight=d
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_homophoneweight))
+						else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						end if
+					case "(General) Letter n-gram power"
+						if d>0 or d<=2 then
+							solvesub_ngrampower=d
+							for j=1 to 255
+								ngp(j)=j^d
+							next j
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_ngrampower))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
 					'case "(General) Letter n-gram log value constant"

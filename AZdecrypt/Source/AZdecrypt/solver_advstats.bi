@@ -1,6 +1,17 @@
 if local_advstats=1 then
 	select case thread(tn).solver_outputid
-		case 0,2,4,6,8,9,10,11,13,14 'substitution, no-substitution, higher-order, bigram, mono-groups, row-bound, caesar shifts, seq-hom
+		case 1,3,7 'poly, sparse, vigenere
+			if local_advstats=1 then
+				thread(tn).repeats=m_repeats(thread(tn).sol(),l,0)
+				thread(tn).pccycles=m_pccycles_longshort(thread(tn).sol(),nba(),l,s)
+				'if ngram_standardalphabet=1 then thread(tn).wordflow=m_wordflow(thread(tn).sol(),l)
+			end if
+		case 5 'mergeseqhom
+			if local_advstats=1 then
+				thread(tn).repeats=m_repeats(thread(tn).sol(),l,thread(tn).num)
+				thread(tn).pccycles=m_pccycles_longshort(thread(tn).key(),nba(),l,s)
+			end if
+		case else '0,2,4,6,8,9,10,11,12,13,14,15 'substitution, no-substitution, higher-order, bigram, mono-groups, row-bound, caesar shifts, seq-hom
 			thread(tn).repeats=m_repeats(thread(tn).sol(),l,0)
 			'if ngram_standardalphabet=1 then thread(tn).wordflow=m_wordflow(thread(tn).sol(),l)
 			if local_pcmode=0 then 'use transposed texts
@@ -14,17 +25,6 @@ if local_advstats=1 then
 					next i
 					thread(tn).pccycles=m_pccycles_shortshort(utp_sol(),utp_nba(),l,s)
 				end if
-			end if
-		case 1,3,7 'poly, sparse, vigenere
-			if local_advstats=1 then
-				thread(tn).repeats=m_repeats(thread(tn).sol(),l,0)
-				thread(tn).pccycles=m_pccycles_longshort(thread(tn).sol(),nba(),l,s)
-				'if ngram_standardalphabet=1 then thread(tn).wordflow=m_wordflow(thread(tn).sol(),l)
-			end if
-		case 5 'mergeseqhom
-			if local_advstats=1 then
-				thread(tn).repeats=m_repeats(thread(tn).sol(),l,thread(tn).num)
-				thread(tn).pccycles=m_pccycles_longshort(thread(tn).key(),nba(),l,s)
 			end if
 	end select
 end if

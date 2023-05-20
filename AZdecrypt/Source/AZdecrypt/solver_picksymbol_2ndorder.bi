@@ -3,8 +3,9 @@
 	if mi(n)=s then mi(n)=1 else mi(n)+=1
 	curr_symbol(n)=maps(n,mi(n))
 	mj(n)+=1
-	state(n)=48271*state(n) and 2147483647
-	maps2(n,mj(n))=1+s*state(n) shr 31
+	rng(maps2(n,mj(n)),1+s,state(n))
+	'state(n)=48271*state(n) and 2147483647
+	'maps2(n,mj(n))=1+s*state(n) shr 31
 	if mj(n)=s then
 		mj(n)=0
 		for i=1 to s-1 step 2

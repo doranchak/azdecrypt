@@ -3,8 +3,9 @@ if use_cribs=0 then
 	if mi=s then mi=1 else mi+=1
 	curr_symbol=maps(mi)
 	mj+=1
-	state=48271*state and 2147483647
-	maps2(mj)=1+s*state shr 31
+	rng(maps2(mj),1+s,state)
+	'state=48271*state and 2147483647
+	'maps2(mj)=1+s*state shr 31
 	if mj=s then
 		mj=0
 		for i=1 to s-1 step 2
@@ -21,8 +22,9 @@ else
 			if mi=s then mi=1 else mi+=1
 			curr_symbol=maps(mi)
 		   mj+=1
-		   state=48271*state and 2147483647
-		   maps2(mj)=1+s*state shr 31
+		   rng(maps2(mj),1+s,state)
+		   'state=48271*state and 2147483647
+		   'maps2(mj)=1+s*state shr 31
 		   if mj=s then
 		   	mj=0
 		   	for i=1 to s-1 step 2

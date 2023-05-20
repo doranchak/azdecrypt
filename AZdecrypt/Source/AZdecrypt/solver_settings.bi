@@ -14,3 +14,5 @@ dim as integer abc_size=ngram_alphabet_size
 dim as integer abc_sizem1=ngram_alphabet_size-1
 dim as integer l=thread(tn).l 'cipher length
 dim as integer s=thread(tn).s 'cipher symbols
+ll=l*(l-1)
+al=l-(ngram_size-1)

@@ -1,6 +1,7 @@
 do
-	state=48271*state and 2147483647
-	r=abc_size*state shr 31
+	rng(r,abc_size,state)
+	'state=48271*state and 2147483647
+	'r=abc_size*state shr 31
 	for i=0 to shifts-1
 		if poly_letter(rc1_symbol,i)<>abcshift(r,i) then exit do
 	next i
