@@ -367,6 +367,18 @@ Note: For this feature to work, n-gram stats that consist only of the letters A 
    
 # Release History <a name="releases"></a>
 
+## 1.23 - Apr 13, 2023
+   
+https://drive.google.com/file/d/1zenlhOqsPs6s7XKMdk9IhL7IK6nO7vUQ/view?usp=share_link
+   
+New features:
+
+- Reduced per thread memory usage by 3/4.
+
+- Adapative sleep times for multi-threading. This should result in a small speed gain for most solvers and a few big gains here and there.
+
+- Start of a Double columnar transposition solver.   
+   
 ## 1.22 - Feb 20, 2023
 
 https://drive.google.com/file/d/12ngl8-_hd7EvofHRKkNB7VtBNBceB2Tl/view?usp=share_link
