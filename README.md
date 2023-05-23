@@ -257,6 +257,8 @@ Options, Path Options to change paths.
 
 The substitution solver = `sub azdecrypt_234567810g(byval tn_ptr as any ptr)`.
 
+Note: To tune the compiled binary to a specific CPU architecture, use the `march` command line options.  For example:  `-march=skylake`.  To optimize to whatever CPU you're using, use `-march=native`.
+
 # Stats <a name="stats"></a>
 
 ## Unigrams
