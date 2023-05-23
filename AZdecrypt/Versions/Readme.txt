@@ -1,1 +1,0 @@
-CPU architecture native .exe's compiled with -march. These should run AZdecrypt a little bit faster if your CPU supports the instruction set and may crash if it does not.
