@@ -51054,21 +51054,27 @@ function yesno(byval a as integer)as string
 end function
 
 function fastpow1_single(byval x as single,byval b as single)as single
-	
-	'by richard @ freebasic.net forum
-	'---------------------------------------------------------------------------------------
-	'you can change the internal value of n beyond 11 to make a bigger log2 table with lower errors.
-	'there is no speed penalty for changing n, just the static table storage requirement.
-	'since the minimum error is fixed at about 0.5% by the quadratic antilog approximation,
-	'you only need to increase n if you are using higher values of b, say greater than 4.
-	'---------------------------------------------------------------------------------------
-    #define n 11     ' number of bits used to address lu table
-    #define max_addr ( 2^n - 1 ) ' also used as table index address mask
+
+	if b = 1 then return x
+
+	' n = 12 (92.5% error reduction)
+	' n = 13 (96.3% error reduction)
+	' n = 14 (98.1% error reduction)
+	' n = 15 (99.1% error reduction)
+	' n = 16 (99.5% error reduction)
+	' n = 17 (99.8% error reduction)
+	' n = 18 (99.9% error reduction)
+
+    #define n 18     ' number of bits used to address lu table
+    #define index_count ( 2^n )
+    #define max_addr ( index_count - 1 ) ' also used as table index address mask
     static as single table( 0 to max_addr )  ' log2 fractional mantissa table
-    static as short i = 0
+    static as single table2( 0 to max_addr )  ' 2^x table to remove quadratic error + save a multiplication
+    static as ulong i = 0
     if i = 0 then           ' initialise the table on first call
-        for i = 0 to 2^n - 1
-            table( i ) = log( 1 + i / 2^n ) / log( 2 )  ' table of log2
+        for i = 0 to max_addr
+            table( i ) = log( 1 + i / (index_count) ) / log( 2 )  ' table of log2
+            table2( i ) = 2^( i / index_count )  ' table of 2^x values
         next i
     end if  ' i is now non-zero so will not initialise again
     ' ieee 754 single   seeeeeeeefffffffffffffffffffffff ' sign_log_linear format
@@ -51078,10 +51084,10 @@ function fastpow1_single(byval x as single,byval b as single)as single
     dim as single expo = ( ( *fp shr frac_bits ) - bias ) ' integer part of log2
     expo += table( ( *fp shr ( frac_bits - n ) ) and max_addr ) ' add mantissa
     x = expo * b
-    '-------- approximate 2^x, is antilog2( x ) ------------------------
+    '-------- 2^x, is antilog2( x ) ------------------------
     expo = int( x ) ' this integer part adjusts the exponent of alog2(x)
     x -= expo   ' x reduced to fraction in range 0.000 thru 0.999
-    x = 1e0 + ( 0.6607687e0 + 0.3392313e0 * x ) * x  ' approx 2^x over range 0 to 1
+    x = table2( int ( x*index_count ) ) ' pull pre-calculated 2^x value from second table
     *fp += ( expo shl frac_bits ) ' restore early integer to biased log exponent
     return x
     
