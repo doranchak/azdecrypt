@@ -56,13 +56,15 @@ const const_rulesmd8=44*const_rulesmaxd '8-gram
 'macros
 '------------------------------------------------------------
 #macro rng(a,b,state) 'https://en.wikipedia.org/wiki/Lehmer_random_number_generator
-   state=48271*state and 2147483647
-	a=b*state shr 31
+   'state=48271*state and 2147483647
+	'a=b*state shr 31
    'state=state xor (state shl 13)
    'state=state xor (state shr 7)
    'state=state xor (state shl 17)
    'state=state and 0xFFFFFFFFFFFFFFFF
    'a=b*(state shr 32)
+	state=2480367069*state and 4294967295
+	a=b*state shr 32
 #endmacro
 
 #macro rng2(a,b,state1,state2) 'https://en.wikipedia.org/wiki/Multiply-with-carry_pseudorandom_number_generator
