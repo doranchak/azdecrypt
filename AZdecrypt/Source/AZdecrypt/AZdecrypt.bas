@@ -2032,15 +2032,15 @@ sub create_window_main
 	'ui_listbox_setcursel(list_main,0)
 	set_solverhighlight("substitution")
 	solver_text=ui_editor_new(600,20-2,570,120,solver_status,,window_main)
-	ui_control_setfont(solver_text,"courier new")
+	ui_control_setfont(solver_text,"Consolas")
 	label=ui_label_new(20,150,110,20,"Input window",,window_main) '145
 	input_text=ui_editor_new(20,175,570,519,"",WS_TABSTOP,window_main) '170
-	ui_control_setfont(input_text,"courier new")
+	ui_control_setfont(input_text,"Consolas")
 	label=ui_label_new(600,150,110,20,"Output window",,window_main) '145
 	output_text=ui_editor_new(600,175,570,519,"",WS_TABSTOP,window_main) '170
-	ui_control_setfont(output_text,"courier new")
+	ui_control_setfont(output_text,"Consolas")
 	'cmd_text=ui_editor_new(20,690,570,40,"",WS_TABSTOP,window_main)
-	'ui_control_setfont(cmd_text,"courier new")
+	'ui_control_setfont(cmd_text,"Consolas")
 	
 	#ifdef __fb_linux__
 	#else
@@ -31472,11 +31472,11 @@ sub get_symbols(byval instance as byte)
 	select case instance
 		case 0 'symbols
 			ui_listbox_resetcontent(list_symbols_ngrams)
-			ui_control_setfont(list_symbols_ngrams,"courier new",18,9)
+			ui_control_setfont(list_symbols_ngrams,"Consolas",18,9)
 		case 1 'polyphones
 			ngramsize=1
 			ui_listbox_resetcontent(list_polyphones_stl)
-			ui_control_setfont(list_polyphones_stl,"courier new",18,9)
+			ui_control_setfont(list_polyphones_stl,"Consolas",18,9)
 	end select	
 	
 	dim as integer j2,cs=0
