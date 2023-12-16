@@ -945,6 +945,37 @@ static shared as ubyte cachebh85()
 static shared as ubyte cachebh86()
 static shared as ubyte cachebh87()
 
+static shared as uinteger g53()   ' 9-gram / 10-gram subarrays
+static shared as uinteger g54()
+
+static shared as UByte gxa9()
+static shared as UByte gxb9()
+static shared as UByte gxc9()
+static shared as UByte gxd9()
+static shared as UByte gxe9()
+static shared as UByte gxf9()
+static shared as UByte gxg9()
+static shared as UByte gxh9()
+static shared as UByte gxi9()
+static shared as UByte gxj9()
+static shared as UByte gxk9()
+static shared as UByte gxl9()
+static shared as UByte gxm9()
+static shared as UByte gxn9()
+static shared as UByte gxo9()
+static shared as UByte gxp9()
+static shared as UByte gxq9()
+static shared as UByte gxr9()
+static shared as UByte gxs9()
+static shared as UByte gxt9()
+static shared as UByte gxu9()
+static shared as UByte gxv9()
+static shared as UByte gxw9()
+static shared as UByte gxx9()
+static shared as UByte gxy9()
+static shared as UByte gxz9()
+
+
 'load n-gram bias arrays:
 '------------------------------------------------------------
 redim shared as ubyte ngbn(0,0)
@@ -3259,7 +3290,7 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 						select case ngram_size
 							case 2 to 7
 								thread_ptr(i)=threadcreate(@azdecrypt_234567810g,cptr(any ptr,i))
-							case 8,10
+							case 8,9,10
 								if solvesub_homophoneweight=0 then
 									thread_ptr(i)=threadcreate(@azdecrypt_810g,cptr(any ptr,i))
 								else
@@ -3272,7 +3303,7 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 							select case ngram_size
 								case 2 to 7
 									thread_ptr(i)=threadcreate(@azdecrypt_234567810g,cptr(any ptr,i))
-								case 8,10
+								case 8,9,10
 									if solvesub_homophoneweight=0 then
 										thread_ptr(i)=threadcreate(@azdecrypt_810g,cptr(any ptr,i))
 									else
@@ -3314,17 +3345,17 @@ sub toggle_solverthreads(array()as integer,byval length as integer,byval symbols
 						thread_ptr(i)=threadcreate(@azdecrypt_nosub_234567810g,cptr(any ptr,i))
 					case "Substitution + monoalphabetic groups"
 						select case ngram_size
-							case 8,10:thread_ptr(i)=threadcreate(@azdecrypt_groups_810g,cptr(any ptr,i))
+							case 8,9,10:thread_ptr(i)=threadcreate(@azdecrypt_groups_810g,cptr(any ptr,i))
 							case else:ui_editbox_settext(output_text,errorno2):solverexist=0
 						end select
 					case "Higher-order homophonic"
 						select case ngram_size
-							case 8,10:thread_ptr(i)=threadcreate(@azdecrypt_higherorder_810g,cptr(any ptr,i))
+							case 8,9,10:thread_ptr(i)=threadcreate(@azdecrypt_higherorder_810g,cptr(any ptr,i))
 							case else:ui_editbox_settext(output_text,errorno2):solverexist=0
 						end select
 					case "Bigram substitution"
 						select case ngram_size
-							case 8,10:thread_ptr(i)=threadcreate(@azdecrypt_bigram_810g,cptr(any ptr,i))
+							case 8,9,10:thread_ptr(i)=threadcreate(@azdecrypt_bigram_810g,cptr(any ptr,i))
 							case else:ui_editbox_settext(output_text,errorno2):solverexist=0
 						end select
 					case "Substitution + sequential homophones"
@@ -4194,7 +4225,7 @@ sub update_solver_status
 			solvesub_avgscore=0
 			solvesub_avgioc=0
 			solvesub_avgpccycles=0
-			for i=1 to threads	
+			for i=1 to threads
 				restarts+=thread(i).restarts_completed
 				iterations+=thread(i).iterations_completed
 				solvesub_avgscore+=thread(i).avgscore
@@ -4284,6 +4315,74 @@ sub set_solverhighlight(byval solvername as string)
 
 end sub
 
+function bh9(byval a as ubyte, byval b as ubyte, byval c as ubyte, byval d as ubyte, byval e as ubyte, byval f as ubyte, byval g as ubyte, byval h as ubyte, byval i as ubyte)as ubyte
+
+dim as ubyte z=0,z_offset=0
+dim as integer z1,z2
+
+z1 = g53(a,b,c,d,e)
+if z1 = 0 then return 0
+z2 = g54(e,f,g,h,i)
+if z2 = 0 then return 0
+
+if (z1 and &H100000) > 0 then
+	z_offset += 1
+   z1 -= &H100000
+endif
+if (z2 and &H100000) > 0 then
+	z_offset +=2
+   z2 -= &H100000
+endif
+
+Select case e
+	Case 0: z=gxa9(z1,z2)
+	Case 1: z=gxb9(z1,z2)
+	Case 2: z=gxc9(z1,z2)
+	Case 3: z=gxd9(z1,z2)
+	Case 4: z=gxe9(z1,z2)
+	Case 5: z=gxf9(z1,z2)
+	Case 6: z=gxg9(z1,z2)
+	Case 7: z=gxh9(z1,z2)
+	Case 8: z=gxi9(z1,z2)
+	Case 9: z=gxj9(z1,z2)
+	Case 10:z=gxk9(z1,z2)
+	Case 11:z=gxl9(z1,z2)
+	Case 12:z=gxm9(z1,z2)
+	Case 13:z=gxn9(z1,z2)
+	Case 14:z=gxo9(z1,z2)
+	Case 15:z=gxp9(z1,z2)
+	Case 16:z=gxq9(z1,z2)
+	Case 17:z=gxr9(z1,z2)
+	Case 18:z=gxs9(z1,z2)
+	Case 19:z=gxt9(z1,z2)
+	Case 20:z=gxu9(z1,z2)
+	Case 21:z=gxv9(z1,z2)
+	Case 22:z=gxw9(z1,z2)
+	Case 23:z=gxx9(z1,z2)
+	Case 24:z=gxy9(z1,z2)
+	Case 25:z=gxz9(z1,z2)
+End select
+
+if z > 0 then
+
+	if z_offset = (z and &H3) then 
+      z = z shr 2  ' correct quartile, shift quartile designation away to recover true score
+	else
+		if (z_offset = 0) andalso (z < 4) then  ' special value to extend range above 63 in main quadrant only
+		   if z = 3 then z = 64
+		   if z = 2 then z = 65
+		   if z = 1 then z = 66
+		else
+	   	z = 0   ' ignore scores in wrong quartiles
+		endif
+	endif
+
+endif
+
+return z
+
+end function
+
 sub normalize_ngramfactor
 	
 	if len(solver_file_name_ngrams)=0 then
@@ -4337,6 +4436,7 @@ sub normalize_ngramfactor
 			case 6:ngram_score+=ngp(g6(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4),cip(i+5)))
 			case 7:ngram_score+=ngp(g7(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4),cip(i+5),cip(i+6)))
 			case 8:ngram_score+=ngp(bh8(bh4(cip(i),cip(i+1),cip(i+2),cip(i+3)),bh4(cip(i+4),cip(i+5),cip(i+6),cip(i+7))))
+			case 9:ngram_score+=ngp(bh9(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4),cip(i+5),cip(i+6),cip(i+7),cip(i+8)))
 			case 10:ngram_score+=ngp(bh10(bh5(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4)),bh5(cip(i+5),cip(i+6),cip(i+7),cip(i+8),cip(i+9))))
 			case 12:ngram_score+=ngp(bh12(bh6(cip(i),cip(i+1),cip(i+2),cip(i+3),cip(i+4),cip(i+5)),bh6(cip(i+6),cip(i+7),cip(i+8),cip(i+9),cip(i+10),cip(i+11))))
 		end select
@@ -33013,7 +33113,7 @@ sub thread_load_ngrams(byval none as any ptr)
 		case "letter"
 			
 			select case ngram_size
-				case 2,3,4,5,6,7
+				case 2,3,4,5,6,7,9
 				case 8,10,12
 					fileformat=1
 					ngram_format="binary"
@@ -33202,6 +33302,34 @@ sub thread_load_ngrams(byval none as any ptr)
 				redim cachebh86(0,0,0,0)
 				redim cachebh87(0,0,0,0)
 				'------------------------------------------------------------------------
+				redim g53(0,0,0,0,0) 'beijinghouse 9-grams
+				redim g54(0,0,0,0,0)
+				redim gxa9(0,0)
+				redim gxb9(0,0)
+				redim gxc9(0,0)
+				redim gxd9(0,0)
+				redim gxe9(0,0)
+				redim gxf9(0,0)
+				redim gxg9(0,0)
+				redim gxh9(0,0)
+				redim gxi9(0,0)
+				redim gxj9(0,0)
+				redim gxk9(0,0)
+				redim gxl9(0,0)
+				redim gxm9(0,0)
+				redim gxn9(0,0)
+				redim gxo9(0,0)
+				redim gxp9(0,0)
+				redim gxq9(0,0)
+				redim gxr9(0,0)
+				redim gxs9(0,0)
+				redim gxt9(0,0)
+				redim gxu9(0,0)
+				redim gxv9(0,0)
+				redim gxw9(0,0)
+				redim gxx9(0,0)
+				redim gxy9(0,0)
+				redim gxz9(0,0)
 			end if
 			
 			select case ngram_size 'calculate required memory
@@ -33771,7 +33899,7 @@ sub thread_load_ngrams(byval none as any ptr)
 					deallocate(fd2)
 					
 					bl=buffer
-					fd=allocate(buffer)
+					'fd=allocate(buffer) 'already allocated
 					gzf=gzopen(file_name_ngrams,"rb")
 					if ngram_maxtableindex>max_allowed_table_index then
 						ngram_mem=max_allowed_table_index*max_allowed_table_index
@@ -33838,6 +33966,210 @@ sub thread_load_ngrams(byval none as any ptr)
 					end if
 					
 					pickletter_caching(0)
+					
+				case 9
+
+					ngram_mem=0
+					
+					dim fileData3 As UByte Ptr			 ' temp storage for encoder table read-in
+					Dim tablecount(256) As UInteger ' temp storage for encoder scoring table sizes
+					ReDim g53(nm1,nm1,nm1,nm1,nm1)
+					ReDim g54(nm1,nm1,nm1,nm1,nm1)
+					'redim g3keyguard(nm1,nm1,nm1)
+					ngram_mem += 2*4*26^5
+					Dim as uinteger top_pivot, pivot, d1,d2,d3,d4,max_count, buf_len_s, acu_len_s, hop_len_s
+					pivot = 65
+					top_pivot = pivot + 26
+					Dim encoder_count As uinteger
+					total_items = filelen(file_name_ngrams)*7.9 'approximation 3.2 - 7.9
+
+					gzf=gzopen(file_name_ngrams,"rb")
+
+
+					While pivot < top_pivot
+						
+						buf_len_s = 0
+						gzread( gzf, fd, 4 ) ' using folded indexes with bitshifted keys in 2 low order score bits
+						highgram(ngram_size) = fd[2+buf_len_s]
+						acu_len_s += 4
+												
+						gzread( gzf, fd, 4 )
+						d1 = (fd[0+buf_len_s] Shl 24) + (fd[1+buf_len_s] Shl 16) + (fd[2+buf_len_s] Shl 8) + fd[3+buf_len_s]
+						acu_len_s += 4
+							
+						gzread( gzf, fd, 4 )
+						d3 = (fd[0+buf_len_s] Shl 24) + (fd[1+buf_len_s] Shl 16) + (fd[2+buf_len_s] Shl 8) + fd[3+buf_len_s]
+						acu_len_s += 4
+						
+						gzread( gzf, fd, d1*4 )								
+						
+						encoder_count = 1
+						While encoder_count <= d1
+							g53(alpharev(fd[0+buf_len_s]), alpharev(fd[1+buf_len_s]), alpharev(fd[2+buf_len_s]), alpharev(fd[3+buf_len_s]), alpharev(pivot)) = encoder_count
+							acu_len_s += 4
+							buf_len_s += 4
+							encoder_count += 1
+						wend
+	
+						buf_len_s = 0
+						gzread( gzf, fd, d3*4 )
+							
+						encoder_count = 1048576 + 1 ' put backup grams arbitrarily higher in encoding count
+						While encoder_count <= d3 + 1048576 ' 5000000 1048576 = &H100000
+							g53(alpharev(fd[0+buf_len_s]), alpharev(fd[1+buf_len_s]), alpharev(fd[2+buf_len_s]),  alpharev(fd[3+buf_len_s]), alpharev(pivot)) = encoder_count
+							acu_len_s += 4
+							buf_len_s += 4
+							encoder_count += 1
+						Wend
+	
+						
+						buf_len_s = 0
+						gzread( gzf, fd, 4 )				
+						d2 = (fd[0+buf_len_s] Shl 24) + (fd[1+buf_len_s] Shl 16) + (fd[2+buf_len_s] Shl 8) + fd[3+buf_len_s]
+						acu_len_s += 4
+
+						gzread( gzf, fd, 4 )
+						d4 = (fd[0+buf_len_s] Shl 24) + (fd[1+buf_len_s] Shl 16) + (fd[2+buf_len_s] Shl 8) + fd[3+buf_len_s]
+						acu_len_s += 4
+
+						gzread( gzf, fd, d2*4 + d4*4 + 255*4 )
+
+						encoder_count = 1
+						While encoder_count <= d2
+							g54(alpharev(pivot), alpharev(fd[0+buf_len_s]), alpharev(fd[1+buf_len_s]), alpharev(fd[2+buf_len_s]), alpharev(fd[3+buf_len_s])) = encoder_count
+							acu_len_s += 4
+							buf_len_s += 4
+							encoder_count += 1
+						wend
+	
+						encoder_count = 1048576 + 1 ' put backup grams arbitrarily higher in encoding count
+						While encoder_count <= d4 + 1048576 '5000000
+							g54(alpharev(pivot), alpharev(fd[0+buf_len_s]), alpharev(fd[1+buf_len_s]), alpharev(fd[2+buf_len_s]), alpharev(fd[3+buf_len_s])) = encoder_count
+							acu_len_s += 4
+							buf_len_s += 4
+							encoder_count += 1
+						wend
+	
+						max_count = 0
+
+						For i = 255 To 1 Step -1
+							tablecount(i) = (fd[0+buf_len_s] Shl 24) + (fd[1+buf_len_s] Shl 16) + (fd[2+buf_len_s] Shl 8) + fd[3+buf_len_s]
+							If tablecount(i) > max_count Then
+			               max_count = tablecount(i)	
+							endif
+							acu_len_s += 4
+							buf_len_s += 4
+						Next i
+
+						Select case pivot-65
+							Case 0: redim gxa9(1 to d1,1 to d2)
+							Case 1: redim gxb9(1 to d1,1 to d2)
+							Case 2: redim gxc9(1 to d1,1 to d2)
+							Case 3: redim gxd9(1 to d1,1 to d2)
+							Case 4: redim gxe9(1 to d1,1 to d2)
+							Case 5: redim gxf9(1 to d1,1 to d2)
+							Case 6: redim gxg9(1 to d1,1 to d2)
+							Case 7: redim gxh9(1 to d1,1 to d2)
+							Case 8: redim gxi9(1 to d1,1 to d2)
+							Case 9: redim gxj9(1 to d1,1 to d2)
+							Case 10:redim gxk9(1 to d1,1 to d2)
+							Case 11:redim gxl9(1 to d1,1 to d2)
+							Case 12:redim gxm9(1 to d1,1 to d2)
+							Case 13:redim gxn9(1 to d1,1 to d2)
+							Case 14:redim gxo9(1 to d1,1 to d2)
+							Case 15:redim gxp9(1 to d1,1 to d2)
+							Case 16:redim gxq9(1 to d1,1 to d2)
+							Case 17:redim gxr9(1 to d1,1 to d2)
+							Case 18:redim gxs9(1 to d1,1 to d2)
+							Case 19:redim gxt9(1 to d1,1 to d2)
+							Case 20:redim gxu9(1 to d1,1 to d2)
+							Case 21:redim gxv9(1 to d1,1 to d2)
+							Case 22:redim gxw9(1 to d1,1 to d2)
+							Case 23:redim gxx9(1 to d1,1 to d2)
+							Case 24:redim gxy9(1 to d1,1 to d2)
+							Case 25:redim gxz9(1 to d1,1 to d2)
+						End Select
+
+						ngram_mem += d1*d2
+
+						fileData3 = Allocate(max_count*4)
+
+						For i = 255 To 1 Step -1
+							hop_len_s = tablecount(i)
+							If hop_len_s > 0 then
+	
+								buf_len_s = 0
+								gzread( gzf, fileData3, hop_len_s*4 )
+	
+								if i > 3 then
+									j = i shr 2
+								else
+								   if i = 3 then j = 64
+		   						if i = 2 then j = 65
+		   						if i = 1 then j = 66
+								endif
+								
+								if j>solvesub_ngramlogcutoff then
+									
+									While buf_len_s < hop_len_s
+										
+										x1 = (fileData3[buf_len_s] Shl 8) + fileData3[hop_len_s+buf_len_s]
+										x2 = (fileData3[2*hop_len_s+buf_len_s] Shl 8) + fileData3[3*hop_len_s+buf_len_s]
+										
+										Select case pivot-65
+											Case 0: gxa9(x1,x2) = i
+											Case 1: gxb9(x1,x2) = i
+											Case 2: gxc9(x1,x2) = i
+											Case 3: gxd9(x1,x2) = i
+											Case 4: gxe9(x1,x2) = i
+											Case 5: gxf9(x1,x2) = i
+											Case 6: gxg9(x1,x2) = i
+											Case 7: gxh9(x1,x2) = i
+											Case 8: gxi9(x1,x2) = i
+											Case 9: gxj9(x1,x2) = i
+											Case 10:gxk9(x1,x2) = i
+											Case 11:gxl9(x1,x2) = i
+											Case 12:gxm9(x1,x2) = i
+											Case 13:gxn9(x1,x2) = i
+											Case 14:gxo9(x1,x2) = i
+											Case 15:gxp9(x1,x2) = i
+											Case 16:gxq9(x1,x2) = i
+											Case 17:gxr9(x1,x2) = i
+											Case 18:gxs9(x1,x2) = i
+											Case 19:gxt9(x1,x2) = i
+											Case 20:gxu9(x1,x2) = i
+											Case 21:gxv9(x1,x2) = i
+											Case 22:gxw9(x1,x2) = i
+											Case 23:gxx9(x1,x2) = i
+											Case 24:gxy9(x1,x2) = i
+											Case 25:gxz9(x1,x2) = i
+										End Select
+										
+										if j<ngram_lowval then ngram_lowval=j
+										if j>ngram_highval then ngram_highval=j
+										ngram_values(j)+=1
+							
+										ngram_count+=1
+										buf_len_s+=1
+										acu_len_s+=4
+										
+									wend
+								
+								endif
+								
+							endif
+
+							curr_items = acu_len_s
+							#include "ngram_loading_progress.bi"
+
+
+						Next i 
+						
+						DeAllocate(fileData3)
+						'-----
+						pivot += 1
+						
+					wend
 					
 			end select
 			
@@ -36086,7 +36418,7 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 					mape2(nba(i))+=mape1(i)
 					j+=mape1(i)
 				next i
-				ent_score_norm=(l*ngram_size)/j
+				ent_score_norm=l*ngram_size/j
 				
 				for i=1 to l
 					for j=0 to ngram_size-1
@@ -44070,7 +44402,8 @@ sub azdecrypt_bigram_810g(byval tn_ptr as any ptr)
 			
 			select case ngram_size
 				case 8:tempdiv=3
-				'case 10:tempdiv=3
+				case 9:tempdiv=3
+				case 10:tempdiv=3
 			end select
 			
 			#include "solver_settings.bi"
@@ -44300,18 +44633,23 @@ sub azdecrypt_bigram_810g(byval tn_ptr as any ptr)
 							temp_min=temp/iterations
 							new_ngram_score=0
 							
-							'select case ngram_size
-							'	case 8
+							select case ngram_size
+								case 8
 									for i=1 to al
 										ngrams(i)=bh8(bh4(sol(i),sol(i+1),sol(i+2),sol(i+3)),bh4(sol(i+4),sol(i+5),sol(i+6),sol(i+7)))
 										new_ngram_score+=ngrams(i)
 									next i
-								'case 10
-								'	for i=1 to al
-								'		ngrams(i)=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
-								'		new_ngram_score+=ngrams(i)
-								'	next i
-							'end select
+								case 9
+									for i=1 to al
+										ngrams(i)=bh9(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5),sol(i+6),sol(i+7),sol(i+8))
+										new_ngram_score+=ngrams(i)
+									next i
+								case 10
+									for i=1 to al
+										ngrams(i)=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
+										new_ngram_score+=ngrams(i)
+									next i
+							end select
 							
 							mc=5
 							mc_minus=(mc-1)/iterations
@@ -44337,14 +44675,50 @@ sub azdecrypt_bigram_810g(byval tn_ptr as any ptr)
 									'k=1+map2(curr_symbol,0)*state shr 31
 									j=map2(curr_symbol,k)
 									new_letter=abc_size
-									'select case ngram_size
-									'	case 8
+									select case ngram_size
+										case 8
+											' switch k and j if sub-gram empty
+											h=map2b(curr_symbol,k)
+											if ((h < 4) andalso (bh4(sol(j),sol(j+1),sol(j+2),sol(j+3)) = 0)) orelse ((h > 3) andalso (bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7)) = 0)) then
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+											end if
 											#include "solver_pickletter_bh8.bi"
-									'	case 10
-									'		#include "solver_pickletter_bh10.bi"
-									'end select
-									if new_letter=old_letter or new_letter=abc_size then
-										#include "solver_randomnewletter.bi"
+										case 9
+											' switch to different location if the fixed sub-gram doesn't exist
+											z=0
+											h=map2b(curr_symbol,k)
+											while (((h < 4) andalso (g53(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) = 0)) orelse ((h > 4) andalso (g54(sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8)) = 0))) andalso z<3
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+												h=map2b(curr_symbol,k)
+												z+=1
+											wend
+											' check predictive array if still empty
+											if ((h < 4) andalso (g53(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) > 0)) orelse ((h > 4) andalso (g54(sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8)) > 0)) orelse h = 4 then
+												#include "solver_pickletter_bh9.bi"
+											end if
+										case 10
+											' switch to different location if the fixed sub-gram doesn't exist
+											z=0
+											h=map2b(curr_symbol,k)
+											while (((h < 5) andalso (bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) = 0)) orelse ((h > 4) andalso (bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)) = 0))) andalso z<3
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+												h=map2b(curr_symbol,k)
+												z+=1
+											wend
+											' check predictive array if still empty
+											if ((h < 5) andalso (bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) > 0)) orelse ((h > 4) andalso (bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)) > 0)) then
+												#include "solver_pickletter_bh10.bi"
+											end if
+									end select
+									if new_letter=old_letter orelse new_letter=abc_size then
+										if ngram_language <> "english" then
+											#include "solver_randomnewletter.bi"
+										else
+											#include "solver_randomnewletter3.bi"
+										end if
 									end if
 								end if
 								
@@ -44382,8 +44756,8 @@ sub azdecrypt_bigram_810g(byval tn_ptr as any ptr)
 									for i=1 to map1(curr_symbol,0)
 										sol(map1(curr_symbol,i))=new_letter
 									next i
-									'select case ngram_size 
-									'	case 8
+									select case ngram_size 
+										case 8
 											for i=1 to num_ngrams
 												z=0
 												j=map2(curr_symbol,i)
@@ -44397,21 +44771,31 @@ sub azdecrypt_bigram_810g(byval tn_ptr as any ptr)
 												new_ngram_score+=z
 												if score_needed<0 then exit for
 											next i
-										'case 10
-										'	for i=1 to num_ngrams
-										'		z=0
-										'		j=map2(curr_symbol,i)
-										'		z1=bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4))
-										'		if z1<>0 then
-										'			z2=bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9))
-										'			if z2<>0 then z=bh10(z1,z2)
-										'		end if
-										'		score_needed-=z*hi
-										'		if (num_ngrams-i)<score_needed then exit for
-										'		new_ngram_score+=z
-										'		if score_needed<0 then exit for
-										'	next i
-									'end select
+										case 9
+											for i=1 to num_ngrams
+												z=0
+												j=map2(curr_symbol,i)
+												z=bh9(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8))
+												score_needed-=z*hi
+												if (num_ngrams-i)<score_needed then exit for
+												new_ngram_score+=z
+												if score_needed<0 then exit for
+											next i
+										case 10
+											for i=1 to num_ngrams
+												z=0
+												j=map2(curr_symbol,i)
+												z1=bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4))
+												if z1<>0 then
+													z2=bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9))
+													if z2<>0 then z=bh10(z1,z2)
+												end if
+												score_needed-=z*hi
+												if (num_ngrams-i)<score_needed then exit for
+												new_ngram_score+=z
+												if score_needed<0 then exit for
+											next i
+									end select
 									if score_needed>=0 then
 										for i=1 to map1(curr_symbol,0)
 											sol(map1(curr_symbol,i))=old_letter
@@ -44438,20 +44822,26 @@ sub azdecrypt_bigram_810g(byval tn_ptr as any ptr)
 									frq(new_letter)+=mape2(curr_symbol)
 									stl(curr_symbol)=new_letter
 									
-									'select case ngram_size
-									'	case 8
+									select case ngram_size
+										case 8
 											for h=1 to num_ngrams
 												j=map2(curr_symbol,h)
 												ngrams(j)=bh8(bh4(sol(j),sol(j+1),sol(j+2),sol(j+3)),bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7)))
 												if h>i then new_ngram_score+=ngrams(j)
 											next h
-									'	case 10
-									'		for h=1 to num_ngrams
-									'			j=map2(curr_symbol,h)
-									'			ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
-									'			if h>i then new_ngram_score+=ngrams(j)
-									'		next h
-									'end select
+										case 9
+											for h=1 to num_ngrams
+												j=map2(curr_symbol,h)
+												ngrams(j)=bh9(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8))
+												if h>i then new_ngram_score+=ngrams(j)
+											next h
+										case 10
+											for h=1 to num_ngrams
+												j=map2(curr_symbol,h)
+												ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
+												if h>i then new_ngram_score+=ngrams(j)
+											next h
+									end select
 									
 									new_score=new_ngram_score*ngfal*ent2
 									new_score/=hw 'bigram substitution stuff
@@ -44597,6 +44987,7 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 			
 			select case ngram_size
 				case 8:tempdiv=2.25
+				case 9:tempdiv=2.25
 				case 10:tempdiv=2
 			end select
 			
@@ -44656,7 +45047,7 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 					mape2(nba(i))+=mape1(i)
 					j+=mape1(i)
 				next i
-				ent_score_norm=(l*ngram_size)/j
+				ent_score_norm=l*ngram_size/j
 				
 				for i=1 to l
 					for j=0 to ngram_size-1
@@ -44755,18 +45146,23 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 							temp_min=temp/iterations
 							new_ngram_score=0
 							
-							'select case ngram_size
-							'	case 8
+							select case ngram_size
+								case 8
 									for i=1 to al
 										ngrams(i)=bh8(bh4(sol(i),sol(i+1),sol(i+2),sol(i+3)),bh4(sol(i+4),sol(i+5),sol(i+6),sol(i+7)))
 										new_ngram_score+=ngrams(i)
 									next i
-							'	case 10
-							'		for i=1 to al
-							'			ngrams(i)=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
-							'			new_ngram_score+=ngrams(i)
-							'		next i
-							'end select
+								case 9
+									for i=1 to al
+										ngrams(i)=bh9(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5),sol(i+6),sol(i+7),sol(i+8))
+										new_ngram_score+=ngrams(i)
+									next i
+								case 10
+									for i=1 to al
+										ngrams(i)=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
+										new_ngram_score+=ngrams(i)
+									next i
+							end select
 							
 							mc=5
 							mc_minus=(mc-1)/iterations
@@ -44780,26 +45176,59 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 								if lv=lvmax then mc-=mc_minus
 								
 								rng(d,4,state)
-								'state=48271*state and 2147483647
-								'd=4*state shr 31
 								
 								bls=0
 								if d>mc then
 									#include "solver_randomnewletter.bi"
 								else
 									rng(k,1+map2(curr_symbol,0),state)
-									'state=48271*state and 2147483647
-									'k=1+map2(curr_symbol,0)*state shr 31
 									j=map2(curr_symbol,k)
 									new_letter=abc_size
-									'select case ngram_size
-									'	case 8
+									select case ngram_size
+										case 8
+											' switch k and j if sub-gram empty
+											h=map2b(curr_symbol,k)
+											if ((h < 4) andalso (bh4(sol(j),sol(j+1),sol(j+2),sol(j+3)) = 0)) orelse ((h > 3) andalso (bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7)) = 0)) then
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+												h=map2b(curr_symbol,k)
+											end if
 											#include "solver_pickletter_bh8.bi"
-									'	case 10
-									'		#include "solver_pickletter_bh10.bi"
-									'end select
-									if new_letter=old_letter or new_letter=abc_size then
-										#include "solver_randomnewletter.bi"
+										case 9
+											' switch to different location if the fixed sub-gram doesn't exist
+											z=0
+											h=map2b(curr_symbol,k)
+											while (((h < 4) andalso (g53(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) = 0)) orelse ((h > 4) andalso (g54(sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8)) = 0))) andalso z<3
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+												h=map2b(curr_symbol,k)
+												z+=1
+											wend
+											' check predictive array if still empty
+											if ((h < 4) andalso (g53(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) > 0)) orelse ((h > 4) andalso (g54(sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8)) > 0)) orelse h = 4 then
+												#include "solver_pickletter_bh9.bi"
+											end if
+										case 10
+											' switch to different location if the fixed sub-gram doesn't exist
+											z=0
+											h=map2b(curr_symbol,k)
+											while (((h < 5) andalso (bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) = 0)) orelse ((h > 4) andalso (bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)) = 0))) andalso z<3
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+												h=map2b(curr_symbol,k)
+												z+=1
+											wend
+											' check predictive array if still empty
+											if ((h < 5) andalso (bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) > 0)) orelse ((h > 4) andalso (bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)) > 0)) then
+												#include "solver_pickletter_bh10.bi"
+											end if
+									end select
+									if new_letter=old_letter orelse new_letter=abc_size then
+										if ngram_language <> "english" then
+											#include "solver_randomnewletter.bi"
+										else
+											#include "solver_randomnewletter3.bi"
+										end if
 									end if
 								end if
 								
@@ -44823,8 +45252,8 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 									for i=1 to map1(curr_symbol,0)
 										sol(map1(curr_symbol,i))=new_letter
 									next i
-									'select case ngram_size 
-									'	case 8
+									select case ngram_size 
+										case 8
 											for i=1 to num_ngrams
 												z=0
 												j=map2(curr_symbol,i)
@@ -44838,21 +45267,31 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 												new_ngram_score+=z
 												if score_needed<0 then exit for
 											next i
-									'	case 10
-									'		for i=1 to num_ngrams
-									'			z=0
-									'			j=map2(curr_symbol,i)
-									'			z1=bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4))
-									'			if z1<>0 then
-									'				z2=bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9))
-									'				if z2<>0 then z=bh10(z1,z2)
-									'			end if
-									'			score_needed-=z*hi
-									'			if (num_ngrams-i)<score_needed then exit for
-									'			new_ngram_score+=z
-									'			if score_needed<0 then exit for
-									'		next i
-									'end select
+										case 9
+											for i=1 to num_ngrams
+												z=0
+												j=map2(curr_symbol,i)
+												z=bh9(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8))
+												score_needed-=z*hi
+												if (num_ngrams-i)<score_needed then exit for
+												new_ngram_score+=z
+												if score_needed<0 then exit for
+											next i												
+										case 10
+											for i=1 to num_ngrams
+												z=0
+												j=map2(curr_symbol,i)
+												z1=bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4))
+												if z1<>0 then
+													z2=bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9))
+													if z2<>0 then z=bh10(z1,z2)
+												end if
+												score_needed-=z*hi
+												if (num_ngrams-i)<score_needed then exit for
+												new_ngram_score+=z
+												if score_needed<0 then exit for
+											next i
+									end select
 									if score_needed>=0 then
 										for i=1 to map1(curr_symbol,0)
 											sol(map1(curr_symbol,i))=old_letter
@@ -44868,20 +45307,26 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 									frq(new_letter)+=mape2(curr_symbol)
 									stl(curr_symbol)=new_letter
 									
-									'select case ngram_size
-									'	case 8
+									select case ngram_size
+										case 8
 											for h=1 to num_ngrams
 												j=map2(curr_symbol,h)
 												ngrams(j)=bh8(bh4(sol(j),sol(j+1),sol(j+2),sol(j+3)),bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7)))
 												if h>i then new_ngram_score+=ngrams(j)
 											next h
-									'	case 10
-									'		for h=1 to num_ngrams
-									'			j=map2(curr_symbol,h)
-									'			ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
-									'			if h>i then new_ngram_score+=ngrams(j)
-									'		next h
-									'end select
+										case 9
+											for h=1 to num_ngrams
+												j=map2(curr_symbol,h)
+												ngrams(j)=bh9(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8))
+												if h>i then new_ngram_score+=ngrams(j)
+											next h
+										case 10
+											for h=1 to num_ngrams
+												j=map2(curr_symbol,h)
+												ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
+												if h>i then new_ngram_score+=ngrams(j)
+											next h
+									end select
 									
 									new_score=new_ngram_score*ngfal*ent2
 									
@@ -45025,6 +45470,7 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 			
 			select case ngram_size
 				case 8:tempdiv=2.5
+				case 9:tempdiv=2.5
 				case 10:tempdiv=2
 			end select
 			
@@ -45193,16 +45639,6 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 												new_letter=next_letter(sol(h-2),sol(h-1),state)
 											end if
 										end if
-
-'                              if i=1 then new_letter=g5predict_seed(tn mod 12,0)
- '                             if i=2 then new_letter=g5predict_seed(tn mod 12,1)
-  '                            if i=3 then new_letter=g5predict_seed(tn mod 12,2)
-   '                           if i=4 then new_letter=g5predict_seed(tn mod 12,3)
-    '                          if i=5 then new_letter=g5predict_seed(tn mod 12,4)
-		'								if i>5 then
-       '                       	h=map1(i,1)
-        '                      	new_letter=g5predict(sol(h-5),sol(h-4),sol(h-3),sol(h-2),sol(h-1))
-			'							end if
 									else
 										new_letter=cribkey(i)-1
 									end if
@@ -45260,18 +45696,23 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 							temp_min=temp/iterations
 							new_ngram_score=0
 							
-							'select case ngram_size
-							'	case 8
+							select case ngram_size
+								case 8
 									for i=1 to al
 										ngrams(i)=bh8(bh4(sol(i),sol(i+1),sol(i+2),sol(i+3)),bh4(sol(i+4),sol(i+5),sol(i+6),sol(i+7)))
 										new_ngram_score+=ngrams(i)
 									next i
-							'	case 10
-							'		for i=1 to al
-							'			ngrams(i)=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
-							'			new_ngram_score+=ngrams(i)
-							'		next i
-							'end select
+								case 9
+									for i=1 to al
+										ngrams(i)=bh9(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4),sol(i+5),sol(i+6),sol(i+7),sol(i+8))
+										new_ngram_score+=ngrams(i)
+									next i
+								case 10
+									for i=1 to al
+										ngrams(i)=bh10(bh5(sol(i),sol(i+1),sol(i+2),sol(i+3),sol(i+4)),bh5(sol(i+5),sol(i+6),sol(i+7),sol(i+8),sol(i+9)))
+										new_ngram_score+=ngrams(i)
+									next i
+							end select
 							
 							mc=5
 							mc_minus=(mc-1)/iterations
@@ -45285,26 +45726,58 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 								if lv=lvmax then mc-=mc_minus
 								
 								rng(d,4,state)
-								'state=48271*state and 2147483647
-								'd=4*state shr 31
 								
 								bls=0
 								if d>mc then
 									#include "solver_randomnewletter.bi"
 								else
 									rng(k,1+map2(curr_symbol,0),state)
-									'state=48271*state and 2147483647
-									'k=1+map2(curr_symbol,0)*state shr 31
 									j=map2(curr_symbol,k)
 									new_letter=abc_size
-									'select case ngram_size
-									'	case 8
+									select case ngram_size
+										case 8
+											' switch k and j if sub-gram empty
+											h=map2b(curr_symbol,k)
+											if ((h < 4) andalso (bh4(sol(j),sol(j+1),sol(j+2),sol(j+3)) = 0)) orelse ((h > 3) andalso (bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7)) = 0)) then
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+											end if
 											#include "solver_pickletter_bh8.bi"
-									'	case 10
-									'		#include "solver_pickletter_bh10.bi"
-									'end select
+										case 9
+											' switch to different location if the fixed sub-gram doesn't exist
+											z=0
+											h=map2b(curr_symbol,k)
+											while (((h < 4) andalso (g53(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) = 0)) orelse ((h > 4) andalso (g54(sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8)) = 0))) andalso z<3
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+												h=map2b(curr_symbol,k)
+												z+=1
+											wend
+											' check predictive array if still empty
+											if ((h < 4) andalso (g53(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) > 0)) orelse ((h > 4) andalso (g54(sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8)) > 0)) orelse h = 4 then
+												#include "solver_pickletter_bh9.bi"
+											end if
+										case 10
+											' switch to different location if the fixed sub-gram doesn't exist
+											z=0
+											h=map2b(curr_symbol,k)
+											while (((h < 5) andalso (bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) = 0)) orelse ((h > 4) andalso (bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)) = 0))) andalso z<3
+												rng(k,1+map2(curr_symbol,0),state)
+												j=map2(curr_symbol,k)
+												h=map2b(curr_symbol,k)
+												z+=1
+											wend
+											' check predictive array if still empty
+											if ((h < 5) andalso (bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)) > 0)) orelse ((h > 4) andalso (bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)) > 0)) then
+												#include "solver_pickletter_bh10.bi"
+											end if
+									end select
 									if new_letter=old_letter or new_letter=ngram_alphabet_size then
-										#include "solver_randomnewletter.bi"
+										if ngram_language <> "english" then
+											#include "solver_randomnewletter.bi"
+										else
+											#include "solver_randomnewletter3.bi"
+										end if
 									end if
 								end if
 								
@@ -45346,8 +45819,8 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 									for i=1 to map1(curr_symbol,0)
 										sol(map1(curr_symbol,i))=new_letter
 									next i
-									'select case ngram_size 
-									'	case 8
+									select case ngram_size 
+										case 8
 											for i=1 to num_ngrams
 												z=0
 												j=map2(curr_symbol,i)
@@ -45361,21 +45834,31 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 												new_ngram_score+=z
 												if score_needed<0 then exit for
 											next i
-										'case 10
-										'	for i=1 to num_ngrams
-										'		z=0
-										'		j=map2(curr_symbol,i)
-										'		z1=bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4))
-										'		if z1<>0 then
-										'			z2=bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9))
-										'			if z2<>0 then z=bh10(z1,z2)
-										'		end if
-										'		score_needed-=z*hi
-										'		if (num_ngrams-i)<score_needed then exit for
-										'		new_ngram_score+=z
-										'		if score_needed<0 then exit for
-										'	next i
-									'end select
+										case 9
+											for i=1 to num_ngrams
+												z=0
+												j=map2(curr_symbol,i)
+												z=bh9(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8))
+												score_needed-=z*hi
+												if (num_ngrams-i)<score_needed then exit for
+												new_ngram_score+=z
+												if score_needed<0 then exit for
+											next i
+										case 10
+											for i=1 to num_ngrams
+												z=0
+												j=map2(curr_symbol,i)
+												z1=bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4))
+												if z1<>0 then
+													z2=bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9))
+													if z2<>0 then z=bh10(z1,z2)
+												end if
+												score_needed-=z*hi
+												if (num_ngrams-i)<score_needed then exit for
+												new_ngram_score+=z
+												if score_needed<0 then exit for
+											next i
+									end select
 									if score_needed>=0 then
 										for i=1 to map1(curr_symbol,0)
 											sol(map1(curr_symbol,i))=old_letter
@@ -45416,20 +45899,26 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 									frq(new_letter)+=mape2(curr_symbol)
 									stl(curr_symbol)=new_letter
 									
-									'select case ngram_size
-									'	case 8
+									select case ngram_size
+										case 8
 											for h=1 to num_ngrams
 												j=map2(curr_symbol,h)
 												ngrams(j)=bh8(bh4(sol(j),sol(j+1),sol(j+2),sol(j+3)),bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7)))
 												if h>i then new_ngram_score+=ngrams(j)
 											next h
-									'	case 10
-									'		for h=1 to num_ngrams
-									'			j=map2(curr_symbol,h)
-									'			ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
-									'			if h>i then new_ngram_score+=ngrams(j)
-									'		next h
-									'end select
+										case 9
+											for h=1 to num_ngrams
+												j=map2(curr_symbol,h)
+												ngrams(j)=bh9(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4),sol(j+5),sol(j+6),sol(j+7),sol(j+8))
+												if h>i then new_ngram_score+=ngrams(j)
+											next h
+										case 10
+											for h=1 to num_ngrams
+												j=map2(curr_symbol,h)
+												ngrams(j)=bh10(bh5(sol(j),sol(j+1),sol(j+2),sol(j+3),sol(j+4)),bh5(sol(j+5),sol(j+6),sol(j+7),sol(j+8),sol(j+9)))
+												if h>i then new_ngram_score+=ngrams(j)
+											next h
+									end select
 									
 									new_score=new_ngram_score*ngfal*ent2
 									new_score/=norm 'monoalphabetic groups
