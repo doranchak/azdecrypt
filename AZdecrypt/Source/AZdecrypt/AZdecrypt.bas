@@ -1553,7 +1553,7 @@ sub file_load_settings
 				case "(bigram substitution) auto-crib restarts"
 					if val(suf)>=0 andalso val(suf)<=1000000 then solvesub_bigramautocrib=val(suf)
 				case "(bigram substitution) bigram homophone weight divider"
-					if val(suf)>=0 andalso val(suf)<=1000000 then solvesub_bigramhomwdiv=val(suf)
+					if val(suf)>0 andalso val(suf)<=1000000 then solvesub_bigramhomwdiv=val(suf)
 				case "(substitution + columnar transposition & rearrangement) search depth"
 					if val(suf)>=1 andalso val(suf)<=7 then solvesub_ctdepth=val(suf)
 				'case "(substitution + columnar transposition & rearrangement) use bigrams"
