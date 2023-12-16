@@ -43,16 +43,19 @@ load_status+="N-gram loading time: "+rdc(ngram_loading_time,2)+" seconds"
 'load_status2+=lb+"---------------------------------------------------------"
 if loadngrams_fileformatmismatch<>"" then warnings+=lb+"- N-gram file format auto-detected as "+str(loadngrams_fileformatmismatch)
 if loadngrams_ngramvalueoverflows>0 then warnings+=lb+"- N-gram log value overflows: "+str(loadngrams_ngramvalueoverflows)
-if (ngram_count/(ngram_alphabet_size^ngram_size)*100)<1 then warnings+=lb+"- N-gram item coverage is very low"
+if ngram_size<9 andalso (ngram_count/(ngram_alphabet_size^ngram_size)*100)<1 then warnings+=lb+"- N-gram item coverage is very low"
+if ngram_size=9 andalso (ngram_count/(ngram_alphabet_size^ngram_size)*100)<0.1 then warnings+=lb+"- N-gram item coverage is very low"
+if ngram_size=10 andalso (ngram_count/(ngram_alphabet_size^ngram_size)*100)<0.01 then warnings+=lb+"- N-gram item coverage is very low"
 dim as double nge_lo,nge_hi
-select case ngram_size 'roughly from memory, values may need more fine-tuning
-	case 2:nge_lo=0.05:nge_hi=0.5
+select case ngram_size
+	case 2:nge_lo=0.05:nge_hi=0.75
 	case 3:nge_lo=0.1:nge_hi=0.75
 	case 4:nge_lo=0.25:nge_hi=1
 	case 5:nge_lo=0.5:nge_hi=1.5
 	case 6:nge_lo=0.75:nge_hi=1.75
 	case 7:nge_lo=1:nge_hi=2
 	case 8:nge_lo=1:nge_hi=2
+	case 9:nge_lo=1:nge_hi=2
 	case 10:nge_lo=1:nge_hi=2
 	case else:nge_lo=1:nge_hi=2
 end select
