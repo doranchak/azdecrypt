@@ -13270,15 +13270,17 @@ sub thread_solve_cribgrid(byval none as any ptr)
 	if task_active="bigram substitution" then
 		select case ngram_size
 			case 8:solvesub_entweight=0.75:solvesub_fastent=3
-			case 10:solvesub_entweight=0.75:solvesub_fastent=3
+			case 9:solvesub_entweight=0.5:solvesub_fastent=2
+			case 10:solvesub_entweight=0.5:solvesub_fastent=2
 		end select
 		normalize_ngramfactor
 	end if
 	
 	if task_active="substitution + monoalphabetic groups" then
 		select case ngram_size
-			case 8:solvesub_entweight=0.1:solvesub_fastent=0
-			case 10:solvesub_entweight=0.1:solvesub_fastent=0
+			case 8:solvesub_entweight=0.075:solvesub_fastent=0
+			case 9:solvesub_entweight=0.05:solvesub_fastent=0
+			case 10:solvesub_entweight=0.05:solvesub_fastent=0
 		end select
 		normalize_ngramfactor
 	end if
@@ -44204,8 +44206,8 @@ sub azdecrypt_bigram_810g(byval tn_ptr as any ptr)
 											'end if
 											
 											'state=48271*state and 2147483647
-											rng(i,1000000,state)
-											dim as double rndroll=i/999999
+											rng(j,1000000,state)
+											dim as double rndroll=j/999999
 												
 											if rndroll>solvesub_bigrambestsol then
 												rng(new_letter,abc_size,state)
