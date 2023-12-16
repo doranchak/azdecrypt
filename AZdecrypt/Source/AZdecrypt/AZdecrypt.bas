@@ -18,6 +18,8 @@
 
 'zlib crc32/adler32 usage: crc32(0,@array(0),arraylen) 'bytes
 
+#inclib "jemalloc"
+
 randomize timer,1 'rng=rand()
 
 'includes
