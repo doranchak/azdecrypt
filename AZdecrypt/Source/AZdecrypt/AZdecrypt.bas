@@ -1250,6 +1250,22 @@ declare function m_letterngrams(txt()as long,byval l as integer,byval stepsize a
 declare function remove_diacritics(byval s as string)as string
 'declare function getcpuname as string
 
+'generated from beijinghouse 1-first-gram statistics
+'generated from beijinghouse 2-first-gram statistics
+'generated from beijinghouse 3-first-gram statistics  (depleted by 3-invalidgrams)
+'generated from beijinghouse 3-gram statistics        (depleted by 3-invalidgrams)
+'generated from beijinghouse 3-gram statistics        (depleted by 3-invalidgrams)
+'generated from beijinghouse 3-gram statistics        (depleted by 3-invalidgrams)
+declare function first_letter(byval state as ulongint) as integer
+declare function second_letter(byval last_letter as integer, byval state as ulongint) as integer
+declare function third_letter(byval second_last_letter as integer, byval last_letter as integer, byval state as ulongint) as integer
+declare function next_letter(byval second_last_letter as integer, byval last_letter as integer, byval state as ulongint) as integer
+declare function prior_letter(byval second_last_letter as integer, byval last_letter as integer, byval state as ulongint) as integer
+declare function mid_letter(byval first_letter as integer, byval second_letter as integer, byval second_last_letter as integer, byval last_letter as integer, byval state as ulong) as integer
+
+#inclib "lp"
+
+
 'program root
 '------------------------------------------------------------
 
@@ -36125,18 +36141,29 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 							
 							if lv=1 then
 								for i=1 to s
-									if use_cribs=0 then
-										rng(new_letter,abc_size,state)
-										'state=48271*state and 2147483647
-										'new_letter=abc_size*state shr 31
-									else
-										if cribkey(i)=0 then
+									if use_cribs=0 orelse cribkey(i)=0 then
+										
+										if ngram_language <> "english" then
 											rng(new_letter,abc_size,state)
-											'state=48271*state and 2147483647
-											'new_letter=abc_size*state shr 31
 										else
-											new_letter=cribkey(i)-1
+											state=2480367069*state and 4294967295  ' advance state for each new letter
+											if i=1 then new_letter=first_letter(state)
+											if i=2 then
+												h=map1(i,1)
+												new_letter=second_letter(sol(h-1),state)
+											end if
+											if i=3 then
+												h=map1(i,1)
+												new_letter=third_letter(sol(h-2),sol(h-1),state)
+											end if											
+											if i>3 then
+												h=map1(i,1)
+												new_letter=next_letter(sol(h-2),sol(h-1),state)
+											end if
 										end if
+										
+									else
+										new_letter=cribkey(i)-1
 									end if
 									stl(i)=new_letter
 									frq(new_letter)+=mape2(i)
@@ -36144,7 +36171,6 @@ sub azdecrypt_234567810g(byval tn_ptr as any ptr)
 										sol(map1(i,j))=new_letter
 									next j
 									hp(new_letter)+=1 'homophone weight
-									'hp(hpg(map1(i,1)),new_letter)+=1
 								next i
 							else
 								for i=1 to s
@@ -44673,21 +44699,31 @@ sub azdecrypt_810g(byval tn_ptr as any ptr)
 						for rr=1 to random_restarts
 							
 							erase frq
-							
+
 							if lv=1 then
 								for i=1 to s
-									if use_cribs=0 then
-										rng(new_letter,abc_size,state)
-										'state=48271*state and 2147483647
-										'new_letter=abc_size*state shr 31
-									else
-										if cribkey(i)=0 then
+									if use_cribs=0 orelse cribkey(i)=0 then
+											
+										if ngram_language <> "english" then
 											rng(new_letter,abc_size,state)
-											'state=48271*state and 2147483647
-											'new_letter=abc_size*state shr 31
 										else
-											new_letter=cribkey(i)-1
+											state=2480367069*state and 4294967295  ' advance state for each new letter
+											if i=1 then new_letter=first_letter(state)
+											if i=2 then
+												h=map1(i,1)
+												new_letter=second_letter(sol(h-1),state)
+											end if
+											if i=3 then
+												h=map1(i,1)
+												new_letter=third_letter(sol(h-2),sol(h-1),state)
+											end if											
+											if i>3 then
+												h=map1(i,1)
+												new_letter=next_letter(sol(h-2),sol(h-1),state)
+											end if
 										end if
+									else
+										new_letter=cribkey(i)-1
 									end if
 									stl(i)=new_letter
 									frq(new_letter)+=mape2(i)
@@ -45136,35 +45172,39 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 							erase frq
 							
 							if lv=1 then
-								'mutexlock csolmutex
 								for i=1 to s
-									if use_cribs=0 then
-										rng(new_letter,abc_size,state)
-										'state=48271*state and 2147483647
-										'new_letter=abc_size*state shr 31
-									else
-										if cribkey(i)=0 then
+									if use_cribs=0 orelse cribkey(i)=0 then
+										
+										if ngram_language <> "english" then
 											rng(new_letter,abc_size,state)
-											'state=48271*state and 2147483647
-											'new_letter=abc_size*state shr 31
-											'------------------------ monoalphabetic groups ------------------------
-											'state=48271*state and 2147483647
-											'dim as double rndroll=state/2147483648
-											'if rndroll>solvesub_bigrambestsol then 'solvesub_bigrambestsol
-											'	state=48271*state and 2147483647 'use random
-											'	new_letter=abc_size*state shr 31
-											'else
-											'	if csol(0,100)=1 then 'use best solution
-											'		new_letter=csol(map1(i,1),100)
-											'	else
-											'		state=48271*state and 2147483647
-											'		new_letter=abc_size*state shr 31
-											'	end if
-											'end if
-											'------------------------------------------------------------------
 										else
-											new_letter=cribkey(i)-1
+											state=2480367069*state and 4294967295  ' advance state for each new letter
+											if i=1 then new_letter=first_letter(state)
+											if i=2 then
+												h=map1(i,1)
+												new_letter=second_letter(sol(h-1),state)
+											end if
+											if i=3 then
+												h=map1(i,1)
+												new_letter=third_letter(sol(h-2),sol(h-1),state)
+											end if											
+											if i>3 then
+												h=map1(i,1)
+												new_letter=next_letter(sol(h-2),sol(h-1),state)
+											end if
 										end if
+
+'                              if i=1 then new_letter=g5predict_seed(tn mod 12,0)
+ '                             if i=2 then new_letter=g5predict_seed(tn mod 12,1)
+  '                            if i=3 then new_letter=g5predict_seed(tn mod 12,2)
+   '                           if i=4 then new_letter=g5predict_seed(tn mod 12,3)
+    '                          if i=5 then new_letter=g5predict_seed(tn mod 12,4)
+		'								if i>5 then
+       '                       	h=map1(i,1)
+        '                      	new_letter=g5predict(sol(h-5),sol(h-4),sol(h-3),sol(h-2),sol(h-1))
+			'							end if
+									else
+										new_letter=cribkey(i)-1
 									end if
 									stl(i)=new_letter
 									frq(new_letter)+=mape2(i)
@@ -45172,7 +45212,6 @@ sub azdecrypt_groups_810g(byval tn_ptr as any ptr)
 										sol(map1(i,j))=new_letter
 									next j
 								next i
-								'mutexunlock csolmutex
 							else
 								for i=1 to s
 									stl(i)=key2(i)
