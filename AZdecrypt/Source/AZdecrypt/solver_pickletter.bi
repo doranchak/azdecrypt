@@ -143,11 +143,6 @@ else
 			j=map2(curr_symbol,k)
 	end select
 	if new_letter=old_letter or new_letter=abc_size then
-		if ngram_language <> "english" then
 			#include "solver_randomnewletter.bi"
-		else
-			h=map2b(curr_symbol,k)
-			#include "solver_randomnewletter3.bi"
-		end if
 	end if
 end if
