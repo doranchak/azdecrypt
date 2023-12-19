@@ -1,4 +1,4 @@
-'AZdecrypt 1.23
+'AZdecrypt 1.23b
 '---------------
 
 'cstate table:
@@ -1316,7 +1316,7 @@ declare function mid_letter(byval first_letter as integer, byval second_letter a
 if solvesub_cputhreads<1 then solvesub_cputhreads=1
 threads=solvesub_cputhreads
 
-program_name="AZdecrypt 1.23"
+program_name="AZdecrypt 1.23b"
 'program_name+=" on "
 ''select case system_cpuarch
 ''	case 0:program_name+="Intel"
@@ -1420,8 +1420,8 @@ sub file_load_settings
 	solvesub_homophoneweight=0
 	
 	solvesub_bigramheatmap=0
-	solvesub_bigrambestsol=0.5
-	solvesub_bigramhomwdiv=300
+	solvesub_bigrambestsol=0.75
+	solvesub_bigramhomwdiv=350
 	solvesub_bigramautocrib=0
 	
 	twait=4 'thread wait when idle
@@ -2197,7 +2197,7 @@ sub create_window_optionssolver
 	ui_listbox_addstring(list_optionssolver,"(General) Iterations factor: "+str(solvesub_iterationsfactor))
 	ui_listbox_addstring(list_optionssolver,"(General) Hill climber iterations: "+str(solvesub_hciterations))
 	ui_listbox_addstring(list_optionssolver,"(General) Hill climber iterations factor: "+str(solvesub_hciterationsfactor))
-	ui_listbox_addstring(list_optionssolver,"(General) Letter n-gram factor: "+rdc(solvesub_ngramfactor,7))
+	ui_listbox_addstring(list_optionssolver,"(General) Letter n-gram factor: "+rdc(solvesub_ngramfactor,14))
 	ui_listbox_addstring(list_optionssolver,"(General) Multiplicity weight: "+str(solvesub_multiplicityweight))
 	ui_listbox_addstring(list_optionssolver,"(General) Output to file: "+yesno(solvesub_outputdir))
 	ui_listbox_addstring(list_optionssolver,"(General) Output to batch: "+yesno(solvesub_outputbatch))
@@ -4458,7 +4458,7 @@ sub normalize_ngramfactor
 	
 	o=ui_listbox_gettext(list_optionssolver,7)
 	o=left(o,instr(o,":")-1)
-	ui_listbox_replacestring(list_optionssolver,7,o+": "+rdc(solvesub_ngramfactor,7)) 'update solver options window
+	ui_listbox_replacestring(list_optionssolver,7,o+": "+rdc(solvesub_ngramfactor,14)) 'update solver options window
 	
 end sub
 
@@ -33182,7 +33182,7 @@ sub thread_load_ngrams(byval none as any ptr)
 				solvesub_ngramfactor/=6.103
 				s=ui_listbox_gettext(list_optionssolver,7)
 				s=left(s,instr(s,":")-1)
-				ui_listbox_replacestring(list_optionssolver,7,s+": "+rdc(solvesub_ngramfactor,5)) 'update solver options window
+				ui_listbox_replacestring(list_optionssolver,7,s+": "+rdc(solvesub_ngramfactor,14)) 'update solver options window
 			else
 				solvesub_entweight=val(right(s,len(s)-a))
 				select case solvesub_entweight
@@ -33435,7 +33435,7 @@ sub thread_load_ngrams(byval none as any ptr)
 	'-----------------------------
 	dim fd as ubyte ptr 'file data
 	dim fs as ushort ptr 'file data
-	dim as integer buffer=1050600
+	dim as integer buffer=1050600*2
 	dim as integer bytesread=buffer
 	dim as integer totalbytes=buffer
 	dim as integer bl=buffer
