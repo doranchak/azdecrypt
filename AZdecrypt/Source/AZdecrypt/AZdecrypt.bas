@@ -33354,6 +33354,8 @@ sub thread_load_ngrams(byval none as any ptr)
 						max_allowed_table_index=sqr(ngram_alphabet_size^ngram_size)
 					end if
 					if (max_allowed_table_index*max_allowed_table_index)>(1073741824*solvesub_bhmaxgb) then max_allowed_table_index=sqr(1073741824*solvesub_bhmaxgb)
+				case 9 'beijnghouse
+					nfb=(1073741824*70) '88 GB RAM required; make sure at least 70GB free; should change in future if 9-gram models eventually use more or less mem
 			end select
 			
 			if memcheck=1 andalso nfb>=fre then 'memory check
@@ -33981,7 +33983,7 @@ sub thread_load_ngrams(byval none as any ptr)
 					pivot = 65
 					top_pivot = pivot + 26
 					Dim encoder_count As uinteger
-					total_items = filelen(file_name_ngrams)*7.9 'approximation 3.2 - 7.9
+					total_items = filelen(file_name_ngrams)*3.25 'approximation 3.2 - 7.9; lower for bigger 9-gram files
 
 					gzf=gzopen(file_name_ngrams,"rb")
 
