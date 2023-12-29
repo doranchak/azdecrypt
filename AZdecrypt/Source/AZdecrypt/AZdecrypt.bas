@@ -1308,10 +1308,9 @@ declare function mid_letter(byval first_letter as integer, byval second_letter a
 	system_cputype=sysinf.dwprocessortype
 	system_cpulevel=sysinf.wprocessorlevel
 	system_cpurev=sysinf.wprocessorrevision
-	solvesub_cputhreads=(system_cputhreads/4)*3 'use 3/4 of system CPU threads
-	'solvesub_cputhreads=(sysinf.dwnumberofprocessors/2) 'use 1/2 of system CPU threads
+	solvesub_cputhreads=system_cputhreads-2 'use all but 2 system CPU threads by default
 #else
-	solvesub_cputhreads=GetCPUCores
+	solvesub_cputhreads=GetCPUCores-2
 #endif
 if solvesub_cputhreads<1 then solvesub_cputhreads=1
 threads=solvesub_cputhreads
@@ -1364,7 +1363,6 @@ sub file_load_settings
 	solvesub_restarts=1
 	solvesub_subrestartlevels=3
 	solvesub_temperature=1000
-	'solvesub_cputhreads=2
 	solvesub_outputdir=1
 	solvesub_outputbatch=0
 	solvesub_outputimp=1
