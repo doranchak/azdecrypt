@@ -102,7 +102,7 @@ select case msg.message
 			case 14 'load n-grams
 				s=""
 				dim as string oldfilter=filter
-				filter="N-gram files (*.txt/*.bin/*.gz)"+chr(0)+"*.txt;*.bin;*.gz"+chr(0)+"All files (*.*)"+chr(0)+"*.gz"
+				filter="N-gram files (*.txt/*.bin/*.gz)"+chr(0)+"*.txt;*.bin;*.gz"+chr(0)+"All files (*.*)"+chr(0)+"*.*"
 				s=ui_loadsavedialog(0,"Open n-grams",filter,1,basedir+"\N-grams\")
 				filter=oldfilter
 				if len(s)>0 then
