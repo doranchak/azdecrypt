@@ -1,4 +1,4 @@
-'AZdecrypt 1.23b
+'AZdecrypt 1.24
 '---------------
 
 'cstate table:
@@ -1315,7 +1315,7 @@ declare function mid_letter(byval first_letter as integer, byval second_letter a
 if solvesub_cputhreads<1 then solvesub_cputhreads=1
 threads=solvesub_cputhreads
 
-program_name="AZdecrypt 1.23b"
+program_name="AZdecrypt 1.24"
 'program_name+=" on "
 ''select case system_cpuarch
 ''	case 0:program_name+="Intel"
