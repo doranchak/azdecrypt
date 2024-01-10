@@ -22,7 +22,7 @@ dim as integer subtract,vig_letter 'vigenere
 dim as integer new_key,old_key 'caesar shifts
 
 dim as uinteger it,iterations,random_restarts
-dim as uinteger state,state1,state2
+dim as ulong state=2*seed-1,state1,state2
 
 dim as double m,ls
 dim as double d,d2,mc,mc_minus 'pick letter
@@ -36,6 +36,6 @@ dim as double new_cycle_score,old_cycle_score,cycle_new,cycle_old 'seqhom
 dim as double norm,old_norm 'groups
 dim as double total_ngrams,total_ngrams2,avgngs,rowscore 'row-bound
 dim as double entropy1,entropy2 'vigenere
-dim as double cycletime
+dim as double cycletime=timer
 
 dim as string filename,solstring

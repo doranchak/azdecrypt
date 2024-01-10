@@ -369,6 +369,29 @@ Note: For this feature to work, n-gram stats that consist only of the letters A 
    
 # Release History <a name="releases"></a>
 
+## 1.24 - Jan 1, 2024
+
+New features:
+
+- Improved PRNG, more precise fast exponentiation, smart initialization, and better letter picking algorithm
+
+- Optimized static zlib increases n-gram loading speed by 30-50%
+
+- Approximately 1.25% more accurate solutions on benchmarks due to code improvements (largest for 7-grams and higher)
+
+- New beijinghouse n-gram files add additional 1-2% more accuracy due to increased input parameters [from 2TB -> 10TB]
+
+- New beijinghouse 8-gram file more accurate while only requiring 10.5GB ram (vs 16GB for prior versions)
+
+- Adds preliminary research support for 9-gram files [requires 88GB ram]
+
+Additional n-gram downloads:
+
+7-gram beijinghouse v7: https://drive.proton.me/urls/K4QQGAVKEC#SlyrIbgegH13 (0.90 GB download --  9.2 GB ram)
+8-gram beijinghouse v7: https://drive.proton.me/urls/A4X7P9X990#uZKoxvda51Fy (3.50 GB download -- 10.5 GB ram)
+9-gram beijinghouse v7: https://drive.proton.me/urls/E3FXCCVK5M#vZxvy1ZK94XN (15.4 GB download -- 88.8 GB ram)
+
+
 ## 1.23 - Apr 13, 2023
    
 https://drive.google.com/file/d/1zenlhOqsPs6s7XKMdk9IhL7IK6nO7vUQ/view?usp=share_link

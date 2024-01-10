@@ -195,7 +195,8 @@ SUB Control_SetFont(ByVal hWndControl As HWND, ByVal Font As String, _
    DIM As HFONT hFont
    
    hFont = CreateFont(h, w, 0, 0, wt, it, ul, so, ANSI_CHARSET, FALSE, FALSE, _
-											DEFAULT_QUALITY, DEFAULT_PITCH Or FF_ROMAN, Font) 
+											CLEARTYPE_QUALITY, FIXED_PITCH OR FF_MODERN, Font) 
+
    
    SendMessage(hWndControl, WM_SETFONT, CAST(WPARAM, hfont), True)
 
