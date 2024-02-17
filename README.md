@@ -371,6 +371,8 @@ Note: For this feature to work, n-gram stats that consist only of the letters A 
 
 ## 1.24 - Jan 1, 2024
 
+https://drive.google.com/file/d/1QNhckwpBdijDViCyW16H9uO_Smd30M41/view?usp=sharing (.exe only)
+
 New features:
 
 - Improved PRNG, more precise fast exponentiation, smart initialization, and better letter picking algorithm
