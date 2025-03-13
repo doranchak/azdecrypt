@@ -305,6 +305,19 @@ Note: To tune the compiled binary to a specific CPU architecture, use the `march
 
 # Notes, tips and tricks <a name="notes">
 
+## Scoring function
+
+The following description of AZDecrypt's scoring function comes from Jarl's 2021 HistoCrypt keynote presentation.
+
+Example cipher “INTHISEXJMPLECIPHERONLYJFEWOFITSLETTERSJRESUBSTITUTED”.
+
+The log frequencies of all the 6-grams in the cipher from “INTHIS” to “ITUTED” are summed. This sum is then divided by the number of 6-grams in the cipher and multiplied by the text’s entropy to get the score. The entropy is needed to keep the solver from converging to solutions that only use a few of the most common letters in the English alphabet (N-gram spaghetti).
+
+The solver works it way through a number of iterations and for every iteration, all instances of a symbol, change their assigned letter in attempt to improve the solution:
+
+Example cipher “INTHISEXAMPLECIPHERONLYAFEWOFITSLETTERSARESUBSTITUTED”. Letter J changed to letter A from example above.
+For speed, all of the cipher’s 6-grams do not need to be summed again. The score is updated only with the 6-grams that change. Such as “RONLYA”, “ONLYAF”, “NLYAFE”, “LYAFEW”, “YAFEWO”, “AFEWOF”.
+
 ## Pangrams
 
 AZDecrypt was not able to solve this cipher with default settings:
