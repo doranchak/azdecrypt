@@ -1,6 +1,6 @@
 # AZDecrypt <a name="azdecrypt"></a>
 
-AZdecrypt is a fast and powerful hillclimbing classical cipher solver written in [FreeBASIC](https://www.freebasic.net/).
+AZdecrypt is a fast and powerful hillclimbing classical cipher solver written in [FreeBASIC](https://www.freebasic.net/) by [Jarl](https://zodiackillerfacts.com/tag/jarl-van-eycke/) [Van](https://www.brusselstimes.com/150781/flemish-warehouse-worker-cracks-350-year-old-code) [Eycke](https://scienceblogs.de/klausis-krypto-kolumne/jarl-van-eycke-solves-400-year-old-longitude-message/).
 
 Latest binaries can be found here:  
 - https://zodiackiller.net/community/zodiac-cipher-mailings-discussion/azdecrypt-1-19b/
