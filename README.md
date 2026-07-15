@@ -382,6 +382,25 @@ Note: For this feature to work, n-gram stats that consist only of the letters A 
    
 # Release History <a name="releases"></a>
 
+## 1.25 - Jun 5, 2025
+
+https://drive.google.com/file/d/1A4qZRZZl-HWbHYnFpDaoVfU1dGI3RzTY/view?usp=drive_link
+
+
+New features/changes:
+
+- Improved shuffle.
+
+- Fixes here and there.
+
+- Improved Bigram substitution solver.
+
+- Experimental Neural network n-grams demo.
+
+- Generate n-grams from corpus (experimental and has issues).
+
+- Chi-squared test redesign.
+
 ## 1.24 - Jan 1, 2024
 
 https://drive.google.com/file/d/1QNhckwpBdijDViCyW16H9uO_Smd30M41/view?usp=sharing (.exe only)
