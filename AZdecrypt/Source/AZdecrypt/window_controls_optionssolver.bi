@@ -24,6 +24,7 @@ case button_optionssolver_change
 				dim as double d=-1
 				dim as string dd=ui_editbox_gettext(editbox_optionssolver_a1)
 				dim as string numd=""
+				'dd=lcase(dd)
 				for j=1 to len(dd)
 					select case chr(asc(dd,j))
 						case "0","1","2","3","4","5","6","7","8","9"
@@ -36,11 +37,11 @@ case button_optionssolver_change
 						case "/","\"
 							op=2
 						case "y"
-							d=0
-							exit select
-						case "n"
 							d=1
-							exit select
+							exit for 'select
+						case "n"
+							d=0
+							exit for 'select
 					end select
 				next j
 				select case s
@@ -75,6 +76,7 @@ case button_optionssolver_change
 								case else:solvesub_fastent=0
 							end select
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_entweight))
+							ui_editbox_settext(editbox_main_entropyweight,str(solvesub_entweight))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
 					case "(General) Iterations"
@@ -104,8 +106,8 @@ case button_optionssolver_change
 								case 1:solvesub_hciterations*=d
 								case 2:solvesub_hciterations/=d
 							end select
-							if solvesub_hciterations<1000 then 
-								solvesub_hciterations=1000
+							if solvesub_hciterations<10 then 
+								solvesub_hciterations=10
 								ui_editbox_settext(output_text,"Error: minimum 1000 iterations")
 							end if
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_hciterations))
@@ -232,15 +234,21 @@ case button_optionssolver_change
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_homophoneweight))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-					case "(General) Letter n-gram power"
-						if d>0 or d<=2 then
-							solvesub_ngrampower=d
-							for j=1 to 255
-								ngp(j)=j^d
-							next j
-							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_ngrampower))
+					case "(General) Override temp div"
+						if d>=0 or d<=1000000 then
+							solvesub_tempdiv=d
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_tempdiv))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
+					'case "(General) Letter n-gram power"
+					'	if d>0 or d<=2 then
+					'		solvesub_ngrampower=d
+					'		for j=1 to 255
+					'			ngp(j)=j^d
+					'		next j
+					'		ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_ngrampower))
+					'	else ui_editbox_settext(output_text,"Error: solver options (A1)")
+					'	end if
 					'case "(General) Letter n-gram log value constant"
 					'	if d>=0 or d<=255 then
 					'		solvesub_constantngramvalue=d
@@ -295,7 +303,30 @@ case button_optionssolver_change
 							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_bigramhomwdiv))
 						else ui_editbox_settext(output_text,"Error: solver options (A1)")
 						end if
-						
+					case "(Bigram substitution) 6-gram factor"
+						if d>=0 andalso d<=1000000 then
+							solvesub_bigram6gramfact=d
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_bigram6gramfact))
+						else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						end if
+					case "(Bigram substitution) 8-gram factor"
+						if d>=0 andalso d<=1000000 then
+							solvesub_bigram8gramfact=d
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_bigram8gramfact))
+						else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						end if
+					case "(Bigram substitution) 10-gram factor"
+						if d>=0 andalso d<=1000000 then
+							solvesub_bigram10gramfact=d
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_bigram10gramfact))
+						else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						end if
+					case "(Bigram substitution) Override fixed entropy weight"
+						if d>=0 andalso d<=1000000 then
+							solvesub_overrideent=d
+							ui_listbox_replacestring(list_optionssolver,i,s+": "+str(solvesub_overrideent))
+						else ui_editbox_settext(output_text,"Error: solver options (A1)")
+						end if
 					'case "(Substitution) Add multiplicity reducing prefix and suffix"
 					'	if d=0 or d=1 then
 					'		solvesub_prefixaid=d

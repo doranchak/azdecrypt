@@ -131,7 +131,7 @@ case button_manipulation_process
 						"Add null symbol","Assign homophones","Add nulls and skips","Randomize and bigrams",_
 						"Add row (using random symbols)","Add column (using random symbols)","Randomize and trigrams"
 						ui_editbox_settext(input_text,info_to_string(info(),newlength,info_x,0,info_numerical,0,0))
-					case else
+					case else 'output numerical (default)
 						ui_editbox_settext(input_text,info_to_string(info(),newlength,info_x,0,1,0,0))
 				end select
 			else ui_editbox_settext(output_text,ret)

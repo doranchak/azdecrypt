@@ -11,6 +11,7 @@ dim as integer b,bl,bm 'ext_hc
 dim as integer solution_improved,improved,accept,wi
 dim as integer local_advstats,local_pcmode,local_outputdir,local_outputbatch,local_outputimp,local_over 'locals
 dim as integer al,ll,new_letter,old_letter,curr_symbol,older_letter,ioc_int,frcmax
+dim as integer new_tuple,old_tuple,lp,swap_symbol 'bigram substitution 2
 dim as integer new_ngram_score,old_ngram_score
 dim as integer shifts 'hafer
 dim as integer ns,rp,acu,rc0_symbol,rc0_number,rc1_symbol,rc1_poly,rchange,pos1,prev_es,old_poly 'poly
@@ -22,7 +23,7 @@ dim as integer subtract,vig_letter 'vigenere
 dim as integer new_key,old_key 'caesar shifts
 
 dim as uinteger it,iterations,random_restarts
-dim as ulong state=2*seed-1,state1,state2
+dim as uinteger state,state1,state2
 
 dim as double m,ls
 dim as double d,d2,mc,mc_minus 'pick letter
@@ -36,6 +37,17 @@ dim as double new_cycle_score,old_cycle_score,cycle_new,cycle_old 'seqhom
 dim as double norm,old_norm 'groups
 dim as double total_ngrams,total_ngrams2,avgngs,rowscore 'row-bound
 dim as double entropy1,entropy2 'vigenere
-dim as double cycletime=timer
+dim as double cycletime
+
+dim as short hps,hp(constfrq) 'homophone weight
 
 dim as string filename,solstring
+
+dim as ubyte ptr up1 'test
+
+'nn variables
+dim as integer ni,nj,nb,hi64
+dim as uinteger i64,target,hidx,argmax
+'dim as uinteger txt1(ngram_size)
+dim as uinteger<nn_intbits> nn_state
+dim as uinteger<nn_intbits> nn_state1(nn_hid1w-1),nn_os1(nn_outdim-1)

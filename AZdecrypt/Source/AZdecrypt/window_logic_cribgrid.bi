@@ -84,7 +84,7 @@ if wc_windowup=1 then
 		next y
 	
 	else 'edit cipher
-			
+		
 		for y=1 to wc_dy 'check wc_cipher for changes
 			for x=1 to wc_dx	
 				wc_symbol=ui_editbox_gettext(wc_cipher(x,y))

@@ -2,73 +2,73 @@ if solvesub_ngramcaching=0 then
 	select case map2b(rc1_symbol,k)
 		case 0
 			old_letter=sol(j+7)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(z1,bh4(sol(j+4),sol(j+5),sol(j+6),i))
+					blt=bh8(z1,h4(sol(j+4),sol(j+5),sol(j+6),i))
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
 		case 1
 			old_letter=sol(j+6)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(z1,bh4(sol(j+4),sol(j+5),i,sol(j+7)))
+					blt=bh8(z1,h4(sol(j+4),sol(j+5),i,sol(j+7)))
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
 		case 2
 			old_letter=sol(j+5)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(z1,bh4(sol(j+4),i,sol(j+6),sol(j+7)))
+					blt=bh8(z1,h4(sol(j+4),i,sol(j+6),sol(j+7)))
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
 		case 3
 			old_letter=sol(j+4)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(z1,bh4(i,sol(j+5),sol(j+6),sol(j+7)))
+					blt=bh8(z1,h4(i,sol(j+5),sol(j+6),sol(j+7)))
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
 		case 4
 			old_letter=sol(j+3)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(bh4(sol(j),sol(j+1),sol(j+2),i),z2)
+					blt=bh8(h4(sol(j),sol(j+1),sol(j+2),i),z2)
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
 		case 5
 			old_letter=sol(j+2)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(bh4(sol(j),sol(j+1),i,sol(j+3)),z2)
+					blt=bh8(h4(sol(j),sol(j+1),i,sol(j+3)),z2)
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
 		case 6
 			old_letter=sol(j+1)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(bh4(sol(j),i,sol(j+2),sol(j+3)),z2)
+					blt=bh8(h4(sol(j),i,sol(j+2),sol(j+3)),z2)
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
 		case 7
 			old_letter=sol(j)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				for i=0 to abc_sizem1
-					blt=bh8(bh4(i,sol(j+1),sol(j+2),sol(j+3)),z2)
+					blt=bh8(h4(i,sol(j+1),sol(j+2),sol(j+3)),z2)
 					if blt>bls then bls=blt:new_letter=i
 				next i
 			end if
@@ -77,13 +77,13 @@ else
 	select case map2b(rc1_symbol,k)
 		case 0
 			old_letter=sol(j+7)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				new_letter=cachebh80(sol(j+4),sol(j+5),sol(j+6),z1)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(z1,bh4(sol(j+4),sol(j+5),sol(j+6),i))
+						blt=bh8(z1,h4(sol(j+4),sol(j+5),sol(j+6),i))
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh80(sol(j+4),sol(j+5),sol(j+6),z1)=new_letter+1
@@ -93,13 +93,13 @@ else
 			end if
 		case 1
 			old_letter=sol(j+6)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				new_letter=cachebh81(sol(j+4),sol(j+5),sol(j+7),z1)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(z1,bh4(sol(j+4),sol(j+5),i,sol(j+7)))
+						blt=bh8(z1,h4(sol(j+4),sol(j+5),i,sol(j+7)))
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh81(sol(j+4),sol(j+5),sol(j+7),z1)=new_letter+1
@@ -109,13 +109,13 @@ else
 			end if
 		case 2
 			old_letter=sol(j+5)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				new_letter=cachebh82(sol(j+4),sol(j+6),sol(j+7),z1)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(z1,bh4(sol(j+4),i,sol(j+6),sol(j+7)))
+						blt=bh8(z1,h4(sol(j+4),i,sol(j+6),sol(j+7)))
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh82(sol(j+4),sol(j+6),sol(j+7),z1)=new_letter+1
@@ -125,13 +125,13 @@ else
 			end if
 		case 3
 			old_letter=sol(j+4)
-			z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+			z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 			if z1>0 then
 				new_letter=cachebh83(sol(j+5),sol(j+6),sol(j+7),z1)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(z1,bh4(i,sol(j+5),sol(j+6),sol(j+7)))
+						blt=bh8(z1,h4(i,sol(j+5),sol(j+6),sol(j+7)))
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh83(sol(j+5),sol(j+6),sol(j+7),z1)=new_letter+1
@@ -141,13 +141,13 @@ else
 			end if
 		case 4
 			old_letter=sol(j+3)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				new_letter=cachebh84(sol(j),sol(j+1),sol(j+2),z2)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(bh4(sol(j),sol(j+1),sol(j+2),i),z2)
+						blt=bh8(h4(sol(j),sol(j+1),sol(j+2),i),z2)
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh84(sol(j),sol(j+1),sol(j+2),z2)=new_letter+1
@@ -157,13 +157,13 @@ else
 			end if
 		case 5
 			old_letter=sol(j+2)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				new_letter=cachebh85(sol(j),sol(j+1),sol(j+3),z2)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(bh4(sol(j),sol(j+1),i,sol(j+3)),z2)
+						blt=bh8(h4(sol(j),sol(j+1),i,sol(j+3)),z2)
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh85(sol(j),sol(j+1),sol(j+3),z2)=new_letter+1
@@ -173,13 +173,13 @@ else
 			end if
 		case 6
 			old_letter=sol(j+1)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				new_letter=cachebh86(sol(j),sol(j+2),sol(j+3),z2)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(bh4(sol(j),i,sol(j+2),sol(j+3)),z2)
+						blt=bh8(h4(sol(j),i,sol(j+2),sol(j+3)),z2)
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh86(sol(j),sol(j+2),sol(j+3),z2)=new_letter+1
@@ -189,13 +189,13 @@ else
 			end if
 		case 7
 			old_letter=sol(j)
-			z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+			z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 			if z2>0 then
 				new_letter=cachebh87(sol(j+1),sol(j+2),sol(j+3),z2)
 				if new_letter=0 then
 					new_letter=abc_size
 					for i=0 to abc_sizem1
-						blt=bh8(bh4(i,sol(j+1),sol(j+2),sol(j+3)),z2)
+						blt=bh8(h4(i,sol(j+1),sol(j+2),sol(j+3)),z2)
 						if blt>bls then bls=blt:new_letter=i
 					next i
 					cachebh87(sol(j+1),sol(j+2),sol(j+3),z2)=new_letter+1

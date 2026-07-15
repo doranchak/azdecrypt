@@ -102,7 +102,7 @@ select case msg.message
 			case 14 'load n-grams
 				s=""
 				dim as string oldfilter=filter
-				filter="N-gram files (*.txt/*.bin/*.gz)"+chr(0)+"*.txt;*.bin;*.gz"+chr(0)+"All files (*.*)"+chr(0)+"*.*"
+				filter="N-gram files (*.txt/*.bin/*.gz/*.bat)"+chr(0)+"*.txt;*.bin;*.gz;*.bat"+chr(0)+"All files (*.*)"+chr(0)+"*.gz"
 				s=ui_loadsavedialog(0,"Open n-grams",filter,1,basedir+"\N-grams\")
 				filter=oldfilter
 				if len(s)>0 then
@@ -115,6 +115,10 @@ select case msg.message
 						sleep 10
 						thread_ptr(threadsmax+1)=threadcreate(@thread_load_ngrams,0)
 					end if
+				end if
+				sleep 1000
+				if load_ngrams_batch=1 then
+					thread_ptr(threadsmax+1)=threadcreate(@thread_load_ngrams_batch,0)
 				end if
 			case 15 'unispace
 				dim as integer ml=0
@@ -176,15 +180,19 @@ select case msg.message
 				combine_stacksize=0
 				erase combine_stack
 				create_window_combine
-			case 19 'randomize positions
+			case 19 'randomize positions (shuffle)
 				soi=string_to_info(ui_editbox_gettext(input_text),constcip2)
 				if soi="Ok" then
-					for i=1 to 1000000 'info_length^2
-						swap info(int(rnd*info_length)+1),info(int(rnd*info_length)+1)
+					for i=1 to 40
+						randomize timer,5
+						for j=1 to info_length 'info_length^2
+							swap info(int(rnd*info_length)+1),info(int(rnd*info_length)+1)
+						next j
 					next i
 					ui_editbox_settext(input_text,info_to_string(info(),info_length,info_x,info_y,info_numerical,0,0))
 				else ui_editbox_settext(output_text,soi)
-				end if				
+				end if
+				randomize timer,rng_algo
 			case 20 'manipulate
 				create_window_manipulation
 			case 21 'bias letter n-grams
@@ -938,8 +946,46 @@ select case msg.message
 				if task_active<>"none" then stop_current_task
 				sleep 10
 				if task_active="none" then
+					'sleep 10
+					'thread_ptr(threadsmax+1)=threadcreate(@generate_ciphers_substitution,0)
+					generate_ciphers_substitution
+				end if
+			case 70 'train neural network n-grams
+				if len(solver_file_name_ngrams)>0 then
+					sleep 100
+					if task_active="none" then
+						sleep 10
+						thread_ptr(threadsmax+1)=threadcreate(@thread_hillclimb_nn,0)
+					end if
+				else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
+				end if
+			case 71 'randomize ngram values
+				if len(solver_file_name_ngrams)>0 then
+					sleep 100
+					if task_active="none" then
+						sleep 10
+						#include "ngram_randomize.bi"
+					else ui_editbox_settext(output_text,"Error: other task pending")
+					end if
+				else ui_editbox_settext(output_text,"Error: no letter n-grams loaded")
+				end if
+			case 72 'math numbers
+				create_window_numbers
+			case 73 'compile letter n-grams
+				if task_active<>"none" then stop_current_task
+				sleep 10 
+				if task_active="none" then
 					sleep 10
-					thread_ptr(threadsmax+1)=threadcreate(@generate_ciphers,0)
+					thread_ptr(threadsmax+1)=threadcreate(@thread_compile_ngrams,0)
+				else ui_editbox_settext(output_text,"Error: other task pending")
+				end if
+			case 74 'convert to bh6
+				if task_active<>"none" then stop_current_task
+				sleep 10 
+				if task_active="none" then
+					sleep 10
+					thread_ptr(threadsmax+1)=threadcreate(@thread_convert_to_bh6,0)
+				else ui_editbox_settext(output_text,"Error: other task pending")
 				end if
 			case 100 to 300 'statsmenu
 				soi=string_to_info(ui_editbox_gettext(input_text),constcip)
@@ -952,13 +998,13 @@ select case msg.message
 						case 103:stats_periodic(1)
 						case 104
 							if thread_ptr(threadsmax+2)=0 then
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_keywordlength,0)
 							else stop_measurement=1
 							end if
 						case 105
 							if thread_ptr(threadsmax+2)=0 then
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_outputgraphs,0)
 							else stop_measurement=1
 							end if
@@ -970,7 +1016,7 @@ select case msg.message
 							end if
 						case 107
 							if thread_ptr(threadsmax+2)=0 then
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_findrearrangement,0)
 							else stop_measurement=1
 							end if
@@ -981,7 +1027,7 @@ select case msg.message
 							end if
 						case 109
 							if thread_ptr(threadsmax+2)=0 then
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_observations,0)
 							else stop_measurement=1
 							end if
@@ -989,17 +1035,30 @@ select case msg.message
 						case 154:stats_transpositionmatrix
 						case 155
 							if thread_ptr(threadsmax+2)=0 then
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_alphabets,0)
 							else stop_measurement=1
 							end if
 						case 156:stats_chi2
+						case 157
+							if thread_ptr(threadsmax+2)=0 then
+								ui_editbox_settext(output_text,"Please wait...")
+								thread_ptr(threadsmax+2)=threadcreate(@stats_contacts,0)
+							else stop_measurement=1
+							end if
+						case 158:stats_compare_subsetchi2
+						case 159
+							if thread_ptr(threadsmax+2)=0 then
+								ui_editbox_settext(output_text,"Please wait...")
+								thread_ptr(threadsmax+2)=threadcreate(@stats_patterns,0)
+							else stop_measurement=1
+							end if
 						case 200 to 250 'plaintext + encoding direction
 							if thread_ptr(threadsmax+2)=0 then
 								select case msg.wparam
 									case 201 to 250:stats_direction_m=msg.wparam-200
 								end select
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_direction,0)
 							else stop_measurement=1
 							end if
@@ -1034,7 +1093,7 @@ select case msg.message
 								case 277:stats_symbolcyclepatternscs=4:stats_symbolcyclepatternsfl=10
 							end select
 							if thread_ptr(threadsmax+2)=0 then
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_symbolcyclepatterns,0)
 							else stop_measurement=1
 							end if
@@ -1049,7 +1108,7 @@ select case msg.message
 									case 165:stats_nsymbolcycles=7
 									case 166:stats_nsymbolcycles=8
 								end select
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_perfectsymbolcycles,0)
 							else stop_measurement=1
 							end if
@@ -1061,7 +1120,7 @@ select case msg.message
 									case 173:stats_nsymbolcycles=5
 									case 174:stats_nsymbolcycles=6
 								end select
-								ui_editbox_settext(output_text,"Please wait..."+lb)
+								ui_editbox_settext(output_text,"Please wait...")
 								thread_ptr(threadsmax+2)=threadcreate(@stats_cycletypes,0)
 							else stop_measurement=1
 							end if

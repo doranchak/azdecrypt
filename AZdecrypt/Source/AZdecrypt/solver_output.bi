@@ -29,7 +29,7 @@ if local_outputdir=1 then
 					if solvesub_nosub=0 then 
 						solstring+="PC-cycles: "+str(thread(tn).pccycles) '+lb
 						select case thread(tn).solver_outputid
-							case 0 'substitution
+							case 0,1 'substitution
 								solstring+=" Homophones: "+str(thread(tn).homophones)+lb
 							case else
 								solstring+=lb
@@ -97,11 +97,11 @@ if local_outputdir=1 then
 				open filename for output as #filenum
 				print #filenum,solstring;
 				close #filenum
-				if solvesub_bigramheatmap=1 andalso task_active="bigram substitution" then
-					open thread(tn).outputdir+"Most common letters "+str(csn)+".txt" for output as #filenum
-					print #filenum,csolstring;
-					close #filenum
-				end if
+				'if solvesub_bigramheatmap=1 andalso task_active="bigram substitution" then
+				'	open thread(tn).outputdir+"Most common letters "+str(csn)+".txt" for output as #filenum
+				'	print #filenum,csolstring;
+				'	close #filenum
+				'end if
 			end if
 		else 'output to batch file
 			solstring="cipher_information="

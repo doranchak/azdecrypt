@@ -1,0 +1,20 @@
+'' examples/manual/procs/cva_start1.bas
+''
+'' Example extracted from the FreeBASIC Manual
+'' from topic 'CVA_START'
+''
+'' See Also: https://www.freebasic.net/wiki/wikka.php?wakka=KeyPgCvaStart
+'' --------
+
+'' typical usage of iterating through all arguments
+
+Sub proc cdecl(count As Integer, ... )
+	Dim args As Cva_List
+	Cva_Start( args, count )
+	For i As Integer = 1 To count
+		Print Cva_Arg( args, Integer )
+	Next
+	Cva_End( args )
+End Sub
+
+proc( 4, 4000, 300, 20, 1 )

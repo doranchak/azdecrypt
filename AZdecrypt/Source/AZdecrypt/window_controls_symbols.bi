@@ -141,7 +141,7 @@ case button_symbols_process
 						 	if i>0 then
 						 		string1=left(string1,i-1)+ngram2+right(string1,lns-(i+(lng1-1)))
 						 		lns=len(string1)
-						 		i+=lng1+(lng2-1)
+						 		i+=lng2 'lng1+(lng2-1)
 						 	else
 						 		exit do
 						 	end if

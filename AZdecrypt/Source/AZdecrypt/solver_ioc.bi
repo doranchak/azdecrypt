@@ -1,3 +1,4 @@
+'memset(@frq2(0),0,(1+constfrq)*2)
 erase frq2
 for i=1 to l
 	frq2(alpharev(thread(tn).sol(i)))+=1

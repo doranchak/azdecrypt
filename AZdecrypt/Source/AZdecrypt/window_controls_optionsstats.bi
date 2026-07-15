@@ -8,6 +8,13 @@ case button_optionsstats_change
 				dim as integer change=0
 				dim as double d=val(ui_editbox_gettext(editbox_optionsstats_a1))
 				select case s
+					case "(Contacts) Distance"
+						if d>=1 andalso d<=constcip then
+							change=1
+							stats_contactssdistance=d
+							ui_listbox_replacestring(list_optionsstats,i,s+": "+str(stats_contactssdistance))
+						else ui_editbox_settext(output_text,"Error: stats options (A1)")
+						end if
 					case "(Find plaintext and encoding direction) Randomization trials"
 						if d>=1 andalso d<100001 then
 							change=1

@@ -32,9 +32,9 @@ if solvesub_accshortcircuit=1 andalso thread(tn).solkey=1 andalso new_score>1000
 								for i=1 to num_ngrams
 									z=0
 									j=map2(g,i)
-									z1=bh4(sol(j),sol(j+1),sol(j+2),sol(j+3))
+									z1=h4(sol(j),sol(j+1),sol(j+2),sol(j+3))
 									if z1<>0 then
-										z2=bh4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
+										z2=h4(sol(j+4),sol(j+5),sol(j+6),sol(j+7))
 										if z2<>0 then z=bh8(z1,z2)
 									end if
 									score_needed-=z*hi
